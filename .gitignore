@@ -1,3 +1,9 @@
+# self-style
+bin/
+build/
+log
+git/
+
 # Prerequisites
 *.d
 
