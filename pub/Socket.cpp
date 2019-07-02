@@ -36,7 +36,7 @@ const int &Socket::get() const
         return _socket_fd;
 }
 
-bool Socket::isValid()
+bool Socket::__isValid()
 {
         if (_socket_fd == INVALID_SOCK)         // 无效的s
         {

@@ -28,7 +28,7 @@ public:
          *      true：表示为有效socket
          *      false：表示为无效socket
          */
-        bool isValid();
+        bool __isValid();
 public:
         /* 设置socket属性 */
         int setSocketOpt();
