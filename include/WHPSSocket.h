@@ -7,6 +7,10 @@
 #define SERVER_MODE             0       // 服务器主socket
 #define CLIENT_CONN_MODE        1       // 服务器接受连接的客户端的socket
 
+/*
+ * WHPS服务的基础socket类，初始化服务
+ */
+
 class WHPSSocket : public Socket
 {
 public:

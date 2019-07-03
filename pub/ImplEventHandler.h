@@ -4,6 +4,8 @@
 
 #include <functional>
 
+#define __stdcall
+
 /*
  * 事件回调抽象接口，包含：
  *      类型声明、回调接口声明、epoll事件类型、提供当前子类对应的句柄描述符等。
@@ -57,6 +59,6 @@ protected:
 
         /* epoll事件类型，其值类型为 enum EPOLL_EVENTS */
         unsigned int __epoll_events;
-}
+};
 
 #endif  // __IMPL_EVENT_HANDLER_H__

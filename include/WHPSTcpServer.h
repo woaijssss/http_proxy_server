@@ -3,6 +3,8 @@
 #define __WHPSTCPSERVER_H__
 
 #include "WHPSTcpSocket.h"
+#include "WHPSEventHandler.h"
+#include "WHPSEpollEventLoop.h"
 
 #include <iostream>
 
@@ -18,11 +20,24 @@ public:
         /* 应用侧检查句柄是否有效 */
         bool isValid();
 
+        /* 获取服务器主socket */
         WHPSTcpSocket& getSocket();
+
+        /* 启动tcp服务，包含：
+         *      - 启动WHPSEpollEventLoop事件循环；
+         *      - 设置epoll触发类型
+         *      - 注册相关回调函数
+         * 若启动失败(即：返回false)，则服务无效，重启服务即可。
+         */
+        bool start();
 
 private:
         WHPSTcpServer();
         static WHPSTcpServer* _tcp_server;
+
+        WHPSTcpSocket _tcp_socket;      // 服务器主socket
+        WHPSEventHandler _event_chn;    // 服务器事件回调通道
+        WHPSEpollEventLoop _loop;       // 服务器事件循环触发
 
         class GC            // 避免内存泄漏的垃圾回收(嵌套)类
         {
@@ -35,10 +50,7 @@ private:
                         }
                 }
         };
-
         static GC _gc; 
-
-        WHPSTcpSocket _tcp_socket; 
 };
 
 #endif  // __WHPSTCPSERVER_H__

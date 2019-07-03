@@ -29,3 +29,16 @@ WHPSTcpSocket& WHPSTcpServer::getSocket()
 {
         return _tcp_socket;
 }
+
+bool WHPSTcpServer::start()
+{
+        if (!this->isValid())
+        {
+                return false;
+        }
+
+        _event_chn.setFd(_tcp_socket);
+        _event_chn.setEvents(EPOLLIN | EPOLLET);        // 设置接收连接事件，epoll模式为边缘触发
+
+        return true;
+}

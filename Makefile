@@ -59,7 +59,7 @@ $(BUILD_DIR)/%.o: %.c
 	@$(CC) $(CFLAGS) $< -c -o $@
 
 clean:
-	@rm -rf $(BUILD_DIR)/* $(BIN_DIR)/$(BIN)
+	@rm -rf $(BUILD_DIR) $(BIN_DIR)
 
 clean_all:
 	@rm -rf $(BUILD_DIR)/* $(BIN_DIR)/*

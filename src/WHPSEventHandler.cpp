@@ -1,4 +1,6 @@
 
+#include <sys/epoll.h>
+
 #include "WHPSEventHandler.h"
 
 WHPSEventHandler::WHPSEventHandler()
@@ -11,12 +13,22 @@ WHPSEventHandler::~WHPSEventHandler()
 
 }
 
+void WHPSEventHandler::setFd(WHPSTcpSocket& wfd)
+{
+        __setFd(wfd.get());
+}
+
+const int& WHPSEventHandler::getFd() const
+{
+        return __getFd();
+}
+
 void WHPSEventHandler::setEvents(events_t events)
 {
         __setEvents(events);
 }
 
-const events_t& WHPSEventHandler::getEvents()
+const events_t& WHPSEventHandler::getEvents() const
 {
         return __getEvents();
 }
@@ -42,10 +54,12 @@ void WHPSEventHandler::setCloseCallback(CbFunc cb)
         this->setCallback(_cb_close, cb);
 }
 
-void WHPSEventHandler::setCallback(CbFunc& cb_s, CbFunc, cb_d)
+void WHPSEventHandler::setCallback(CbFunc& cb_s, CbFunc cb_d)
 {
         cb_s = cb_d;
 }
+
+#include <iostream>
 
 void WHPSEventHandler::exCallback()
 {

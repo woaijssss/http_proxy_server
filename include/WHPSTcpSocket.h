@@ -6,8 +6,7 @@
 
 #include <iostream>
 
-/* 服务器主socket类
- * 单例模式： 一个服务进程只能有一个主socket
+/* WHPS服务基础tcp socket类，所有的socket句柄都通过此类创建
  */
 class WHPSTcpSocket : public WHPSSocket
 {
