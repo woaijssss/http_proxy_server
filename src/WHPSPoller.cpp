@@ -3,7 +3,8 @@
 
 #include "WHPSPoller.h"
 
-WHPSPoller::WHPSPoller()
+WHPSPoller::WHPSPoller(int maxevents, int timeout)
+        : Poller(maxevents, timeout)
 {
 
 }

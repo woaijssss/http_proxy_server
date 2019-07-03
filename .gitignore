@@ -3,6 +3,7 @@ bin/
 build/
 log
 git/
+Debug/
 
 # Prerequisites
 *.d

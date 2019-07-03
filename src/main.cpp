@@ -7,7 +7,7 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {
-        WHPSTcpServer* p_socket = WHPSTcpServer::Get();
+        WHPSTcpServer* p_socket = WHPSTcpServer::Get(1024, 10);
 
         while (true)
         {

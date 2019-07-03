@@ -15,7 +15,7 @@ typedef WHPSEventHandler event_chn;
 class WHPSPoller : public Poller
 {
 public:
-        WHPSPoller();
+        WHPSPoller(int maxevents, int timeout);
         ~WHPSPoller();
 
 public:

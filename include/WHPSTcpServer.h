@@ -15,7 +15,7 @@ class WHPSTcpServer
 {
 public:
         /* 获取单例实例 */
-        static WHPSTcpServer* Get();
+        static WHPSTcpServer* Get(int maxevents, int timeout);
 
         /* 应用侧检查句柄是否有效 */
         bool isValid();
@@ -32,7 +32,7 @@ public:
         bool start();
 
 private:
-        WHPSTcpServer();
+        WHPSTcpServer(int maxevents, int timeout);
         static WHPSTcpServer* _tcp_server;
 
         WHPSTcpSocket _tcp_socket;      // 服务器主socket
@@ -44,7 +44,7 @@ private:
         public:
                 ~GC()
                 {
-                        if(WHPSTcpServer::_tcp_server) 
+                        if (WHPSTcpServer::_tcp_server)
                         {
                                 delete WHPSTcpServer::_tcp_server;
                         }

@@ -4,17 +4,17 @@
 WHPSTcpServer* WHPSTcpServer::_tcp_server = NULL;
 WHPSTcpServer::GC WHPSTcpServer::_gc;
 
-WHPSTcpServer::WHPSTcpServer()
-        : _tcp_socket(SERVER_MODE)
+WHPSTcpServer::WHPSTcpServer(int maxevents, int timeout)
+        : _tcp_socket(SERVER_MODE), _loop(maxevents, timeout)
 {
         _tcp_socket.init();
 }
 
-WHPSTcpServer* WHPSTcpServer::Get()
+WHPSTcpServer* WHPSTcpServer::Get(int maxevents, int timeout)
 {
         if (!_tcp_server)
         {
-                _tcp_server = new WHPSTcpServer();
+                _tcp_server = new WHPSTcpServer(maxevents, timeout);
         }
 
         return _tcp_server;

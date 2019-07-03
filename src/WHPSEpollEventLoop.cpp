@@ -1,7 +1,8 @@
 
-#include "WHPSEventLoop.h"
+#include "WHPSEpollEventLoop.h"
 
-WHPSEpollEventLoop::WHPSEpollEventLoop()
+WHPSEpollEventLoop::WHPSEpollEventLoop(int maxevents, int timeout)
+        : _poller(maxevents, timeout)
 {
 
 }

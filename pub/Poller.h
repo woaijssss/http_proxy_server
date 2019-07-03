@@ -14,7 +14,7 @@ typedef struct epoll_event SEplEvent;
 class Poller
 {
 public:
-        Poller();
+        Poller(int maxevents, int timeout);
         ~Poller();
 
 public:

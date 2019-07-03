@@ -13,11 +13,11 @@ enum EventType
 
 };
 
-class WHPSEventHandler : public ImplEventHandler
+class WHPSEventHandler : private ImplEventHandler
 {
 public:
         WHPSEventHandler();
-        ~WHPSEventHandler();
+        virtual ~WHPSEventHandler();
 
 public:
         /* 设置当前处理的句柄描述符 */
@@ -51,8 +51,14 @@ public:
 private:
         /* 设置事件回调函数：
          *      任何设置事件回调的过程，都通过此接口实现；
+         * 禁止外部回调
          */
         virtual void setCallback(CbFunc& cb_s, CbFunc cb_d);
+
+        virtual void  __setCallback(__callback_t& __cb_s, __callback_t __cb_d);
+
+        /* 执行回调函数接口 */
+        virtual void  __exCallback();
 
 private:
         CbFunc _cb_read;      // 读回调

@@ -11,7 +11,7 @@
 class WHPSEpollEventLoop
 {
 public:
-        WHPSEpollEventLoop();
+        WHPSEpollEventLoop(int maxevents, int timeout);
         ~WHPSEpollEventLoop();
 
 public:
