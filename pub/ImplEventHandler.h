@@ -50,10 +50,10 @@ protected:
         }
 
         /* 设置回调函数接口 */
-        virtual void  __setCallback(__callback_t& __cb_s, __callback_t __cb_d) = 0;
+        virtual void __stdcall __setCallback(__callback_t& __cb_s, __callback_t __cb_d) = 0;
 
         /* 执行回调函数接口 */
-        virtual void  __exCallback() = 0;
+        virtual void __stdcall __exCallback() = 0;
 
 protected:
         /* 该父类的派生类所拥有的句柄描述符。

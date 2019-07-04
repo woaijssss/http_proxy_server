@@ -55,10 +55,10 @@ private:
          */
         virtual void setCallback(CbFunc& cb_s, CbFunc cb_d);
 
-        virtual void  __setCallback(__callback_t& __cb_s, __callback_t __cb_d);
+        virtual void __stdcall __setCallback(__callback_t& __cb_s, __callback_t __cb_d);
 
         /* 执行回调函数接口 */
-        virtual void  __exCallback();
+        virtual void __stdcall __exCallback();
 
 private:
         CbFunc _cb_read;      // 读回调

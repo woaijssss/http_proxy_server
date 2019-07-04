@@ -77,22 +77,22 @@ void __stdcall WHPSEventHandler::__exCallback()
          */
         if (events & EPOLLRDHUP)         // 对端异常关闭事件
         {
-                std::cout << "Event EPOLLRDHUP" << std::endl;
+                std::cout << "epoll type: EPOLLRDHUP" << std::endl;
                 _cb_close();
         }
         else if (events & (EPOLLIN | EPOLLPRI))  //读事件，对端有数据或者正常关闭
         {
-                std::cout << "Event EPOLLIN" << std::endl;
+                std::cout << "epoll type: EPOLLIN" << std::endl;
                 _cb_read();
         }
         else if (events & EPOLLOUT)  //写事件
         {
-                std::cout << "Event EPOLLOUT" << std::endl;
+                std::cout << "epoll type: EPOLLOUT" << std::endl;
                 _cb_write();
         }
         else
         {
-                std::cout << "Event error" << std::endl;
+                std::cout << "epoll type: error" << std::endl;
                 _cb_error();  //连接错误
         }
 }

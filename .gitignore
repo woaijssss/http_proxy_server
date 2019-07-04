@@ -4,6 +4,8 @@ build/
 log
 git/
 Debug/
+a.out
+*/a.out
 
 # Prerequisites
 *.d

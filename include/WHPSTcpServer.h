@@ -14,6 +14,8 @@
 class WHPSTcpServer
 {
 public:
+        using error_code = unsigned int;
+public:
         /* 获取单例实例 */
         static WHPSTcpServer* Get(int maxevents, int timeout);
 
@@ -30,6 +32,11 @@ public:
          * 若启动失败(即：返回false)，则服务无效，重启服务即可。
          */
         bool start();
+
+        WHPSEpollEventLoop& loop();
+
+private:
+        void onAccept(error_code error);
 
 private:
         WHPSTcpServer(int maxevents, int timeout);

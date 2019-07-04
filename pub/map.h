@@ -4,36 +4,43 @@
 #include <map>
 #include <mutex>
 
-#include <iostream>
-using namespace std;
-
-template<class KEY, class VALUE>
-class Map: public std::map<KEY, VALUE> {
+/* 线程安全的map */
+template<class __K, class __V>
+class Map: public std::map<__K, __V> 
+{
 public:
-        void insert(const KEY& key, const VALUE& value)
+        using iterator = typename Map<__K, __V>::iterator;
+public:
+        void insert(const __K& k, const __V& v)
         {
                 std::lock_guard<std::mutex> lock(__mutex);
-                std::map<KEY, VALUE>::insert(std::pair<KEY, VALUE>(key, value));
+                std::map<__K, __V>::insert(std::pair<__K, __V>(k, v));
         }
 
-        void erase(const KEY& key)
+        void erase(const __K& k)
         {
                 std::lock_guard<std::mutex> lock(__mutex);
-                std::map<KEY, VALUE>::erase(key);
+                std::map<__K, __V>::erase(k);
         }
 
-        VALUE& operator[](const KEY& key)
+        __V& operator[](const __K& k)
         {
                 std::lock_guard<std::mutex> lock(__mutex);
-                return std::map<KEY, VALUE>::operator[](key);
+                return std::map<__K, __V>::operator[](k);
         }
 
         size_t size()
         {
                 std::lock_guard<std::mutex> lock(__mutex);
-                return std::map<KEY, VALUE>::size();
+                return std::map<__K, __V>::size();
         }
-public:
+
+        iterator find(const __K& k)
+        {
+                std::lock_guard<std::mutex> lock(__mutex);
+                return std::map<__K, __V>::find(k);
+        }
+private:
         std::mutex __mutex;
 };
 
