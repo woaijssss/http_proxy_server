@@ -17,7 +17,7 @@ void WHPSEventHandler::setFd(WHPSTcpSocket& wfd)
         __setFd(wfd.get());
 }
 
-const int& WHPSEventHandler::getFd() const
+const int& WHPSEventHandler::getFd()
 {
         return __getFd();
 }

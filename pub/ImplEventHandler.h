@@ -32,7 +32,7 @@ protected:
         }
 
         /* 获取已设置的句柄描述符 */
-        const int& __getFd() const
+        const int& __getFd()
         {
                 return __fd;
         }
@@ -55,7 +55,7 @@ protected:
         /* 执行回调函数接口 */
         virtual void __stdcall __exCallback() = 0;
 
-protected:
+private:
         /* 该父类的派生类所拥有的句柄描述符。
          * 任何的事件处理都是基于句柄描述符，该描述符的值应与外部统一。
          */

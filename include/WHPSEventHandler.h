@@ -13,7 +13,7 @@ enum EventType
 
 };
 
-class WHPSEventHandler : private ImplEventHandler
+class WHPSEventHandler : public ImplEventHandler
 {
 public:
         WHPSEventHandler();
@@ -24,7 +24,7 @@ public:
         void setFd(WHPSTcpSocket& wfd);
 
         /* 获取已设置的句柄描述符 */
-        const int& getFd() const;
+        const int& getFd();
 
         /* 设置epoll事件类型宏 */
         void setEvents(events_t events);
