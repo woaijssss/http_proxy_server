@@ -13,7 +13,7 @@ class WHPSTcpSocket : public WHPSSocket
 {
 public:
         WHPSTcpSocket(int mode);
-        ~WHPSTcpSocket();
+        virtual ~WHPSTcpSocket();
 
         /* 应用侧检查句柄是否有效 */
         bool isValid();

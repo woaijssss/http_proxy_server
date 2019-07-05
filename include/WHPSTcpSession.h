@@ -8,18 +8,16 @@
 #include "WHPSEventHandler.h"
 #include "WHPSEpollEventLoop.h"
 
-class WHPSTcpSession;
-typedef std::shared_ptr<WHPSTcpSession>         sp_TcpSession;
-typedef std::function<void(sp_TcpSession&)>     TcpSessionCB;
-
 /* 连接客户端表示类，该类实例化的每个对象，分别表示一个客户端的一条tcp连接
  * 句柄的操作由WHPSTcpConnSocket来维护；
  * 该类不做socket的改变
  */
-class WHPSTcpSession// : public std::enable_shared_from_this<WHPSTcpSession>
+class WHPSTcpSession : public std::enable_shared_from_this<WHPSTcpSession>
 {
 public:
         using error_code = unsigned int;
+        using sp_TcpSession = std::shared_ptr<WHPSTcpSession>;
+        using TcpSessionCB = std::function<void(sp_TcpSession&)> ;
 public:
         WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr);
         ~WHPSTcpSession();
@@ -36,6 +34,9 @@ public:
 
         /* 将当前的客户端session的事件回调通道，加入到EventLoop事件循环中 */
         void addToEventLoop();
+
+        /* 移除事件 */
+        void delFromEventLoop();
 
         /* 设置资源清理回调函数
          * 由于socket是从主socket申请的资源，主socket和EventLoop都有记录，
@@ -59,5 +60,8 @@ private:
 
         TcpSessionCB _cb_cleanup;
 };
+
+typedef WHPSTcpSession::sp_TcpSession   sp_TcpSession;
+typedef WHPSTcpSession::TcpSessionCB    TcpSessionCB;
 
 #endif  // __WHPS_TCP_SESSION_H__

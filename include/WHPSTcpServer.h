@@ -44,6 +44,7 @@ private:
         /* 处理新建连接，设置相关属性，并加入到_loop事件循环中 */
         void onNewSession();
 
+public:
         /* 某个客户端连接关闭时，调用此回调清除句柄资源 */
         void onCleanUpResource(sp_TcpSession& sp_tcp_session);
 

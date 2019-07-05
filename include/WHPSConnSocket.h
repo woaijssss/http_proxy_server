@@ -11,7 +11,7 @@ class WHPSConnSocket : public Socket
 public:
         //WHPSConnSocket();
         WHPSConnSocket(int fd);
-        ~WHPSConnSocket();
+        virtual ~WHPSConnSocket();
 
 public:
         /* 检查句柄是否有效 */

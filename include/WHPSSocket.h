@@ -15,7 +15,7 @@ class WHPSSocket : public Socket
 {
 public:
         WHPSSocket(int mode);
-        ~WHPSSocket();
+        virtual ~WHPSSocket();
 
 public:
         /* 设置socket，适用于服务器接收的客户端socket */

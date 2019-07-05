@@ -26,6 +26,7 @@ Socket::~Socket()
         if (__socket_fd != INVALID_SOCK)
         {
                 this->__close();
+                __socket_fd = INVALID_SOCK;
         }
 }
 

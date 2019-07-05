@@ -18,7 +18,7 @@ class Socket
 {
 public:
         Socket();
-        ~Socket();
+        virtual ~Socket();
 
         /* 获取当前socket句柄 */
         const int& __get() const;

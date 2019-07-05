@@ -13,7 +13,7 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         _conn_sock.setNonblock();
 
         _event_chn.setFd(_conn_sock.get());
-        _event_chn.setEvents(EPOLLIN | EPOLLET);        // 设置接收连接事件，epoll模式为边缘触发
+        _event_chn.setEvents(EPOLLIN | EPOLLPRI);        // 设置接收连接事件，epoll模式为边缘触发
 
         _event_chn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0));
         _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0));
@@ -44,6 +44,11 @@ void WHPSTcpSession::addToEventLoop()
         _loop.addEvent(&_event_chn);    // 所有请求都由主线程处理(后续要修改成多线程)
 }
 
+void WHPSTcpSession::delFromEventLoop()
+{
+        _loop.delEvent(&_event_chn);
+}
+
 void WHPSTcpSession::setCleanUpCallback(TcpSessionCB& cb)
 {
         _cb_cleanup = cb;
@@ -60,6 +65,11 @@ void WHPSTcpSession::onNewRead(error_code error)
                 if (nbyte > 0)
                 {
                         cout << getHexString(buffer, nbyte) << endl;
+                }
+                else if (nbyte == 0)    // 对端关闭
+                {
+                        onNewClose(-1); // 关闭连接
+                        break;
                 }
                 else
                 {
@@ -78,7 +88,8 @@ void WHPSTcpSession::onNewClose(error_code error)
          */
 
         cout << "WHPSTcpSession::onNewClose" << endl;
+        sp_TcpSession sp_tcp_session = std::make_shared<WHPSTcpSession>(*this);
+        _cb_cleanup(sp_tcp_session);  // 执行清理回调函数
+        this->delFromEventLoop();
         _conn_sock.close();
-        _loop.delEvent(&_event_chn);    // 从EventLoop删除对应的资源
-        _cb_cleanup();  // 执行清理回调函数
 }
