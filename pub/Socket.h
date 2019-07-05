@@ -21,7 +21,7 @@ public:
         ~Socket();
 
         /* 获取当前socket句柄 */
-        const int& get() const;
+        const int& __get() const;
 
         /* 判断当前socket是否有效 
          * 返回：
@@ -29,35 +29,41 @@ public:
          *      false：表示为无效socket
          */
         bool __isValid();
-public:
+protected:
+        /* 设置socket，适用于服务器接收的客户端socket */
+        void __set(int fd);
+        
         /* 设置socket属性 */
-        int setSocketOpt();
+        int __setSocketOpt();
 
         /* 设置非阻塞socket */
-        int setNonblock();
+        int __setNonblock();
+
+        /* 创建一个socket */
+        int __socket();
 
         /* 绑定一个端口
          *      server模式：ip地址无需传递
          *      client模式：ip地址需传指定的服务器ip
          */
-        int bind(const int& port, const char* ip = NULL);
+        int __bind(const int& port, const char* ip = NULL);
 
         /* 启动监听 */
-        int listen();
+        int __listen();
 
         /* 获取被监听的连接请求 */
-        int accept();   // 暂时不用
-        int accept(struct sockaddr_in& c_addr);         // 优先实现这个接口
-        struct sockaddr_in accpet();    // 暂时不用
+        int __accept();   // 暂时不用
+        int __accept(struct sockaddr_in& c_addr);         // 优先实现这个接口
+        struct sockaddr_in __accpet();    // 暂时不用
 
         /* 设置socket地址重用(主要用于服务端socket) */
-        int setReuseAddr();
+        int __setReuseAddr();
 
         /* 关闭socket */
-        int close();
+        int __close();
 
 private:
-        int _socket_fd;         // 句柄文件描述符
+        int __socket_fd;         // 句柄文件描述符
 };
 
 #endif  // __SOCKET_H__

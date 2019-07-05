@@ -1,0 +1,84 @@
+
+#include <iostream>
+#include <unistd.h>
+using namespace std;
+
+#include "WHPSTcpSession.h"
+#include "util.h"
+
+WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr)
+        : _c_addr(c_addr), _loop(loop), _conn_sock(fd)
+{
+        /* 每个客户端的socket要设置成非阻塞，否则在read或write会使线程阻塞，无法实现异步和线程复用 */
+        _conn_sock.setNonblock();
+
+        _event_chn.setFd(_conn_sock.get());
+        _event_chn.setEvents(EPOLLIN | EPOLLET);        // 设置接收连接事件，epoll模式为边缘触发
+
+        _event_chn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0));
+        _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0));
+}
+
+WHPSTcpSession::~WHPSTcpSession()
+{
+        cout << "~WHPSTcpSession..." << endl;
+}
+
+bool WHPSTcpSession::isValid()
+{
+        return _conn_sock.isValid();
+}
+
+const int& WHPSTcpSession::get() const
+{
+        return _conn_sock.get();
+}
+
+WHPSConnSocket& WHPSTcpSession::getConn()
+{
+        return _conn_sock;
+}
+
+void WHPSTcpSession::addToEventLoop()
+{
+        _loop.addEvent(&_event_chn);    // 所有请求都由主线程处理(后续要修改成多线程)
+}
+
+void WHPSTcpSession::setCleanUpCallback(TcpSessionCB& cb)
+{
+        _cb_cleanup = cb;
+}
+
+void WHPSTcpSession::onNewRead(error_code error)
+{
+        cout << "++++++++++++++++++++++++++" << endl;
+        while (true)
+        {
+                unsigned char buffer[1024];
+                int nbyte = read(_conn_sock.get(), buffer, 1024); 
+
+                if (nbyte > 0)
+                {
+                        cout << getHexString(buffer, nbyte) << endl;
+                }
+                else
+                {
+                        cout << "nbyte: " << nbyte << endl;     // 异步时，当缓冲区无数据时，read会返回-1,即：读完了
+                        break;
+                }
+        }
+        cout << "++++++++++++++++++++++++++" << endl;
+}
+
+void WHPSTcpSession::onNewClose(error_code error)
+{
+        /* 关闭数据需要做两件事情
+         *      （1）关闭socket
+         *      （2）通知主socket对象和EventLoop对象删除该句柄资源
+         */
+
+        cout << "WHPSTcpSession::onNewClose" << endl;
+        _conn_sock.close();
+        _loop.delEvent(&_event_chn);    // 从EventLoop删除对应的资源
+        _cb_cleanup();  // 执行清理回调函数
+}

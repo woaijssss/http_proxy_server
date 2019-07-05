@@ -9,7 +9,6 @@
 #include "vector.h"
 
 #define MAX_EVENTS      1024            // 最大触发的事件数
-typedef WHPSEventHandler event_chn;
 
 /* WHPS事件循环基础类，用于启动事件和对事件的增、删、改、查。
  * WHPSPoller中，维护事件列表、事件队列等。

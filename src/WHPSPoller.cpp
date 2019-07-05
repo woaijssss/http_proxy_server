@@ -103,6 +103,7 @@ void WHPSPoller::onEvent(Vector<event_chn*>& event_queue, const int& n_fds)
                 int events = _events[i].events;                         // 获取被触发的事件类型
                 event_chn* p_event = (event_chn*)_events[i].data.ptr;   // 获取被触发的事件指针
                 const int& fd = p_event->getFd();                       // 获取事件对应的句柄
+                cout << "fd: " << fd << endl;
                 Map<int, event_chn*>::iterator it = _event_list.find(fd);
                 if (it != _event_list.end())    // 在事件表中找到了对应的句柄
                 {

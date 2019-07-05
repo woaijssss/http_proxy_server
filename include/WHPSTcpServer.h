@@ -5,6 +5,7 @@
 #include "WHPSTcpSocket.h"
 #include "WHPSEventHandler.h"
 #include "WHPSEpollEventLoop.h"
+#include "WHPSTcpSession.h"
 
 #include <iostream>
 
@@ -33,10 +34,18 @@ public:
          */
         bool start();
 
+        /* 获取主socket事件循环对象 */
         WHPSEpollEventLoop& loop();
 
 private:
-        void onAccept(error_code error);
+        /* 接收新建连接的回调函数 */
+        void onNewConnection(error_code error);
+
+        /* 处理新建连接，设置相关属性，并加入到_loop事件循环中 */
+        void onNewSession();
+
+        /* 某个客户端连接关闭时，调用此回调清除句柄资源 */
+        void onCleanUpResource(sp_TcpSession& sp_tcp_session);
 
 private:
         WHPSTcpServer(int maxevents, int timeout);
@@ -45,6 +54,9 @@ private:
         WHPSTcpSocket _tcp_socket;      // 服务器主socket
         WHPSEventHandler _event_chn;    // 服务器事件回调通道
         WHPSEpollEventLoop _loop;       // 服务器事件循环触发
+
+        /* 保证在连接存在时，智能指针至少被引用一次，不至于销毁连接 */
+        Map<int, sp_TcpSession> _tcp_sess_list;   // tcp客户端连接表(断线要清理)
 
         class GC            // 避免内存泄漏的垃圾回收(嵌套)类
         {

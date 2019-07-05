@@ -5,14 +5,22 @@
 #include "ImplEventHandler.h"
 #include "WHPSTcpSocket.h"
 
+class WHPSEventHandler;
+
 typedef ImplEventHandler::__callback_t CbFunc;
 typedef ImplEventHandler::__epoll_events_t events_t;
+typedef WHPSEventHandler event_chn;
 
 enum EventType
 {
 
 };
 
+/* 事件注册、回调类：
+ *  （1）设置指定的fd
+ *  （2）设置指定的epoll触发类型
+ *  （3）设置指定的回调函数
+ */
 class WHPSEventHandler : public ImplEventHandler
 {
 public:
@@ -21,7 +29,7 @@ public:
 
 public:
         /* 设置当前处理的句柄描述符 */
-        void setFd(WHPSTcpSocket& wfd);
+        void setFd(const int& fd);
 
         /* 获取已设置的句柄描述符 */
         const int& getFd();
