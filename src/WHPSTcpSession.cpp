@@ -93,7 +93,7 @@ void WHPSTcpSession::onNewClose(error_code error)
 //        _cb_cleanup(sp_tcp_session);  // 执行清理回调函数
         //sp_TcpSession sp_tcp_session = shared_from_this();
         this->delFromEventLoop();
-        sp_TcpSession sp_tcp_session = shared_from_this();
+        sp_TcpSession sp_tcp_session = shared_from_this();      // 返回this类的智能指针
         _cb_cleanup(sp_tcp_session);
         _conn_sock.close();
 }
