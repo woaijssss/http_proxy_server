@@ -7,7 +7,8 @@ using namespace std;
 #include "util.h"
 
 WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr)
-        : _c_addr(c_addr), _loop(loop), _conn_sock(fd)
+        : std::enable_shared_from_this<WHPSTcpSession>()
+          , _c_addr(c_addr), _loop(loop), _conn_sock(fd)
 {
         /* 每个客户端的socket要设置成非阻塞，否则在read或write会使线程阻塞，无法实现异步和线程复用 */
         _conn_sock.setNonblock();
@@ -88,8 +89,11 @@ void WHPSTcpSession::onNewClose(error_code error)
          */
 
         cout << "WHPSTcpSession::onNewClose" << endl;
-        sp_TcpSession sp_tcp_session = std::make_shared<WHPSTcpSession>(*this);
-        _cb_cleanup(sp_tcp_session);  // 执行清理回调函数
+        //sp_TcpSession& sp_tcp_session = std::make_shared<WHPSTcpSession>(*this);
+//        _cb_cleanup(sp_tcp_session);  // 执行清理回调函数
+        //sp_TcpSession sp_tcp_session = shared_from_this();
         this->delFromEventLoop();
+        sp_TcpSession sp_tcp_session = shared_from_this();
+        _cb_cleanup(sp_tcp_session);
         _conn_sock.close();
 }

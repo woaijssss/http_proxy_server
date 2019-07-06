@@ -46,7 +46,7 @@ private:
 
 public:
         /* 某个客户端连接关闭时，调用此回调清除句柄资源 */
-        void onCleanUpResource(sp_TcpSession& sp_tcp_session);
+        void onCleanUpResource(const sp_TcpSession& sp_tcp_session);
 
 private:
         WHPSTcpServer(int maxevents, int timeout);

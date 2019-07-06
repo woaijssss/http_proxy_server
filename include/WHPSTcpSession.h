@@ -17,7 +17,7 @@ class WHPSTcpSession : public std::enable_shared_from_this<WHPSTcpSession>
 public:
         using error_code = unsigned int;
         using sp_TcpSession = std::shared_ptr<WHPSTcpSession>;
-        using TcpSessionCB = std::function<void(sp_TcpSession&)> ;
+        using TcpSessionCB = std::function<void(const sp_TcpSession&)> ;
 public:
         WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr);
         ~WHPSTcpSession();

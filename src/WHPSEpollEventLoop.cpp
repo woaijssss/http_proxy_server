@@ -4,6 +4,7 @@
 WHPSEpollEventLoop::WHPSEpollEventLoop(int maxevents, int timeout)
         : _poller(maxevents, timeout)
         , _event_queue()
+        , _is_stop(false)
 {
 
 }
@@ -30,7 +31,7 @@ void WHPSEpollEventLoop::updateEvent(event_chn* p_event)
 
 void WHPSEpollEventLoop::loop()
 {
-        while (true)
+        while (!_is_stop)
         {
                 _poller.poll(_event_queue);         // 获取当前所有的事件
 
@@ -40,5 +41,6 @@ void WHPSEpollEventLoop::loop()
                 }
 
                 _event_queue.clear();   // 执行结束后清空队列
+
         }
 }

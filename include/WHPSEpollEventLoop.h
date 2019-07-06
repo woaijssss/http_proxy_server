@@ -38,6 +38,8 @@ private:
          * 外部线程，通过事件队列，来向epoll获取任务
          */
         Vector<event_chn*> _event_queue;
+
+        bool _is_stop;
 };
 
 #endif  // __WHPS_EPOLL_EVENT_LOOP_H__

@@ -44,6 +44,11 @@ int WHPSConnSocket::setNonblock()
 
 int WHPSConnSocket::close()
 {
-        cout << "WHPSConnSocket::close()" << endl;
-        return this->__close();
+        if (this->isValid())
+        {
+                cout << "WHPSConnSocket::close()" << endl;
+                return this->__close();
+        }
+
+        return 0;
 }
