@@ -16,8 +16,10 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         _event_chn.setFd(_conn_sock.get());
         _event_chn.setEvents(EPOLLIN | EPOLLPRI);        // 设置接收连接事件，epoll模式为边缘触发
 
-        _event_chn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0));
-        _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0));
+        _event_chn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0));     // 注册数据接收回调
+        _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0));   // 注册连接关闭回调
+
+        // 还需要注册发送数据和超时回调
 }
 
 WHPSTcpSession::~WHPSTcpSession()
