@@ -45,9 +45,29 @@ public:
          */
         void setCleanUpCallback(TcpSessionCB& cb);
 
+        /* 写数据要触发epoll事件 */
+        void send(const std::string& msg);
+
 private:
+
+        /**********************************************************************/
+        // 当前读、写异常情况处理可能不全面，后续出问题再追加
+        /* 写数据要触发epoll事件，必须要主动先写一次，调用此接口
+         * 由send()调用
+         */
+        int sendTcpMessage(std::string& buffer_out);
+
+        /* 真正的读read()操作，由onNewRead() epoll事件触发后调用 */
+        int readTcpMessage(std::string& buffer_in);
+
         /* 接收数据事件处理回调 */
         void onNewRead(error_code error);
+        /**********************************************************************/
+
+        /* 发送数据事件处理回调 
+         * 该接口的实现中，应检测数据是否发送完毕，并将剩余数据递归发送完成。
+         */
+        void onNewWrite(error_code error);
 
         /* 关闭连接事件处理回调 */
         void onNewClose(error_code error);
@@ -59,6 +79,10 @@ private:
         event_chn _event_chn;           // 服务器事件回调通道
 
         TcpSessionCB _cb_cleanup;
+
+private:
+        std::string _buffer_in;           // 接收消息缓冲(tcp请求)
+        std::string _buffer_out;          // 发送消息缓冲(tcp响应)
 };
 
 typedef WHPSTcpSession::sp_TcpSession   sp_TcpSession;

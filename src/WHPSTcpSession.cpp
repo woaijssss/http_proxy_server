@@ -6,6 +6,17 @@ using namespace std;
 #include "WHPSTcpSession.h"
 #include "util.h"
 
+static void TestSend(WHPSTcpSession* sp_tcp_session)
+{
+        string msg;
+        for (int i = 0; i < 30000; i++)
+        {
+                //string msg((char*)p);
+                msg += (char)0xaa;
+        }
+        sp_tcp_session->send(msg);
+}
+
 WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr)
         : std::enable_shared_from_this<WHPSTcpSession>()
           , _c_addr(c_addr), _loop(loop), _conn_sock(fd)
@@ -17,6 +28,7 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         _event_chn.setEvents(EPOLLIN | EPOLLPRI);        // 设置接收连接事件，epoll模式为边缘触发
 
         _event_chn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0));     // 注册数据接收回调
+        _event_chn.setWriteCallback(std::bind(&WHPSTcpSession::onNewWrite, this, 0));     // 注册数据发送回调
         _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0));   // 注册连接关闭回调
 
         // 还需要注册发送数据和超时回调
@@ -57,30 +69,132 @@ void WHPSTcpSession::setCleanUpCallback(TcpSessionCB& cb)
         _cb_cleanup = cb;
 }
 
-void WHPSTcpSession::onNewRead(error_code error)
+void WHPSTcpSession::send(const std::string& msg)
 {
-        cout << "++++++++++++++++++++++++++" << endl;
+        _buffer_out = msg;
+        int res = this->sendTcpMessage(_buffer_out);      // 需要判别发送的结果，从而决定要不要关闭连接
+}
+
+int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
+{
+        int res = -1;
+
+        int bytes_transferred = 0;
         while (true)
         {
-                unsigned char buffer[1024];
-                int nbyte = read(_conn_sock.get(), buffer, 1024); 
+                int w_nbytes = write(_conn_sock.get(), buffer_out.c_str(), buffer_out.size());
+                bytes_transferred += w_nbytes;
 
-                if (nbyte > 0)
+                if (w_nbytes > 0)   // 该笔数据已发送
                 {
-                        cout << getHexString(buffer, nbyte) << endl;
+                        buffer_out.erase(0, w_nbytes);     // 清除缓冲区中已发送的数据(不适用于重发的情况)
+
                 }
-                else if (nbyte == 0)    // 对端关闭
+                else if (w_nbytes == 0)
                 {
-                        onNewClose(-1); // 关闭连接
+                        cout << "w_nbytes----errno: " << w_nbytes << "----" << errno << endl;
+                        if (errno == EAGAIN)    // 数据正确的发送完成，再次调用的返回结果
+                        {
+                                cout << "write errno == EAGAIN, 发送完成!" << endl;
+                                res = bytes_transferred;
+                        }
+
                         break;
                 }
-                else
+                else    // 写数据异常
                 {
-                        cout << "nbyte: " << nbyte << endl;     // 异步时，当缓冲区无数据时，read会返回-1,即：读完了
+                        cout << "w_nbytes----errno: " << w_nbytes << "----" << errno << endl;
+                        if (errno == EPIPE)     // 客户端已经close，并发了RST，继续wirte会报EPIPE，返回0，表示close
+                        {
+                                cout << "unknow errno type..." << endl;
+                        }
+                        else if (errno == EINTR)    // 中断，write()会返回-1，同时置errno为EINTR
+                        {
+
+                        }
+                        else
+                        {
+                                cout << "unknow errno type..." << endl;
+                        }
+
+                        break; 
+                }
+        }
+
+        return res;
+}
+
+void WHPSTcpSession::onNewRead(error_code error)
+{
+        int res = this->readTcpMessage(_buffer_in);
+
+        if (res > 0)
+        {
+                // 进行业务层的数据数据(tcp数据处理)
+                // 异步回调方式，epoll线程跟业务线程分离
+        }
+        else if (res == 0)
+        {
+                onNewClose(-1); // 关闭连接
+        }
+        else
+        {
+                /* 后续替换成onNewError()，增加错误处理 */
+                onNewClose(-1); // 关闭连接
+                // onNewError(-1);  
+        }
+}
+
+int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
+{
+        int res = -1;
+        int bytes_transferred = 0;
+
+        while (true)
+        {
+                char buffer[1024];
+                int r_nbyte = read(_conn_sock.get(), buffer, 1024);
+
+                if (r_nbyte > 0)
+                {
+                        // cout << getHexString(buffer, r_nbyte) << endl;
+                        _buffer_in.append(buffer);
+                        bytes_transferred += r_nbyte;
+                        //cout << getHexString((unsigned char*)_buffer_in.c_str(), r_nbyte) << endl;
+                }
+                else if (r_nbyte == 0)    // 客户端关闭socket，FIN包
+                {
+                        cout << "---------======" << endl;
+                        res = 0;
+                        break;
+                }
+                else    // 读数据异常(-1)
+                {
+                        cout << "r_nbyte----errno: " << r_nbyte << "----" << errno << endl;     // 异步时，当缓冲区无数据时，read会返回-1,即：读完了
+
+                        if (errno == EAGAIN)    // 在非阻塞模式下调用了阻塞操作，在该操作没有完成就返回这个错误，这个错误不会破坏socket的同步，下次循环接着recv就可以。
+                        {
+                                // pass
+                                res = bytes_transferred;
+                        }
+                        else if (errno == EINTR)    // 中断，read()会返回-1，同时置errno为EINTR
+                        {
+
+                        }
+
+#if 1   // send msg test(测试发送的异常情况)
+                        TestSend(this);
+#endif
                         break;
                 }
         }
-        cout << "++++++++++++++++++++++++++" << endl;
+
+        return res;
+}
+
+void WHPSTcpSession::onNewWrite(error_code error)
+{
+        cout << "WHPSTcpSession::onNewWrite: " << endl;
 }
 
 void WHPSTcpSession::onNewClose(error_code error)
@@ -98,4 +212,8 @@ void WHPSTcpSession::onNewClose(error_code error)
         sp_TcpSession sp_tcp_session = shared_from_this();      // 返回this类的智能指针
         _cb_cleanup(sp_tcp_session);
         _conn_sock.close();
+
+#if 0   // 测试socket关闭后，再发送数据的错误处理
+        TestSend(this);
+#endif
 }
