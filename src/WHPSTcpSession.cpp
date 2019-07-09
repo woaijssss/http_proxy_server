@@ -27,9 +27,10 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         _event_chn.setFd(_conn_sock.get());
         _event_chn.setEvents(EPOLLIN | EPOLLPRI);        // 设置接收连接事件，epoll模式为边缘触发
 
-        _event_chn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0));     // 注册数据接收回调
-        _event_chn.setWriteCallback(std::bind(&WHPSTcpSession::onNewWrite, this, 0));     // 注册数据发送回调
-        _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0));   // 注册连接关闭回调
+        _event_chn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0));     // 注册数据接收回调函数
+        _event_chn.setWriteCallback(std::bind(&WHPSTcpSession::onNewWrite, this, 0));   // 注册数据发送回调函数
+        _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0));   // 注册连接关闭回调函数
+        _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewError, this, 0));   // 注册异常错误回调函数
 
         // 还需要注册发送数据和超时回调
 }
@@ -77,11 +78,14 @@ void WHPSTcpSession::send(const std::string& msg)
 
 int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
 {
+        /* 当前发送数据，是一个线程将_buffer_out中的所有数据全部发送
+         * 后续是否需要改成每次只发送一比数据，之后的数据靠epoll事件触发？
+         */
         int res = -1;
 
         int bytes_transferred = 0;
         while (true)
-        {
+        {   
                 int w_nbytes = write(_conn_sock.get(), buffer_out.c_str(), buffer_out.size());
                 bytes_transferred += w_nbytes;
 
@@ -139,9 +143,7 @@ void WHPSTcpSession::onNewRead(error_code error)
         }
         else
         {
-                /* 后续替换成onNewError()，增加错误处理 */
-                onNewClose(-1); // 关闭连接
-                // onNewError(-1);  
+                onNewError(-1); // 错误处理，释放资源
         }
 }
 
@@ -200,8 +202,9 @@ void WHPSTcpSession::onNewWrite(error_code error)
 void WHPSTcpSession::onNewClose(error_code error)
 {
         /* 关闭数据需要做两件事情
-         *      （1）关闭socket
-         *      （2）通知主socket对象和EventLoop对象删除该句柄资源
+         *      （1）处理剩余数据(接收_buffer_in/发送_buffer_out)————(暂不考虑，后续扩展)
+         *      （2）关闭socket
+         *      （3）通知主socket对象和EventLoop对象删除该句柄资源
          */
 
         cout << "WHPSTcpSession::onNewClose" << endl;
@@ -209,11 +212,28 @@ void WHPSTcpSession::onNewClose(error_code error)
 //        _cb_cleanup(sp_tcp_session);  // 执行清理回调函数
         //sp_TcpSession sp_tcp_session = shared_from_this();
         this->delFromEventLoop();
-        sp_TcpSession sp_tcp_session = shared_from_this();      // 返回this类的智能指针
-        _cb_cleanup(sp_tcp_session);
+        //sp_TcpSession sp_tcp_session = shared_from_this();      // 返回this类的智能指针
+        _cb_cleanup(shared_from_this());
         _conn_sock.close();
 
 #if 0   // 测试socket关闭后，再发送数据的错误处理
         TestSend(this);
 #endif
+}
+
+void WHPSTcpSession::onNewError(error_code error)
+{
+        /* 关闭数据需要做两件事情
+         *      （1）关闭socket
+         *      （2）通知主socket对象和EventLoop对象删除该句柄资源
+         */
+
+        cout << "WHPSTcpSession::onNewError" << endl;
+        //sp_TcpSession& sp_tcp_session = std::make_shared<WHPSTcpSession>(*this);
+//        _cb_cleanup(sp_tcp_session);  // 执行清理回调函数
+        //sp_TcpSession sp_tcp_session = shared_from_this();
+        this->delFromEventLoop();
+        //sp_TcpSession sp_tcp_session = shared_from_this();      // 返回this类的智能指针
+        _cb_cleanup(shared_from_this());
+        _conn_sock.close();
 }
