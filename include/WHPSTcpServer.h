@@ -6,6 +6,7 @@
 #include "WHPSEventHandler.h"
 #include "WHPSEpollEventLoop.h"
 #include "WHPSTcpSession.h"
+#include "WHPSThreadPool.h"
 
 #include <iostream>
 
@@ -17,6 +18,9 @@ class WHPSTcpServer
 public:
         using error_code = unsigned int;
 public:
+        /* 虽然是单例，但实例化了线程池，没有析构函数，服务停止时，无法正常释放线程资源，导致内存泄漏 */
+        ~WHPSTcpServer();
+
         /* 获取单例实例 */
         static WHPSTcpServer* Get(int maxevents, int timeout);
 
@@ -33,6 +37,9 @@ public:
          * 若启动失败(即：返回false)，则服务无效，重启服务即可。
          */
         bool start();
+
+        /* 开启事件循环 */
+        void startLoop();
 
         /* 获取主socket事件循环对象 */
         WHPSEpollEventLoop& loop();
@@ -52,6 +59,7 @@ private:
         WHPSTcpServer(int maxevents, int timeout);
         static WHPSTcpServer* _tcp_server;
 
+        WHPSThreadPool _thread_pool;    // 线程池句柄
         WHPSTcpSocket _tcp_socket;      // 服务器主socket
         WHPSEventHandler _event_chn;    // 服务器事件回调通道
         WHPSEpollEventLoop _loop;       // 服务器事件循环触发

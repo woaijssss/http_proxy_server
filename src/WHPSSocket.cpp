@@ -1,10 +1,10 @@
 
 #include <iostream>
-using namespace std;
-
 #include "WHPSSocket.h"
 
-int g_port = 3000;              // 可做成配置项
+using namespace std;
+
+int g_port = 80;              // 可做成配置项
 
 WHPSSocket::WHPSSocket(int mode)
         : _mode(mode)

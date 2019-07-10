@@ -5,13 +5,22 @@ using namespace std;
 #include "WHPSTcpServer.h"
 #include "WHPSConnSocket.h"
 
+static int g_nthreads = 50;     // 可做成配置
+
 WHPSTcpServer* WHPSTcpServer::_tcp_server = NULL;
 WHPSTcpServer::GC WHPSTcpServer::_gc;
 
 WHPSTcpServer::WHPSTcpServer(int maxevents, int timeout)
-        : _tcp_socket(SERVER_MODE), _loop(maxevents, timeout)
+        : _thread_pool(g_nthreads, std::bind(&WHPSEpollEventLoop::loop, &_loop))
+        , _tcp_socket(SERVER_MODE)
+        , _loop(maxevents, timeout)
 {
         
+}
+
+WHPSTcpServer::~WHPSTcpServer()
+{
+        // _tp.stop();     // stop()自动调用，释放线程资源，防止内存泄漏
 }
 
 WHPSTcpServer* WHPSTcpServer::Get(int maxevents, int timeout)
@@ -54,6 +63,8 @@ bool WHPSTcpServer::start()
                 return false;
         }
 
+        _thread_pool.start();
+
         _event_chn.setFd(_tcp_socket.get());
         _event_chn.setEvents(EPOLLIN | EPOLLET);        // 设置接收连接事件，epoll模式为边缘触发
 
@@ -63,6 +74,11 @@ bool WHPSTcpServer::start()
         _loop.addEvent(&_event_chn);
 
         return true;
+}
+
+void WHPSTcpServer::startLoop()
+{
+        _loop.loop();
 }
 
 void WHPSTcpServer::onNewConnection(error_code error)

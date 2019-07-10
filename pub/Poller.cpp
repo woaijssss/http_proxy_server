@@ -20,7 +20,7 @@ Poller::~Poller()
 
 int Poller::__poll(SEplEvent* events)
 {
-        return epoll_wait(__poll_fd, events, __maxevents, 1000);
+        return epoll_wait(__poll_fd, events, __maxevents, 5*1000);
 }
 
 int Poller::__addEvent(const int& fd, SEplEvent& ev)

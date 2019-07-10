@@ -18,7 +18,7 @@ int main(int argc, char const *argv[])
                 return -1;
         }
 
-        p_server->loop().loop();
+        p_server->startLoop();
 
         // while (true)
         // {
