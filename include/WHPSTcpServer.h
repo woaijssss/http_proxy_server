@@ -22,7 +22,7 @@ public:
         ~WHPSTcpServer();
 
         /* 获取单例实例 */
-        static WHPSTcpServer* Get(int maxevents, int timeout);
+        static WHPSTcpServer* Get();
 
         /* 应用侧检查句柄是否有效 */
         bool isValid();
@@ -55,14 +55,20 @@ public:
         /* 某个客户端连接关闭时，调用此回调清除句柄资源 */
         void onCleanUpResource(const sp_TcpSession& sp_tcp_session);
 
+public:     // 测试接口
+        void stop()
+        {
+                _loop.stop();
+        }
+
 private:
-        WHPSTcpServer(int maxevents, int timeout);
+        WHPSTcpServer();
         static WHPSTcpServer* _tcp_server;
 
+        WHPSEpollEventLoop _loop;       // 服务器事件循环触发
         WHPSThreadPool _thread_pool;    // 线程池句柄
         WHPSTcpSocket _tcp_socket;      // 服务器主socket
         WHPSEventHandler _event_chn;    // 服务器事件回调通道
-        WHPSEpollEventLoop _loop;       // 服务器事件循环触发
 
         /* 保证在连接存在时，智能指针至少被引用一次，不至于销毁连接 */
         Map<int, sp_TcpSession> _tcp_sess_list;   // tcp客户端连接表(断线要清理)

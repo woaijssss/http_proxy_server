@@ -18,9 +18,12 @@ Poller::~Poller()
         
 }
 
+#include <iostream>
+using namespace std;
 int Poller::__poll(SEplEvent* events)
 {
-        return epoll_wait(__poll_fd, events, __maxevents, 5*1000);
+        // cout << ">>>>>>>>>>>epoll_wait timeout: " << __timeout << endl;
+        return epoll_wait(__poll_fd, events, __maxevents, __timeout);
 }
 
 int Poller::__addEvent(const int& fd, SEplEvent& ev)
@@ -36,4 +39,9 @@ int Poller::__delEvent(const int& fd, SEplEvent& ev)
 int Poller::__updateEvent(const int& fd, SEplEvent& ev)
 {
         return epoll_ctl(__poll_fd, EPOLL_CTL_MOD, fd, &ev);
+}
+
+void Poller::__setTimeout(int timeout)
+{
+        __timeout = timeout;
 }

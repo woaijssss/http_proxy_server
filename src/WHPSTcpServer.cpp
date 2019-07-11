@@ -5,15 +5,15 @@ using namespace std;
 #include "WHPSTcpServer.h"
 #include "WHPSConnSocket.h"
 
-static int g_nthreads = 50;     // 可做成配置
+static int g_nthreads = 100;     // 可做成配置
 
 WHPSTcpServer* WHPSTcpServer::_tcp_server = NULL;
 WHPSTcpServer::GC WHPSTcpServer::_gc;
 
-WHPSTcpServer::WHPSTcpServer(int maxevents, int timeout)
-        : _thread_pool(g_nthreads, std::bind(&WHPSEpollEventLoop::loop, &_loop))
+WHPSTcpServer::WHPSTcpServer()
+        : _loop()
+        , _thread_pool(g_nthreads, _loop)
         , _tcp_socket(SERVER_MODE)
-        , _loop(maxevents, timeout)
 {
         
 }
@@ -21,13 +21,14 @@ WHPSTcpServer::WHPSTcpServer(int maxevents, int timeout)
 WHPSTcpServer::~WHPSTcpServer()
 {
         // _tp.stop();     // stop()自动调用，释放线程资源，防止内存泄漏
+        // _thread_pool.stop();
 }
 
-WHPSTcpServer* WHPSTcpServer::Get(int maxevents, int timeout)
+WHPSTcpServer* WHPSTcpServer::Get()
 {
         if (!_tcp_server)
         {
-                _tcp_server = new WHPSTcpServer(maxevents, timeout);
+                _tcp_server = new WHPSTcpServer();
         }
 
         return _tcp_server;
@@ -76,6 +77,7 @@ bool WHPSTcpServer::start()
         return true;
 }
 
+#include <unistd.h>
 void WHPSTcpServer::startLoop()
 {
         _loop.loop();
@@ -102,7 +104,7 @@ void WHPSTcpServer::onNewSession()
 
         while ((fd = _tcp_socket.Accept(c_addr)) > 0)         // 高并发时，可能返回多个连接的事件，因此循环处理
         {
-                sp_TcpSession sp_tcp_session(new WHPSTcpSession(_loop, fd, c_addr));   // 实例化客户端对象
+                sp_TcpSession sp_tcp_session(new WHPSTcpSession(_thread_pool.getOneLoop(), fd, c_addr));   // 实例化客户端对象
                 //sp_tcp_session->setCleanUpCallback(std::bind(&WHPSTcpServer::onCleanUpResource, this, sp_tcp_session));
                 TcpSessionCB cb = std::bind(&WHPSTcpServer::onCleanUpResource, this, std::placeholders::_1);
                 sp_tcp_session->setCleanUpCallback(cb);         // 该任务属于线程任务，不属于epoll事件，因此需要设置线程回调函数才能被执行

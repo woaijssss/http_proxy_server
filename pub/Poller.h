@@ -29,6 +29,9 @@ public:
         /* 修改事件，EPOLL_CTL_MOD */
         int __updateEvent(const int& fd, SEplEvent& ev);
 
+        /* 设置epoll事件等待超时时间 */
+        void __setTimeout(int timeout);
+
 private:
         int __poll_fd;          // epoll实例句柄
         int __maxevents;

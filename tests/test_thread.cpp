@@ -19,15 +19,15 @@ void delay(ThreadPool& tp, int time)
         while (time-- > 0)
         {
                 tp.testTask(std::bind(&func, 100, "123123"));
-                sleep(1);
+		usleep(100);
         }
 }
 
 int main()
 {
-        ThreadPool tp(5);
+        ThreadPool tp(100);
         tp.start();
-        delay(tp, 3);
+        delay(tp, 100000);
 
         return 0;
 }

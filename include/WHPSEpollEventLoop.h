@@ -12,7 +12,7 @@
 class WHPSEpollEventLoop
 {
 public:
-        WHPSEpollEventLoop(int maxevents, int timeout);
+        WHPSEpollEventLoop(int maxevents = 1024, int timeout = 100);
         ~WHPSEpollEventLoop();
 
 public:
@@ -31,6 +31,11 @@ public:
          *   - 子线程：用于接收、发送客户端数据；
          */
         void loop();
+        void loopOne();      // 子线程执行，循环由线程控制，函数内部只执行一次
+
+public:         // 测试接口
+        void stop();
+
 private:
         WHPSPoller _poller;                     // 事件轮询对象
 

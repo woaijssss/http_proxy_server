@@ -39,6 +39,9 @@ public:
         /* 线程执行函数 */
         void workFunc();
 
+        void excuteTask();
+
+private:
         /* 线程进入执行函数后的一些初始化 */
         virtual void init();
 private:

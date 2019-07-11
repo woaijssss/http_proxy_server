@@ -5,12 +5,30 @@
 #include <iostream>
 #include <errno.h>
 #include <stdio.h>
+#include <signal.h>
 
 using namespace std;
 
+WHPSTcpServer* p_server = NULL;
+
+void sigHandler(int sig)
+{
+        if (p_server)
+        {
+                p_server->stop();
+        }
+
+        exit(0);
+}
+
 int main(int argc, char const *argv[])
 {
-        WHPSTcpServer* p_server = WHPSTcpServer::Get(1024, 10);
+        signal(SIGUSR1, sigHandler);
+        signal(SIGUSR2, sigHandler);
+        signal(SIGINT, sigHandler); 
+        signal(SIGPIPE, SIG_IGN);
+
+        p_server = WHPSTcpServer::Get();
 
         if (!p_server->start())         // tcp服务启动失败，则退出进程
         {

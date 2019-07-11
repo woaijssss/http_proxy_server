@@ -35,7 +35,7 @@ public:
                 return std::map<__K, __V>::size();
         }
 
-        iterator find(const __K& k)
+        iterator find1(const __K& k)
         {
                 std::lock_guard<std::mutex> lock(__mutex);
                 return std::map<__K, __V>::find(k);

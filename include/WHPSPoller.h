@@ -40,6 +40,9 @@ public:         // 外部调用
         /* 修改事件 */
         void updateEvent(event_chn* p_event);
 
+        /* 设置事件等待超时时间 */
+        void setTimeout(int timeout);
+
 private:        // 内部调用
 
         void eventOperation(OpsType type, event_chn* p_event);

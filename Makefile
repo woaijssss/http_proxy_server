@@ -17,7 +17,7 @@ BIN:=whps
 
 CPPFLAGS+=-Iinclude -I$(PUB)
 
-CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -D_GLIBCXX_USE_NANOSLEEP \
+CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 \
 	-Wno-deprecated -Wdeprecated-declarations \
 	-Wunused-function \
 	-Wno-unused-parameter  # 设置此项，不提示“未使用变量”，正式程序需要去掉 
