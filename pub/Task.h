@@ -63,7 +63,7 @@ public:
 private:
         std::queue<T> __tq;     // 任务队列
         std::mutex __q_mutex;   // 任务锁
-        size_t     __tq_size;
+        size_t     __tq_size;   // 任务量
 };
 
 #endif  // __TASK_H__

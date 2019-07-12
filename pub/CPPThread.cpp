@@ -59,11 +59,17 @@ void CPPThread::init()
 
 void CPPThread::excuteTask()
 {
-        task_t task = _task.get();
-        // task();
-        if (task)       // 有可能存在取空的情况，因此加上判断，防止执行空函数
+        /* 执行所有任务 */
+
+        for (size_t i = 0; i < _task.size(); i++)
         {
-                task();
+                task_t task = _task.get();
+                // task();
+                if (task)       // 有可能存在取空的情况，因此加上判断，防止执行空函数
+                {
+                        cout << "线程异步执行回调函数..." << endl;
+                        task();
+                }
         }
 }
 

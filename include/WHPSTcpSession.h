@@ -85,6 +85,7 @@ private:
         WHPSEpollEventLoop& _loop;      // 引用外部事件循环
         WHPSConnSocket _conn_sock;      // 连接句柄
         event_chn _event_chn;           // 服务器事件回调通道
+        events_t  _base_events;         // 连接默认的事件监听标识
 
         TcpSessionCB _cb_cleanup;
 

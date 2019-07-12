@@ -8,9 +8,12 @@
  */
 #include "WHPSPoller.h"
 #include "vector.h"
+#include "Task.h"
 
 class WHPSEpollEventLoop
 {
+public:
+        using task_t = std::function<void()>;   // 线程任务队列的任务类型(应与ImplThread中的任务类型相同)
 public:
         WHPSEpollEventLoop(int maxevents = 1024, int timeout = 100);
         ~WHPSEpollEventLoop();
@@ -31,7 +34,15 @@ public:
          *   - 子线程：用于接收、发送客户端数据；
          */
         void loop();
-        void loopOne();      // 子线程执行，循环由线程控制，函数内部只执行一次
+
+        /* 子线程执行，循环由线程控制，函数内部只执行一次 */
+        void loopOne();      
+
+        /* 获取当前循环的任务队列 */
+        Task<task_t>& getTask();
+
+        /* 通过事件处理，添加一个异步任务 */
+        void addTask(task_t func_cb);
 
 public:         // 测试接口
         void stop();
@@ -45,6 +56,8 @@ private:
         Vector<event_chn*> _event_queue;
 
         bool _is_stop;
+
+        Task<task_t> _task;     // 线程任务队列
 };
 
 #endif  // __WHPS_EPOLL_EVENT_LOOP_H__

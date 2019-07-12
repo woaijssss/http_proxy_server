@@ -67,7 +67,7 @@ void WHPSThreadPool::createThreads()
 {
         for (int i = 0; i < _size; i++)
         {
-                WHPSThread* th = new WHPSThread(_task);         // 会阻塞？
+                WHPSThread* th = new WHPSThread(_task);
                 _v_th.push_back(th);
         }
 }

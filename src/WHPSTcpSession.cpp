@@ -9,7 +9,7 @@ using namespace std;
 static void TestSend(WHPSTcpSession* sp_tcp_session)
 {
         string msg;
-        for (int i = 0; i < 30000; i++)
+        for (int i = 0; i < 300; i++)
         {
                 //string msg((char*)p);
                 msg += (char)0xaa;
@@ -19,13 +19,17 @@ static void TestSend(WHPSTcpSession* sp_tcp_session)
 
 WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr)
         : std::enable_shared_from_this<WHPSTcpSession>()
-          , _c_addr(c_addr), _loop(loop), _conn_sock(fd)
+          , _c_addr(c_addr)
+          , _loop(loop)
+          , _conn_sock(fd)
+          , _base_events(EPOLLIN | EPOLLPRI)
 {
         /* 每个客户端的socket要设置成非阻塞，否则在read或write会使线程阻塞，无法实现异步和线程复用 */
         _conn_sock.setNonblock();
 
         _event_chn.setFd(_conn_sock.get());
-        _event_chn.setEvents(EPOLLIN | EPOLLPRI);        // 设置接收连接事件，epoll模式为边缘触发
+        // _event_chn.setEvents(EPOLLIN | EPOLLPRI | EPOLLOUT); // 不能设置EPOLLOUT，否则客户端连接，会频繁调用onNewWrite()
+        _event_chn.setEvents(_base_events);        // 设置接收连接事件，epoll模式为边缘触发
 
         _event_chn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0));     // 注册数据接收回调函数
         _event_chn.setWriteCallback(std::bind(&WHPSTcpSession::onNewWrite, this, 0));   // 注册数据发送回调函数
@@ -37,6 +41,7 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
 
 WHPSTcpSession::~WHPSTcpSession()
 {
+        cout << "~WHPSTcpSession" << endl;
         this->delFromEventLoop();
         _conn_sock.close();
         // _conn_sock.close();
@@ -76,6 +81,32 @@ void WHPSTcpSession::send(const std::string& msg)
 {
         _buffer_out = msg;
         int res = this->sendTcpMessage(_buffer_out);      // 需要判别发送的结果，从而决定要不要关闭连接
+        _buffer_out.clear();
+
+        if (res > 0)    // 正确发送数据
+        {
+                events_t events = _event_chn.getEvents();
+
+                if (_buffer_out.size())     // 还有数据未发送(可能是tcp缓冲区占满导致)
+                {
+                        events = events | EPOLLOUT;         // 设置写监听
+                }
+                else        // 数据发送完毕
+                {
+                        events = _base_events;      // 数据发送完毕，无需继续监听写操作
+                }
+                
+                _event_chn.setEvents(events);    
+                _loop.updateEvent(&_event_chn);
+        }
+        else if (res == 0)    // 数据发送异常
+        {
+                onNewClose(-1); // 关闭连接
+        }
+        else
+        {
+                onNewError(-1); // 错误处理，释放资源
+        }
 
         // cout << "-----------buff size: " << _buffer_out.size() << endl;
         // _buffer_out.clear();
@@ -88,7 +119,7 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
          */
         int res = -1;
 
-        int bytes_transferred = 0;
+        long bytes_transferred = 0;
         while (true)
         {   
                 int w_nbytes = write(_conn_sock.get(), buffer_out.c_str(), buffer_out.size());
@@ -98,14 +129,21 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
                 {
                         buffer_out.erase(0, w_nbytes);     // 清除缓冲区中已发送的数据(不适用于重发的情况)
 
+                        if (_buffer_out.size() == 0)
+                        {
+                                res = bytes_transferred;
+                                break;
+                        }
+
                 }
                 else if (w_nbytes == 0)
                 {
                         cout << "w_nbytes----errno: " << w_nbytes << "----" << errno << endl;
                         if (errno == EAGAIN)    // 数据正确的发送完成，再次调用的返回结果
                         {
-                                cout << "write errno == EAGAIN, 发送完成!" << endl;
+                                cout << "write errno == EAGAIN, 发送完成!---" << endl;
                                 res = bytes_transferred;
+                                // res = 0;
                         }
 
                         break;
@@ -113,7 +151,18 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
                 else    // 写数据异常
                 {
                         cout << "write error: w_nbytes----errno: " << w_nbytes << "----" << errno << endl;
-                        if (errno == EPIPE)     // 客户端已经close，并发了RST，继续wirte会报EPIPE，返回0，表示close
+                        if (errno == EAGAIN)    // tcp发送缓冲区满了，下次继续发送
+                        {
+                                cout << "write errno == EAGAIN, tcp发送缓冲区满了，下次继续发送!" << bytes_transferred << endl;
+                                // res = bytes_transferred;
+
+                                /* 这里统一返回1！
+                                 *  若返回bytes_transferred，当写一次出错时，同时errno是EAGAIN，不应关闭
+                                 *  但实际的bytes_transferred结果为-1，会导致异常关闭。
+                                 */
+                                res = 1;   
+                        }
+                        else if (errno == EPIPE)     // 客户端已经close，并发了RST，继续wirte会报EPIPE，返回0，表示close
                         {
                                 cout << "EPIPE..." << endl;
                         }
@@ -138,6 +187,8 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
 void WHPSTcpSession::onNewRead(error_code error)
 {
         int res = this->readTcpMessage(_buffer_in);
+
+        _buffer_in.clear();
 
         if (res > 0)
         {
@@ -211,7 +262,34 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
 
 void WHPSTcpSession::onNewWrite(error_code error)
 {
-        cout << "WHPSTcpSession::onNewWrite: " << endl;
+        cout << "-----------------------WHPSTcpSession::onNewWrite: " << _buffer_out.size() << endl;
+        int res = this->sendTcpMessage(_buffer_out);      // 需要判别发送的结果，从而决定要不要关闭连接
+        _buffer_out.clear();
+
+        if (res > 0)    // 正确发送数据
+        {
+                events_t events = _event_chn.getEvents();
+
+                if (_buffer_out.size())     // 还有数据未发送(可能是tcp缓冲区占满导致)
+                {
+                        events = events | EPOLLOUT;         // 设置写监听
+                }
+                else        // 数据发送完毕
+                {
+                        events = _base_events;      // 数据发送完毕，无需继续监听写操作
+                }
+                
+                _event_chn.setEvents(events);    
+                _loop.updateEvent(&_event_chn);
+        }
+        else if (res == 0)    // 数据发送异常
+        {
+                onNewClose(-1); // 关闭连接
+        }
+        else
+        {
+                onNewError(-1); // 错误处理，释放资源
+        }
 }
 
 void WHPSTcpSession::onNewClose(error_code error)
@@ -238,9 +316,7 @@ void WHPSTcpSession::onNewClose(error_code error)
                 //sp_TcpSession sp_tcp_session = shared_from_this();      // 返回this类的智能指针
                 _cb_cleanup(shared_from_this());
 
-#if 0           // 测试socket关闭后，再发送数据的错误处理
-                TestSend(this);
-#endif
+                // _loop.addTask(std::bind(_cb_cleanup, shared_from_this()));
        }
 }
 

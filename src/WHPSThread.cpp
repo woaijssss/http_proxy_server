@@ -4,7 +4,7 @@
 #include <iostream>
 using namespace std;
 WHPSThread::WHPSThread(Task<task_t>& task)
-        : _thrd(task)
+        : _thrd(_loop.getTask())
         , _is_stop(false)
 {
         

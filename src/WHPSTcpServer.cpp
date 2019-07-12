@@ -5,7 +5,7 @@ using namespace std;
 #include "WHPSTcpServer.h"
 #include "WHPSConnSocket.h"
 
-static int g_nthreads = 100;     // 可做成配置
+static int g_nthreads = 5;     // 可做成配置
 
 WHPSTcpServer* WHPSTcpServer::_tcp_server = NULL;
 WHPSTcpServer::GC WHPSTcpServer::_gc;
@@ -107,15 +107,13 @@ void WHPSTcpServer::onNewSession()
                 sp_TcpSession sp_tcp_session(new WHPSTcpSession(_thread_pool.getOneLoop(), fd, c_addr));   // 实例化客户端对象
                 //sp_tcp_session->setCleanUpCallback(std::bind(&WHPSTcpServer::onCleanUpResource, this, sp_tcp_session));
                 TcpSessionCB cb = std::bind(&WHPSTcpServer::onCleanUpResource, this, std::placeholders::_1);
-                sp_tcp_session->setCleanUpCallback(cb);         // 该任务属于线程任务，不属于epoll事件，因此需要设置线程回调函数才能被执行
-                
                 _tcp_sess_list[fd] = sp_tcp_session;
+                sp_tcp_session->setCleanUpCallback(cb);         // 该任务属于线程任务，不属于epoll事件，因此需要设置线程回调函数才能被执行
                 sp_tcp_session->addToEventLoop();
                 // 设置客户端相关参数、回调功能
 
                 // 将客户端回调任务加入到WHPSEventLoop中
         }
-        cout << "------------" << endl;
 }
 
 void WHPSTcpServer::onCleanUpResource(const sp_TcpSession& sp_tcp_session)

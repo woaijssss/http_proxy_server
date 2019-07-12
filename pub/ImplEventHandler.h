@@ -62,7 +62,7 @@ private:
         int __fd;
 
         /* epoll事件类型，其值类型为 enum EPOLL_EVENTS */
-        unsigned int __epoll_events;
+        __epoll_events_t __epoll_events;
 };
 
 #endif  // __IMPL_EVENT_HANDLER_H__

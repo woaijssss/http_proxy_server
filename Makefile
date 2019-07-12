@@ -4,20 +4,20 @@ BUILD:=debug
 # DIRS
 PUB:=pub
 SRC_DIR:=src
-
-
 BUILD_DIR:=build
 BIN_DIR:=bin
 
 SRC:=$(wildcard $(SRC_DIR)/*.cpp) \
 	$(wildcard $(PUB)/*.cpp) 
 
+
+
 OBJ:=$(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
 BIN:=whps
 
 CPPFLAGS+=-Iinclude -I$(PUB)
 
-CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 \
+CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -MMD -D_GLIBCXX_USE_NANOSLEEP \
 	-Wno-deprecated -Wdeprecated-declarations \
 	-Wunused-function \
 	-Wno-unused-parameter  # 设置此项，不提示“未使用变量”，正式程序需要去掉 
