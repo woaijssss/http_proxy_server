@@ -92,6 +92,8 @@ private:
 private:
         std::string _buffer_in;           // 接收消息缓冲(tcp请求)
         std::string _buffer_out;          // 发送消息缓冲(tcp响应)
+
+        bool _is_connect /*= true*/;           // 连接标志(默认为true)
 };
 
 typedef WHPSTcpSession::sp_TcpSession   sp_TcpSession;

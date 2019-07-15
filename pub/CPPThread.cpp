@@ -80,7 +80,7 @@ void CPPThread::workFunc()
 
         while (!__is_stop)
         {
-                usleep(10);     // 延迟后面可去掉，以为一次http业务处理远比10us长
+                usleep(10);     // 延迟后面可去掉，因为一次http业务处理远比10us长
                 task_t task = _task.get();
                 // task();
                 if (task)       // 有可能存在取空的情况，因此加上判断，防止执行空函数

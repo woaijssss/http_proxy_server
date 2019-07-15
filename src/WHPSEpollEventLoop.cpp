@@ -3,7 +3,7 @@
 
 static int g_nthreads = 0;     // 可做成配置
 
-WHPSEpollEventLoop::WHPSEpollEventLoop(int maxevents, int timeout)
+WHPSEpollEventLoop::WHPSEpollEventLoop(int maxevents /*= 1024*/, int timeout /*= 100*/)
         : _poller(maxevents, timeout)
         , _event_queue()
         , _is_stop(false)
@@ -84,12 +84,12 @@ void WHPSEpollEventLoop::loopOne()
 
         /* 当前是线程池所有线程，每个线程单独一个事件队列
          */
-        for (event_chn* chn : _event_queue && )     // 遍历事件队列
+        for (event_chn* chn : _event_queue)     // 遍历事件队列
         {
                 if (chn)
                 {
                         cout << "---------" << endl;
-                        sleep(10);      // 当A线程执行到此时，B线程执行了WHPSTcpSession的析构函数(客户端断开)，valgrind会报错(必现)
+                        // sleep(10);      // 当A线程执行到此时，B线程执行了WHPSTcpSession的析构函数(客户端断开)，valgrind会报错(必现)
                         chn->exCallback();
                         cout << "==============" << endl;
                 }

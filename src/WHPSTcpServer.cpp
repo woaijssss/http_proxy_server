@@ -120,4 +120,11 @@ void WHPSTcpServer::onCleanUpResource(const sp_TcpSession& sp_tcp_session)
 {
         _tcp_sess_list.erase(sp_tcp_session->getConn().get());
         cout << "WHPSTcpServer::onCleanUpResource-----size: " << _tcp_sess_list.size() << endl;
+
+        if (!_tcp_sess_list.size())
+        {
+                // Map<int, sp_TcpSession> tmp;
+                // _tcp_sess_list.swap(tmp);
+                _tcp_sess_list.clear();
+        }
 }

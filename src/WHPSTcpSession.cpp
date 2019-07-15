@@ -9,7 +9,7 @@ using namespace std;
 static void TestSend(WHPSTcpSession* sp_tcp_session)
 {
         string msg;
-        for (int i = 0; i < 300; i++)
+        for (int i = 0; i < 10000; i++)
         {
                 //string msg((char*)p);
                 msg += (char)0xaa;
@@ -23,6 +23,7 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
           , _loop(loop)
           , _conn_sock(fd)
           , _base_events(EPOLLIN | EPOLLPRI)
+          , _is_connect(true)
 {
         /* 每个客户端的socket要设置成非阻塞，否则在read或write会使线程阻塞，无法实现异步和线程复用 */
         _conn_sock.setNonblock();
@@ -221,8 +222,8 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
 
         while (true)
         {
-                char buffer[1024];
-                int r_nbyte = read(_conn_sock.get(), buffer, 1024);
+                char buffer[1];
+                int r_nbyte = read(_conn_sock.get(), buffer, 1);
 
                 if (r_nbyte > 0)
                 {
@@ -294,6 +295,15 @@ void WHPSTcpSession::onNewWrite(error_code error)
 
 void WHPSTcpSession::onNewClose(error_code error)
 {
+        /* 防止陷入死循环
+         * 正常执行完_cb_cleanup,清除对应的智能指针占用,可以使其引用计数降为0,从而正确退出session.
+         * 而因为addTask传递_cb_cleanup,所携带shared_from_this(),会使指向当前对象的shared_ptr引用计数加1,
+         * 因此,再次引用时,无需执行此函数,直接返回,使引用计数降为0即可.
+         */
+        if (!_is_connect)
+        {
+                return;
+        }
         /* 关闭数据需要做两件事情
          *      （1）处理剩余数据(接收_buffer_in/发送_buffer_out)————(暂不考虑，后续扩展)
          *      （2）关闭socket
@@ -314,9 +324,10 @@ void WHPSTcpSession::onNewClose(error_code error)
                 //sp_TcpSession sp_tcp_session = shared_from_this();
                 // this->delFromEventLoop();
                 //sp_TcpSession sp_tcp_session = shared_from_this();      // 返回this类的智能指针
-                _cb_cleanup(shared_from_this());
+                // _cb_cleanup(shared_from_this());
 
-                // _loop.addTask(std::bind(_cb_cleanup, shared_from_this()));
+                _loop.addTask(std::bind(_cb_cleanup, shared_from_this()));
+                _is_connect = false;
        }
 }
 
