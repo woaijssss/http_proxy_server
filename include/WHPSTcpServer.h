@@ -8,18 +8,21 @@
 #include "WHPSTcpSession.h"
 #include "WHPSThreadPool.h"
 
+#include "ImplSingleton.h"
+#include "SingletonRegister.h"
+
 #include <iostream>
 
 /* Tcp服务类
  * 单例模式： 一个服务进程只能有一个主socket
  */
-class WHPSTcpServer
+class WHPSTcpServer : public ImplSingleton<WHPSTcpServer>
 {
 public:
         using error_code = unsigned int;
 public:
         /* 虽然是单例，但实例化了线程池，没有析构函数，服务停止时，无法正常释放线程资源，导致内存泄漏 */
-        ~WHPSTcpServer();
+        virtual ~WHPSTcpServer();
 
         /* 获取单例实例 */
         static WHPSTcpServer* Get();
@@ -59,6 +62,7 @@ public:     // 测试接口
         void stop()
         {
                 _loop.stop();
+                ImplSingleton<WHPSTcpServer>::free();
         }
 
 private:
@@ -73,6 +77,7 @@ private:
         /* 保证在连接存在时，智能指针至少被引用一次，不至于销毁连接 */
         Map<int, sp_TcpSession> _tcp_sess_list;   // tcp客户端连接表(断线要清理)
 
+#if 0
         class GC            // 避免内存泄漏的垃圾回收(嵌套)类
         {
         public:
@@ -85,6 +90,9 @@ private:
                 }
         };
         static GC _gc; 
+#endif
 };
+
+GET_SINGLETON_OBJECT(WHPSTcpServer)
 
 #endif  // __WHPSTCPSERVER_H__

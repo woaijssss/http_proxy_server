@@ -8,10 +8,11 @@ using namespace std;
 static int g_nthreads = 5;     // 可做成配置
 
 WHPSTcpServer* WHPSTcpServer::_tcp_server = NULL;
-WHPSTcpServer::GC WHPSTcpServer::_gc;
+// WHPSTcpServer::GC WHPSTcpServer::_gc;
 
 WHPSTcpServer::WHPSTcpServer()
-        : _loop()
+        : ImplSingleton<WHPSTcpServer>()
+        , _loop()
         , _thread_pool(g_nthreads, _loop)
         , _tcp_socket(SERVER_MODE)
 {
@@ -20,6 +21,7 @@ WHPSTcpServer::WHPSTcpServer()
 
 WHPSTcpServer::~WHPSTcpServer()
 {
+        cout << "WHPSTcpServer::~WHPSTcpServer" << endl;
         // _tp.stop();     // stop()自动调用，释放线程资源，防止内存泄漏
         // _thread_pool.stop();
 }

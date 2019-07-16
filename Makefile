@@ -3,19 +3,21 @@ BUILD:=debug
 
 # DIRS
 PUB:=pub
+HTTP:=http
 SRC_DIR:=src
 BUILD_DIR:=build
 BIN_DIR:=bin
 
 SRC:=$(wildcard $(SRC_DIR)/*.cpp) \
-	$(wildcard $(PUB)/*.cpp) 
+	$(wildcard $(PUB)/*.cpp) \
+	$(wildcard $(SRC_DIR)/$(HTTP)/*.cpp)
 
 
 
 OBJ:=$(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
 BIN:=whps
 
-CPPFLAGS+=-Iinclude -I$(PUB)
+CPPFLAGS+=-Iinclude -I$(PUB) -I$(PUB)/pub_macro -Iinclude/$(HTTP)
 
 CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -MMD -D_GLIBCXX_USE_NANOSLEEP \
 	-Wno-deprecated -Wdeprecated-declarations \
