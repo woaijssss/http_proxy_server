@@ -23,6 +23,24 @@ public:
         ~WHPSTcpSession();
 
 public:
+        /* 获取对端网络信息：
+         *    ip、端口等
+         */
+        void getEndpointInfo();
+
+        /* 获取客户端ip */
+        const std::string& getIp() const;
+
+        /* 获取客户端端口 */
+        const int& getPort() const;
+
+        /* 获取客户端网络信息
+         * 格式为：
+         *      ip:port
+         */
+        const std::string& getNetInfo() const;
+
+
         /* 检查句柄是否有效 */
         bool isValid();
 
@@ -89,9 +107,12 @@ private:
 
         TcpSessionCB _cb_cleanup;
 
-private:
-        std::string _buffer_in;           // 接收消息缓冲(tcp请求)
-        std::string _buffer_out;          // 发送消息缓冲(tcp响应)
+private:    // 对应用服务层提供的可用数据
+        std::string _client_ip;         // 客户端ip
+        int _client_port;               // 客户端端口
+        std::string _net_info;          // 客户端网络信息(格式：   ip:port)
+        std::string _buffer_in;         // 接收消息缓冲(tcp请求)
+        std::string _buffer_out;        // 发送消息缓冲(tcp响应)
 
         bool _is_connect /*= true*/;           // 连接标志(默认为true)
 };

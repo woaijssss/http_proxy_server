@@ -29,7 +29,16 @@ public:         // 测试接口
                 ImplSingleton<WHPSHttpServer>::free();
         }
 
-private:
+private:        // 业务函数
+        /* 接收新建连接的回调函数 */
+        void onNewConnection(const sp_TcpSession& tcp_session);
+
+        /* 处理新建连接，设置相关属性，并加入到_loop事件循环中
+         * 应由 onNewConnection() 内部调用
+         */
+        void onNewSession(const sp_TcpSession& tcp_session);
+
+        void onNewClose(const sp_TcpSession& tcp_session);
 
 private:
         static WHPSHttpServer* _http_server;

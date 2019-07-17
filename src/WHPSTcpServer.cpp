@@ -111,6 +111,9 @@ void WHPSTcpServer::onNewSession()
                 TcpSessionCB cb = std::bind(&WHPSTcpServer::onCleanUpResource, this, std::placeholders::_1);
                 _tcp_sess_list[fd] = sp_tcp_session;
                 sp_tcp_session->setCleanUpCallback(cb);         // 该任务属于线程任务，不属于epoll事件，因此需要设置线程回调函数才能被执行
+
+                _cb_connect(sp_tcp_session);
+
                 sp_tcp_session->addToEventLoop();
                 // 设置客户端相关参数、回调功能
 
@@ -129,4 +132,14 @@ void WHPSTcpServer::onCleanUpResource(const sp_TcpSession& sp_tcp_session)
                 // _tcp_sess_list.swap(tmp);
                 _tcp_sess_list.clear();
         }
+}
+
+void WHPSTcpServer::setNewConnCallback(cbFunc cb)
+{
+        _cb_connect = cb;
+}
+
+void WHPSTcpServer::setNewCloseCallback(cbFunc cb)
+{
+        _cb_close = cb;
 }

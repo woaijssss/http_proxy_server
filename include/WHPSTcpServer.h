@@ -20,6 +20,7 @@ class WHPSTcpServer : public ImplSingleton<WHPSTcpServer>
 {
 public:
         using error_code = unsigned int;
+        using cbFunc = std::function<void(const sp_TcpSession&)> ;
 public:
         /* 虽然是单例，但实例化了线程池，没有析构函数，服务停止时，无法正常释放线程资源，导致内存泄漏 */
         virtual ~WHPSTcpServer();
@@ -58,6 +59,13 @@ public:
         /* 某个客户端连接关闭时，调用此回调清除句柄资源 */
         void onCleanUpResource(const sp_TcpSession& sp_tcp_session);
 
+public:     // 应用层回调注册接口
+        /* 客户端连接回调 */
+        void setNewConnCallback(cbFunc cb);
+
+        /* 客户端断开回调 */
+        void setNewCloseCallback(cbFunc cb);
+
 public:     // 测试接口
         void stop()
         {
@@ -77,6 +85,11 @@ private:
         /* 保证在连接存在时，智能指针至少被引用一次，不至于销毁连接 */
         Map<int, sp_TcpSession> _tcp_sess_list;   // tcp客户端连接表(断线要清理)
 
+private:    // 应用层回调函数
+        cbFunc _cb_connect;     // 新连接应用层回调
+        cbFunc _cb_close;       // 连接关闭应用层回调
+
+
 #if 0
         class GC            // 避免内存泄漏的垃圾回收(嵌套)类
         {
@@ -93,6 +106,6 @@ private:
 #endif
 };
 
-GET_SINGLETON_OBJECT(WHPSTcpServer)
+GET_SINGLETON_OBJECT_PTR(WHPSTcpServer)
 
 #endif  // __WHPSTCPSERVER_H__

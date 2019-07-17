@@ -88,10 +88,8 @@ void WHPSEpollEventLoop::loopOne()
         {
                 if (chn)
                 {
-                        cout << "---------" << endl;
                         // sleep(10);      // 当A线程执行到此时，B线程执行了WHPSTcpSession的析构函数(客户端断开)，valgrind会报错(必现)
                         chn->exCallback();
-                        cout << "==============" << endl;
                 }
         }
 

@@ -25,6 +25,7 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
           , _base_events(EPOLLIN | EPOLLPRI)
           , _is_connect(true)
 {
+        this->getEndpointInfo();
         /* 每个客户端的socket要设置成非阻塞，否则在read或write会使线程阻塞，无法实现异步和线程复用 */
         _conn_sock.setNonblock();
 
@@ -46,6 +47,36 @@ WHPSTcpSession::~WHPSTcpSession()
         this->delFromEventLoop();
         _conn_sock.close();
         // _conn_sock.close();
+}
+
+void WHPSTcpSession::getEndpointInfo()
+{
+        struct sockaddr_in sa;
+        socklen_t len = sizeof(sa);
+        if(!getpeername(_conn_sock.get(), (struct sockaddr *)&sa, &len))
+        {
+                _client_ip = string(inet_ntoa(sa.sin_addr));
+                _client_port = ntohs(sa.sin_port);
+                _net_info = _client_ip + ":" + to_string(_client_port);
+        }
+
+        // cout << "客户端连接信息： " << (_client_ip + ":" + _client_port) << endl;
+}
+
+const std::string& WHPSTcpSession::getIp() const
+{
+        return _client_ip;
+}
+        
+const int& WHPSTcpSession::getPort() const
+{
+        return _client_port;
+}
+
+
+const std::string& WHPSTcpSession::getNetInfo() const
+{
+        return _net_info;
 }
 
 bool WHPSTcpSession::isValid()
@@ -233,13 +264,12 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
                 }
                 else if (r_nbyte == 0)    // 客户端关闭socket，FIN包
                 {
-                        cout << "---------======" << endl;
                         res = 0;
                         break;
                 }
                 else    // 读数据异常(-1)
                 {
-                        cout << "r_nbyte----errno: " << r_nbyte << "----" << errno << endl;     // 异步时，当缓冲区无数据时，read会返回-1,即：读完了
+                        // cout << "r_nbyte----errno: " << r_nbyte << "----" << errno << endl;     // 异步时，当缓冲区无数据时，read会返回-1,即：读完了
 
                         if (errno == EAGAIN)    // 在非阻塞模式下调用了阻塞操作，在该操作没有完成就返回这个错误，这个错误不会破坏socket的同步，下次循环接着recv就可以。
                         {
