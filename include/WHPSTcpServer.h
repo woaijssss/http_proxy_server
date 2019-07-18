@@ -20,6 +20,7 @@ class WHPSTcpServer : public ImplSingleton<WHPSTcpServer>
 {
 public:
         using error_code = unsigned int;
+        using sp_TcpSession = WHPSTcpSession::sp_TcpSession;
         using cbFunc = std::function<void(const sp_TcpSession&)> ;
 public:
         /* 虽然是单例，但实例化了线程池，没有析构函数，服务停止时，无法正常释放线程资源，导致内存泄漏 */

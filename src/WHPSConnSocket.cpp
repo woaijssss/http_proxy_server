@@ -18,7 +18,7 @@ WHPSConnSocket::WHPSConnSocket(int fd)
 
 WHPSConnSocket::~WHPSConnSocket()
 {
-        cout << "destruct socket" << endl;
+//        cout << "destruct socket" << endl;
         this->close();
 }
 
@@ -46,7 +46,6 @@ int WHPSConnSocket::close()
 {
         if (this->isValid())
         {
-                cout << "WHPSConnSocket::close()" << endl;
                 return this->__close();
         }
 

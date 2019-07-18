@@ -17,10 +17,18 @@ class WHPSTcpSession : public std::enable_shared_from_this<WHPSTcpSession>
 public:
         using error_code = unsigned int;
         using sp_TcpSession = std::shared_ptr<WHPSTcpSession>;
-        using TcpSessionCB = std::function<void(const sp_TcpSession&)> ;
+        using TcpSessionCB = std::function<void(const sp_TcpSession&)>;
+
+        // 应用层回调函数类型
+        using httpCB = std::function<void(const sp_TcpSession&)>;
 public:
         WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr);
         ~WHPSTcpSession();
+
+        std::string& getBufferIn()
+        {
+                return _buffer_in;
+        }
 
 public:
         /* 获取对端网络信息：
@@ -50,6 +58,9 @@ public:
         /* 获取当前连接信息句柄 */
         WHPSConnSocket& getConn();
 
+        /* 主动关闭连接 */
+        void close();
+
         /* 将当前的客户端session的事件回调通道，加入到EventLoop事件循环中 */
         void addToEventLoop();
 
@@ -65,6 +76,19 @@ public:
 
         /* 写数据要触发epoll事件 */
         void send(const std::string& msg);
+
+public:         // 应用层回调函数设置
+        /* http接收数据回调函数 */
+        void setHttpRecvCallback(httpCB cb);
+
+        /* http发送数据回调函数 */
+        void setHttpSendCallback(httpCB cb);
+
+        /* http连接关闭回调函数 */
+        void setHttpCloseCallback(httpCB cb);
+
+        /* http异常错误回调函数 */
+        void setHttpErrorCallback(httpCB cb);
 
 private:
 
@@ -114,10 +138,15 @@ private:    // 对应用服务层提供的可用数据
         std::string _buffer_in;         // 接收消息缓冲(tcp请求)
         std::string _buffer_out;        // 发送消息缓冲(tcp响应)
 
-        bool _is_connect /*= true*/;           // 连接标志(默认为true)
+        bool _is_connect /*= true*/;    // 连接标志(默认为true)
+
+private:        // 应用层回调函数定义
+        httpCB _http_onRecv;            // http接收数据回调函数
+        httpCB _http_onSend;            // http发送数据回调函数
+        httpCB _http_onClose;           // http连接关闭回调函数
+        httpCB _http_onError;           // http异常错误回调函数
 };
 
-typedef WHPSTcpSession::sp_TcpSession   sp_TcpSession;
 typedef WHPSTcpSession::TcpSessionCB    TcpSessionCB;
 
 #endif  // __WHPS_TCP_SESSION_H__

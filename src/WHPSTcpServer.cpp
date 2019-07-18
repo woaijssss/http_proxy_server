@@ -107,6 +107,8 @@ void WHPSTcpServer::onNewSession()
         while ((fd = _tcp_socket.Accept(c_addr)) > 0)         // 高并发时，可能返回多个连接的事件，因此循环处理
         {
                 sp_TcpSession sp_tcp_session(new WHPSTcpSession(_thread_pool.getOneLoop(), fd, c_addr));   // 实例化客户端对象
+
+                // 设置客户端相关参数、回调功能
                 //sp_tcp_session->setCleanUpCallback(std::bind(&WHPSTcpServer::onCleanUpResource, this, sp_tcp_session));
                 TcpSessionCB cb = std::bind(&WHPSTcpServer::onCleanUpResource, this, std::placeholders::_1);
                 _tcp_sess_list[fd] = sp_tcp_session;
@@ -114,10 +116,8 @@ void WHPSTcpServer::onNewSession()
 
                 _cb_connect(sp_tcp_session);
 
-                sp_tcp_session->addToEventLoop();
-                // 设置客户端相关参数、回调功能
-
                 // 将客户端回调任务加入到WHPSEventLoop中
+                sp_tcp_session->addToEventLoop();
         }
 }
 

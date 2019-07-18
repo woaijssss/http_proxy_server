@@ -4,6 +4,7 @@
 
 #include "ImplSingleton.h"
 #include "WHPSTcpServer.h"
+#include "WHPSHttpSession.h"
 
 /* HTTP服务的核心类
  * 启动http服务、设置数据回调接口、创建httpsession等操作
@@ -11,6 +12,9 @@
  */
 class WHPSHttpServer : public ImplSingleton<WHPSHttpServer>
 {
+public:
+        using sp_TcpSession = WHPSTcpServer::sp_TcpSession;
+        using sp_HttpSession = WHPSHttpSession::sp_HttpSession;
 public:
         WHPSHttpServer();
         virtual ~WHPSHttpServer();
@@ -33,11 +37,12 @@ private:        // 业务函数
         /* 接收新建连接的回调函数 */
         void onNewConnection(const sp_TcpSession& tcp_session);
 
-        /* 处理新建连接，设置相关属性，并加入到_loop事件循环中
+        /* 处理新建连接，创建http session，并设置tcp session对应于http session的回调函数
          * 应由 onNewConnection() 内部调用
          */
         void onNewSession(const sp_TcpSession& tcp_session);
 
+        /* 连接断开回调函数 */
         void onNewClose(const sp_TcpSession& tcp_session);
 
 private:

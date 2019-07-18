@@ -7,7 +7,7 @@ WHPSHttpServer::WHPSHttpServer()
         : _tcp_server(GetWHPSTcpServer())
 {
         _tcp_server->setNewConnCallback(std::bind(&WHPSHttpServer::onNewConnection, this, std::placeholders::_1));
-        _tcp_server->setNewCloseCallback(std::bind(&WHPSHttpServer::onNewClose, this, std::placeholders::_1));
+        // _tcp_server->setNewCloseCallback(std::bind(&WHPSHttpServer::onNewClose, this, std::placeholders::_1));
 }
 
 WHPSHttpServer::~WHPSHttpServer()
@@ -36,11 +36,13 @@ void WHPSHttpServer::start()
 void WHPSHttpServer::onNewConnection(const sp_TcpSession& tcp_session)
 {
         cout << "WHPSHttpServer::onNewConnection: " << tcp_session->getNetInfo() << endl;
+
+        this->onNewSession(tcp_session);
 }
 
 void WHPSHttpServer::onNewSession(const sp_TcpSession& tcp_session)
 {
-
+        sp_HttpSession http_session(new WHPSHttpSession(tcp_session));
 }
 
 void WHPSHttpServer::onNewClose(const sp_TcpSession& tcp_session)
