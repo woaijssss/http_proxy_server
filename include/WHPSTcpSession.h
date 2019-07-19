@@ -30,6 +30,11 @@ public:
                 return _buffer_in;
         }
 
+        const std::string& getBufferOut()
+        {
+                return _buffer_out;
+        }
+
 public:
         /* 获取对端网络信息：
          *    ip、端口等
@@ -90,6 +95,10 @@ public:         // 应用层回调函数设置
         /* http异常错误回调函数 */
         void setHttpErrorCallback(httpCB cb);
 
+        void setProcessingFlag(bool is_processing);
+
+        const bool& getProcessingFlag() const;
+
 private:
 
         /**********************************************************************/
@@ -139,6 +148,9 @@ private:    // 对应用服务层提供的可用数据
         std::string _buffer_out;        // 发送消息缓冲(tcp响应)
 
         bool _is_connect /*= true*/;    // 连接标志(默认为true)
+
+        bool _is_processing;             // 数据处理标志
+        bool _is_wait;
 
 private:        // 应用层回调函数定义
         httpCB _http_onRecv;            // http接收数据回调函数
