@@ -33,7 +33,7 @@ static void load(const string& filename, string& f_buff)
 #else
         std::ifstream t;  
         int length;  
-        t.open(filename, std::ios::in | std::ios::binary);      // open input file  
+        t.open(filename, std::ios::in | std::ios::binary);      // open input file
         t.seekg(0, std::ios::end);    // go to the end  
         length = t.tellg();           // report location (this is the length)  
         t.seekg(0, std::ios::beg);    // go back to the beginning  
@@ -43,7 +43,8 @@ static void load(const string& filename, string& f_buff)
 #if 1
         f_buff = "HTTP/1.1 200 OK \r\n"
 //                 "Connection:close \r\n"
-                 "Content-Type:application/x-gzip\r\n"
+//                 "Content-Type:application/x-gzip\r\n"
+                 "Content-Type:text/html\r\n"
                  "Content-Length: " + to_string(length) + "\r\n"
                  "\r\n";
 #endif
@@ -66,8 +67,8 @@ void WHPSHttpSession::onHttpMessage(const sp_TcpSession& tcp_session)
 
         string test_msg;
         // load("/home/wenhan/server/webResource/html/index.html", test_msg);
-#if 0
-        TestSendMsg("/home/wenhan/server/webResource/html/index.html", test_msg);
+#if 1
+        TestSendMsg("/home/wenhan/http_proxy_server/webResource/html/index.html", test_msg);
 #else
         TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/curl-7.26.0.tar.gz", test_msg);
 #endif
