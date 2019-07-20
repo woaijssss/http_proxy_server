@@ -40,8 +40,14 @@ static void load(const string& filename, string& f_buff)
         char *buffer = new char[length];    // allocate memory for a buffer of appropriate dimension  
         t.read(buffer, length);       // read the whole file into the buffer  
 
-        f_buff = string(buffer, length);
-        // f_buff = "HTTP/1.1 200 OK \r\ncontent-length:" + to_string(length) + "\r\n" + f_buff;
+#if 1
+        f_buff = "HTTP/1.1 200 OK \r\n"
+//                 "Connection:close \r\n"
+                 "Content-Type:application/x-gzip\r\n"
+                 "Content-Length: " + to_string(length) + "\r\n"
+                 "\r\n";
+#endif
+        f_buff += string(buffer, length);
         t.close();
 
         delete[] buffer;
@@ -69,14 +75,13 @@ void WHPSHttpSession::onHttpMessage(const sp_TcpSession& tcp_session)
         // sleep(5);
         tcp_session->send(test_msg);
 
-        tcp_session->getBufferIn().clear();     // 假设已经处理完毕
-
         // tcp_session->close();           // 不确定是否需要服务器来释放连接？（目前测试chrome浏览器，必须由服务器释放）
 }
 
 void WHPSHttpSession::onHttpSend(const sp_TcpSession& tcp_session)
 {
         cout << "WHPSHttpSession::onHttpSend" << endl;
+        tcp_session->getBufferIn().clear();     // 假设已经处理完毕
 }
 
 void WHPSHttpSession::onHttpClose(const sp_TcpSession& tcp_session)
