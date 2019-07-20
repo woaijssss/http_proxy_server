@@ -33,6 +33,7 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
           , _is_processing(false)
           , _is_wait(false)
 {
+        _conn_sock.setOption();
         this->getEndpointInfo();
         /* 每个客户端的socket要设置成非阻塞，否则在read或write会使线程阻塞，无法实现异步和线程复用 */
         _conn_sock.setNonblock();
@@ -238,7 +239,7 @@ void WHPSTcpSession::onNewRead(error_code error)
         {
                 // 进行业务层的数据数据(tcp数据处理)
                 // 异步回调方式，epoll线程跟业务线程分离
-                _http_onRecv(shared_from_this());
+                _http_onMessage(shared_from_this());
 
 #if 0           // 测试socket关闭后，再发送数据的错误处理
                 TestSend(this);     
@@ -304,7 +305,6 @@ void WHPSTcpSession::onNewWrite(error_code error)
 {
         cout << "-----------------------WHPSTcpSession::onNewWrite: " << _buffer_out.size() << endl;
         int res = this->sendTcpMessage(_buffer_out);      // 需要判别发送的结果，从而决定要不要关闭连接
-        cout << "=====res: " << res << endl;
         if (res > 0)    // 正确发送数据
         {
                 events_t events = _event_chn.getEvents();
@@ -316,11 +316,6 @@ void WHPSTcpSession::onNewWrite(error_code error)
                 else        // 数据发送完毕
                 {
                         events = _base_events;      // 数据发送完毕，无需继续监听写操作
-
-                        if (_is_wait)
-                        {
-                                this->onNewClose(0);
-                        }
                 }
                 
                 _event_chn.setEvents(events);    
@@ -353,31 +348,17 @@ void WHPSTcpSession::onNewClose(error_code error)
          *      （3）通知主socket对象和EventLoop对象删除该句柄资源
          */
         if (_buffer_in.size() || _buffer_out.size() || _is_processing)
-
-        // if (!_buffer_in.size() && !_buffer_out.size()) {
-        //         _is_processing = false;
-        // }
-
-        // if (_is_processing)
         {
-                _is_wait = true;
+                // _is_wait = true;
                 if (_buffer_in.size())
                 {
-                        _http_onRecv(shared_from_this());
+                        _http_onMessage(shared_from_this());
                 }
         }
         else
         {
-                // sleep(2);
-                // cout << "WHPSTcpSession::onNewClose: " << _buffer_in.size() << "|" << _buffer_out.size() << endl;
-                //sp_TcpSession& sp_tcp_session = std::make_shared<WHPSTcpSession>(*this);
-        //        _cb_cleanup(sp_tcp_session);  // 执行清理回调函数
-                //sp_TcpSession sp_tcp_session = shared_from_this();
-                // this->delFromEventLoop();
-                //sp_TcpSession sp_tcp_session = shared_from_this();      // 返回this类的智能指针
-                // _cb_cleanup(shared_from_this());
                 cout << "=========close close" << endl; 
-                _loop.addTask(std::bind(_cb_cleanup, shared_from_this()));
+                _loop.addTask(std::bind(_cb_cleanup, shared_from_this()));  // 执行清理回调函数
                 _http_onClose(shared_from_this());      // 清除应用层回调相关标志位
                 _is_connect = false;
        }
@@ -401,9 +382,9 @@ void WHPSTcpSession::onNewError(error_code error)
 }
 
 
-void WHPSTcpSession::setHttpRecvCallback(httpCB cb)
+void WHPSTcpSession::setHttpMessageCallback(httpCB cb)
 {
-        _http_onRecv = cb;
+        _http_onMessage = cb;
 }
 
 void WHPSTcpSession::setHttpSendCallback(httpCB cb)

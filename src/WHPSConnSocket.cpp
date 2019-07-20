@@ -42,6 +42,11 @@ int WHPSConnSocket::setNonblock()
         return this->__setNonblock();
 }
 
+int WHPSConnSocket::setOption()
+{
+        return this->__setSocketOpt();
+}
+
 int WHPSConnSocket::close()
 {
         if (this->isValid())

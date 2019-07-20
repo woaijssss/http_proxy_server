@@ -84,7 +84,7 @@ public:
 
 public:         // 应用层回调函数设置
         /* http接收数据回调函数 */
-        void setHttpRecvCallback(httpCB cb);
+        void setHttpMessageCallback(httpCB cb);
 
         /* http发送数据回调函数 */
         void setHttpSendCallback(httpCB cb);
@@ -153,7 +153,7 @@ private:    // 对应用服务层提供的可用数据
         bool _is_wait;
 
 private:        // 应用层回调函数定义
-        httpCB _http_onRecv;            // http接收数据回调函数
+        httpCB _http_onMessage;            // http接收数据回调函数
         httpCB _http_onSend;            // http发送数据回调函数
         httpCB _http_onClose;           // http连接关闭回调函数
         httpCB _http_onError;           // http异常错误回调函数

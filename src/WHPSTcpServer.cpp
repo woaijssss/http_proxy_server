@@ -5,7 +5,7 @@ using namespace std;
 #include "WHPSTcpServer.h"
 #include "WHPSConnSocket.h"
 
-static int g_nthreads = 5;     // 可做成配置
+static int g_nthreads = 1;     // 可做成配置
 
 WHPSTcpServer* WHPSTcpServer::_tcp_server = NULL;
 // WHPSTcpServer::GC WHPSTcpServer::_gc;

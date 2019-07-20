@@ -27,7 +27,7 @@ public:
 private:
         // 统一格式类型，参数全部采用tcp session
         /* http接收消息回调 */
-        void onHttpRecv(const sp_TcpSession& tcp_session);
+        void onHttpMessage(const sp_TcpSession& tcp_session);
 
         /* http发送消息回调 */
         void onHttpSend(const sp_TcpSession& tcp_session);

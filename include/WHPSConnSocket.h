@@ -26,6 +26,9 @@ public:
         /* 设置非阻塞socket */
         int setNonblock();
 
+        /* 设置socket属性 */
+        int setOption();
+
         /* 关闭socket */
         int close();
 
