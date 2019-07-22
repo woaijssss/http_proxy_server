@@ -1,6 +1,58 @@
 
+#include <unistd.h>     // for sleep
+#include <iostream>
+#include <thread>
+#include <sstream>
+#include <fstream>
+
 #include "WHPSHttpSession.h"
 #include "util.h"
+
+using namespace std;
+
+/* 测试接口 */
+static int load(const string& filename, string& f_buff)
+{
+#if 0
+        std::ifstream in(filename);
+        std::stringstream buffer;
+        buffer << in.rdbuf();
+        f_buff = buffer.str();
+#else
+        std::ifstream in;  
+        int length;  
+        in.open(filename, std::ios::in | std::ios::binary);      // open input file
+
+        if (!in)
+        {
+                return -1;
+        }
+
+        in.seekg(0, std::ios::end);    // go to the end  
+        length = in.tellg();           // report location (this is the length)  
+        in.seekg(0, std::ios::beg);    // go back to the beginning  
+        char *buffer = new char[length];    // allocate memory for a buffer of appropriate dimension  
+        in.read(buffer, length);       // read the whole file into the buffer  
+        in.close();
+
+#if 1
+        f_buff = "HTTP/1.1 200 OK \r\n"
+//                 "Connection:close \r\n"
+                "Content-Type:application/x-gzip\r\n"
+                 // "Content-Type:text/html\r\n"
+                 "Content-Length: " + to_string(length) + "\r\n"
+                 "\r\n";
+#endif
+        f_buff += string(buffer, length);
+
+        delete[] buffer;
+#endif
+
+        return 0;
+}
+
+#define TestSendMsg(TypeName1, TypeName2) load(TypeName1, TypeName2)                 
+
 
 WHPSHttpSession::WHPSHttpSession(const sp_TcpSession& tcp_session)
         : _tcp_session(tcp_session)
@@ -13,67 +65,44 @@ WHPSHttpSession::WHPSHttpSession(const sp_TcpSession& tcp_session)
 
 WHPSHttpSession::~WHPSHttpSession()
 {
-
+        cout << __FUNCTION__ << endl;
 }
 
-#include <iostream>
-#include <thread>
-#include <sstream>
-#include <fstream>
-using namespace std;
-
-/* 测试接口 */
-static void load(const string& filename, string& f_buff)
+const WHPSHttpSession::sp_TcpSession& WHPSHttpSession::getTcpSession() const
 {
-#if 0
-        std::ifstream t(filename);
-        std::stringstream buffer;
-        buffer << t.rdbuf();
-        f_buff = buffer.str();
-#else
-        std::ifstream t;  
-        int length;  
-        t.open(filename, std::ios::in | std::ios::binary);      // open input file
-        t.seekg(0, std::ios::end);    // go to the end  
-        length = t.tellg();           // report location (this is the length)  
-        t.seekg(0, std::ios::beg);    // go back to the beginning  
-        char *buffer = new char[length];    // allocate memory for a buffer of appropriate dimension  
-        t.read(buffer, length);       // read the whole file into the buffer  
-
-#if 1
-        f_buff = "HTTP/1.1 200 OK \r\n"
-//                 "Connection:close \r\n"
-//                 "Content-Type:application/x-gzip\r\n"
-                 "Content-Type:text/html\r\n"
-                 "Content-Length: " + to_string(length) + "\r\n"
-                 "\r\n";
-#endif
-        f_buff += string(buffer, length);
-        t.close();
-
-        delete[] buffer;
-#endif
+        return _tcp_session;
 }
 
-#define TestSendMsg(TypeName1, TypeName2) load(TypeName1, TypeName2)                 
+void WHPSHttpSession::setHttpCloseCallback(HttpSessionCB cb)
+{
+        _http_closeCB = cb;
+}
 
-#include <unistd.h>
 void WHPSHttpSession::onHttpMessage(const sp_TcpSession& tcp_session)
 {
         tcp_session->setProcessingFlag(true);
         string& buff = tcp_session->getBufferIn();
-        // cout << "thread_id: " << (unsigned int)std::hash<std::thread::id>()(std::this_thread::get_id()) 
-        //     << "----" << getHexString((unsigned char*)buff.c_str(), buff.size()) << endl;
 
         string test_msg;
         // load("/home/wenhan/server/webResource/html/index.html", test_msg);
-#if 1
-        TestSendMsg("/home/wenhan/http_proxy_server/webResource/html/index.html", test_msg);
+#if 0
+        int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/html/index.html", test_msg);
 #else
-        TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/curl-7.26.0.tar.gz", test_msg);
+        int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/curl-7.26.0.tar.gz1", test_msg);
 #endif
+
+        if (res < 0)
+        {
+                string tmp = "404 not found!";
+                test_msg = "HTTP/1.1 200 OK \r\n"
+                             "Content-Type:text/html\r\n"
+                             "Content-Length: " + to_string(tmp.size()) + "\r\n"
+                             "\r\n"
+                             + tmp;
+        }
+
         cout << "test_msg.size: " << test_msg.size() << endl;
-        // sleep(5);
+        tcp_session->getBufferIn().clear();     // 假设已经处理完毕
         tcp_session->send(test_msg);
 
         // tcp_session->close();           // 不确定是否需要服务器来释放连接？（目前测试chrome浏览器，必须由服务器释放）
@@ -87,10 +116,14 @@ void WHPSHttpSession::onHttpSend(const sp_TcpSession& tcp_session)
 
 void WHPSHttpSession::onHttpClose(const sp_TcpSession& tcp_session)
 {
+        cout << "WHPSHttpSession::onHttpClose" << endl;
         tcp_session->setProcessingFlag(false);
+        _http_closeCB(tcp_session);
 }
 
 void WHPSHttpSession::onHttpError(const sp_TcpSession& tcp_session)
 {
-
+        cout << "WHPSHttpSession::onHttpError" << endl;
+        tcp_session->setProcessingFlag(false);
+        _http_closeCB(tcp_session);
 }

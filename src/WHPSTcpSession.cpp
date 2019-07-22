@@ -5,12 +5,6 @@ using namespace std;
 #include "WHPSTcpSession.h"
 #include "util.h"
 
-static void swap(string& src)
-{
-        string tmp;
-        src.swap(tmp);
-}
-
 static void TestSend(WHPSTcpSession* sp_tcp_session)
 {
         string msg;
@@ -22,17 +16,15 @@ static void TestSend(WHPSTcpSession* sp_tcp_session)
         sp_tcp_session->send(msg);
 }
 
-WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd,
-                                struct sockaddr_in& c_addr)
-                                : std::enable_shared_from_this<WHPSTcpSession>(), _c_addr(
-                                                                c_addr), _loop(
-                                                                loop), _conn_sock(
-                                                                fd), _base_events(
-                                                                EPOLLIN
-                                                                                                | EPOLLPRI), _is_connect(
-                                                                true), _is_processing(
-                                                                false), _is_wait(
-                                                                false)
+WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr)
+        : std::enable_shared_from_this<WHPSTcpSession>()
+        , _c_addr(c_addr)
+        , _loop(loop)
+        , _conn_sock(fd)
+        , _base_events(EPOLLIN | EPOLLPRI)
+        , _is_connect(true)
+        , _is_processing(false)
+        , _is_wait(false)
 {
         _conn_sock.setOption();
         this->getEndpointInfo();
@@ -43,22 +35,10 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd,
         // _event_chn.setEvents(EPOLLIN | EPOLLPRI | EPOLLOUT); // 不能设置EPOLLOUT，否则客户端连接，会频繁调用onNewWrite()
         _event_chn.setEvents(_base_events);        // 设置接收连接事件，epoll模式为边缘触发
 
-        _event_chn.setReadCallback(
-                                        std::bind(&WHPSTcpSession::onNewRead,
-                                                                        this,
-                                                                        0)); // 注册数据接收回调函数
-        _event_chn.setWriteCallback(
-                                        std::bind(&WHPSTcpSession::onNewWrite,
-                                                                        this,
-                                                                        0)); // 注册数据发送回调函数
-        _event_chn.setCloseCallback(
-                                        std::bind(&WHPSTcpSession::onNewClose,
-                                                                        this,
-                                                                        0)); // 注册连接关闭回调函数
-        _event_chn.setCloseCallback(
-                                        std::bind(&WHPSTcpSession::onNewError,
-                                                                        this,
-                                                                        0)); // 注册异常错误回调函数
+        _event_chn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0)); // 注册数据接收回调函数
+        _event_chn.setWriteCallback(std::bind(&WHPSTcpSession::onNewWrite, this, 0)); // 注册数据发送回调函数
+        _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0)); // 注册连接关闭回调函数
+        _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewError, this, 0)); // 注册异常错误回调函数
 
         // 还需要注册发送数据和超时回调
 }
@@ -118,7 +98,6 @@ WHPSConnSocket& WHPSTcpSession::getConn()
 void WHPSTcpSession::close()
 {
         // this->send(_buffer_out);
-
         // _http_onClose(shared_from_this());
         // _loop.addTask(std::bind(_cb_cleanup, shared_from_this()));
         // _is_connect = false;
@@ -217,10 +196,7 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
                                                         << endl;
                         if (errno == EAGAIN)    // tcp发送缓冲区满了，下次继续发送
                         {
-                                cout
-                                                                << "write errno == EAGAIN, tcp发送缓冲区满了，下次继续发送!"
-                                                                << bytes_transferred
-                                                                << endl;
+                                cout << "write errno == EAGAIN, tcp发送缓冲区满了，下次继续发送!" << bytes_transferred << endl;
                                 // res = bytes_transferred;
 
                                 /* 这里统一返回1！
@@ -289,7 +265,7 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
                 if (r_nbyte > 0)
                 {
                         // cout << getHexString(buffer, r_nbyte) << endl;
-                        _buffer_in.append(buffer, r_nbyte);
+                        _buffer_in.append(buffer, r_nbyte);     // 每次追加写入数据
                         bytes_transferred += r_nbyte;
                 }
                 else if (r_nbyte == 0)    // 客户端关闭socket，FIN包
@@ -396,6 +372,7 @@ void WHPSTcpSession::onNewError(error_code error)
          */
 
         cout << "WHPSTcpSession::onNewError" << endl;
+        _http_onError(shared_from_this());
         //sp_TcpSession& sp_tcp_session = std::make_shared<WHPSTcpSession>(*this);
 //        _cb_cleanup(sp_tcp_session);  // 执行清理回调函数
         //sp_TcpSession sp_tcp_session = shared_from_this();

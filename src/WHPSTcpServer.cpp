@@ -5,7 +5,7 @@ using namespace std;
 #include "WHPSTcpServer.h"
 #include "WHPSConnSocket.h"
 
-static int g_nthreads = 1;     // 可做成配置
+static int g_nthreads = 1;     // 可做成配置(至少是1)
 
 WHPSTcpServer* WHPSTcpServer::_tcp_server = NULL;
 // WHPSTcpServer::GC WHPSTcpServer::_gc;
@@ -126,7 +126,7 @@ void WHPSTcpServer::onCleanUpResource(const sp_TcpSession& sp_tcp_session)
         _tcp_sess_list.erase(sp_tcp_session->getConn().get());
         cout << "WHPSTcpServer::onCleanUpResource-----size: " << _tcp_sess_list.size() << endl;
 
-        if (!_tcp_sess_list.size())
+        if (!_tcp_sess_list.size())     // 主要是释放map的内存，可能没用（后面换个方法）
         {
                 // Map<int, sp_TcpSession> tmp;
                 // _tcp_sess_list.swap(tmp);

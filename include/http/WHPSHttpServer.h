@@ -45,9 +45,13 @@ private:        // 业务函数
         /* 连接断开回调函数 */
         void onNewClose(const sp_TcpSession& tcp_session);
 
+public:     // 后面需要增加一些接口，用来进行外部监控（比如：当前http有效连接数等）
+
 private:
         static WHPSHttpServer* _http_server;
         WHPSTcpServer* _tcp_server;
+
+        Map<std::string, sp_HttpSession> _http_sess_list;    // http列表
 };
 
 GET_SINGLETON_OBJECT(WHPSHttpServer)

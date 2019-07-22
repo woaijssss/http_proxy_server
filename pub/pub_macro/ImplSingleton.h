@@ -17,6 +17,9 @@ public:
 protected:
         ImplSingleton() {}
 
+	/* 该方法仅测试使用，真正的单例对象，不需要显示执行free释放，
+ 	 * 使用了智能指针，应智能的管理内存。
+	 */
         static void free()
         {
                 _gc.free();

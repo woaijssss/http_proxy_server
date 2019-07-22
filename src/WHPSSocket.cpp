@@ -4,7 +4,7 @@
 
 using namespace std;
 
-int g_port = 80;              // 可做成配置项
+int g_port = 3000;              // 可做成配置项
 
 WHPSSocket::WHPSSocket(int mode)
         : _mode(mode)
