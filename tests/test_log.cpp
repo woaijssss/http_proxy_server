@@ -3,8 +3,7 @@
 
 int main()
 {
-        WHPSLog log;
-        log.printToFile("%s", "11111");
+        WHPSLogInfo("%.2f", 3.1415666);
 
         return 0;
 }
