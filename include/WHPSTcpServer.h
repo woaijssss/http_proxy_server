@@ -10,7 +10,7 @@
 
 #include "ImplSingleton.h"
 #include "SingletonRegister.h"
-
+#include <memory>
 #include <iostream>
 
 /* Tcp服务类
@@ -23,6 +23,7 @@ public:
         using sp_TcpSession = WHPSTcpSession::sp_TcpSession;
         using cbFunc = std::function<void(const sp_TcpSession&)> ;
 public:
+        WHPSTcpServer();
         /* 虽然是单例，但实例化了线程池，没有析构函数，服务停止时，无法正常释放线程资源，导致内存泄漏 */
         virtual ~WHPSTcpServer();
 
@@ -71,12 +72,11 @@ public:     // 测试接口
         void stop()
         {
                 _loop.stop();
-                ImplSingleton<WHPSTcpServer>::free();
         }
 
 private:
-        WHPSTcpServer();
-        static WHPSTcpServer* _tcp_server;
+        // static WHPSTcpServer* _tcp_server;
+        static std::shared_ptr<WHPSTcpServer> _tcp_server;
 
         WHPSEpollEventLoop _loop;       // 服务器事件循环触发
         WHPSThreadPool _thread_pool;    // 线程池句柄
@@ -89,22 +89,6 @@ private:
 private:    // 应用层回调函数
         cbFunc _cb_connect;     // 新连接应用层回调
         cbFunc _cb_close;       // 连接关闭应用层回调
-
-
-#if 0
-        class GC            // 避免内存泄漏的垃圾回收(嵌套)类
-        {
-        public:
-                ~GC()
-                {
-                        if (WHPSTcpServer::_tcp_server)
-                        {
-                                delete WHPSTcpServer::_tcp_server;
-                        }
-                }
-        };
-        static GC _gc; 
-#endif
 };
 
 GET_SINGLETON_OBJECT_PTR(WHPSTcpServer)

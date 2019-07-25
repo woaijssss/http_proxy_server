@@ -41,6 +41,7 @@ int Socket::__setSocketOpt()
         int on = 1;
         setsockopt(__socket_fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&on, sizeof(on));
         setsockopt(__socket_fd, IPPROTO_TCP, TCP_NODELAY, (void*)&on, sizeof(on));
+        setsockopt(__socket_fd, SOL_TCP, TCP_NODELAY, (void*)&on, sizeof(on));
 
         return 0;
 }

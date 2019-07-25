@@ -12,7 +12,9 @@ template<class C_T>
 class ImplSingleton
 {
 public:
-        virtual ~ImplSingleton() {}
+        virtual ~ImplSingleton() {
+                cout << "~ImplSingleton" << endl;
+        }
 
 protected:
         ImplSingleton() {}
@@ -22,15 +24,15 @@ protected:
 	 */
         static void free()
         {
-                _gc.free();
+                // _gc.free();
         }
 
 private:
         class GC            // 避免内存泄漏的垃圾回收(嵌套)类
         {
         public:
-                // ~GC()
-                void free()
+                ~GC()
+                // void free()
                 {
                         if (C_T::Get())
                         {

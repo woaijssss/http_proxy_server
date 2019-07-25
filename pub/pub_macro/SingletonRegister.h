@@ -18,7 +18,7 @@
 
 // 可以得到函数 inline XXXX& GetXXXX();的定义
 #define GET_SINGLETON_OBJECT(TypeName)                          \
-        inline TypeName& Get##TypeName()                     \
+        inline TypeName& Get##TypeName()                        \
         {                                                       \
                 return SingletonRegister::Function<             \
                                         TypeName                \

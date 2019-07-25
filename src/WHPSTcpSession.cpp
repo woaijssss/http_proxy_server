@@ -259,8 +259,11 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
 
         while (true)
         {
-                char buffer[1];
-                int r_nbyte = read(_conn_sock.get(), buffer, 1);
+                char buffer[1024];
+                // int r_nbyte = read(_conn_sock.get(), buffer, 1);
+                /* 参考nginx实现方式
+                 */
+                int r_nbyte = recvfrom(_conn_sock.get(), buffer, 1024, 0, NULL, NULL);
 
                 if (r_nbyte > 0)
                 {
@@ -276,11 +279,14 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
                 else    // 读数据异常(-1)
                 {
                         // cout << "r_nbyte----errno: " << r_nbyte << "----" << errno << endl;     // 异步时，当缓冲区无数据时，read会返回-1,即：读完了
-
-                        if (errno == EAGAIN) // 在非阻塞模式下调用了阻塞操作，在该操作没有完成就返回这个错误，这个错误不会破坏socket的同步，下次循环接着recv就可以。
+                        /* 在非阻塞模式下调用了阻塞操作，在该操作没有完成就返回这个错误，
+                         * 这个错误不会破坏socket的同步，下次循环接着recv就可以。
+                         */
+                        if (errno == EAGAIN) 
                         {
                                 // pass
-                                res = bytes_transferred;
+                                // res = bytes_transferred;
+                                res = (bytes_transferred == 0) ? 1 : bytes_transferred;
                         }
                         else if (errno == EINTR) // 中断，read()会返回-1，同时置errno为EINTR
                         {

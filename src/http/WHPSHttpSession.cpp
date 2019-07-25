@@ -4,23 +4,64 @@
 #include <thread>
 #include <sstream>
 #include <fstream>
+#include <sys/stat.h>   // for fstat
 
 #include "WHPSHttpSession.h"
 #include "util.h"
 
 using namespace std;
 
+static size_t getFileTotalSize(const ifstream& in)
+{
+        struct stat stat__;
+        /* std::filebuf: 流缓冲区用于读取和写入文件。
+         *
+         */
+        auto getFd = [](std::filebuf& fbuff) -> int
+        {
+                // 继承自std::filebuf，才能使用_M_file protected成员
+                struct Helper : public std::filebuf
+                {
+                        int Handle()
+                        { return _M_file.fd(); }
+                };
+            
+                return static_cast<Helper&>(fbuff).Handle();
+        };
+
+        int fd = getFd(*in.rdbuf());
+        fstat(fd, &stat__);
+
+        return stat__.st_size;
+}
+
 /* 测试接口 */
 static int load(const string& filename, string& f_buff)
 {
+/*
+        struct stat {
+               dev_t     st_dev;     // ID of device containing file 
+               ino_t     st_ino;     // inode number 
+               mode_t    st_mode;    // protection 
+               nlink_t   st_nlink;   // number of hard links 
+               uid_t     st_uid;     // user ID of owner 
+               gid_t     st_gid;     // group ID of owner 
+               dev_t     st_rdev;    // device ID (if special file) 
+               off_t     st_size;    // total size, in bytes 
+               blksize_t st_blksize; // blocksize for file system I/O 
+               blkcnt_t  st_blocks;  // number of 512B blocks allocated 
+               time_t    st_atime;   // time of last access 
+               time_t    st_mtime;   // time of last modification 
+               time_t    st_ctime;   // time of last status change 
+        };
+ */
 #if 0
         std::ifstream in(filename);
         std::stringstream buffer;
         buffer << in.rdbuf();
         f_buff = buffer.str();
 #else
-        std::ifstream in;  
-        int length;  
+        std::ifstream in;   
         in.open(filename, std::ios::in | std::ios::binary);      // open input file
 
         if (!in)
@@ -28,9 +69,9 @@ static int load(const string& filename, string& f_buff)
                 return -1;
         }
 
-        in.seekg(0, std::ios::end);    // go to the end  
-        length = in.tellg();           // report location (this is the length)  
-        in.seekg(0, std::ios::beg);    // go back to the beginning  
+        
+        size_t length = getFileTotalSize(in);
+
         char *buffer = new char[length];    // allocate memory for a buffer of appropriate dimension  
         in.read(buffer, length);       // read the whole file into the buffer  
         in.close();
@@ -88,7 +129,7 @@ void WHPSHttpSession::onHttpMessage(const sp_TcpSession& tcp_session)
 #if 0
         int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/html/index.html", test_msg);
 #else
-        int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/curl-7.26.0.tar.gz1", test_msg);
+        int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/curl-7.26.0.tar.gz", test_msg);
 #endif
 
         if (res < 0)

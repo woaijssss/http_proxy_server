@@ -7,7 +7,7 @@ using namespace std;
 
 static int g_nthreads = 1;     // 可做成配置(至少是1)
 
-WHPSTcpServer* WHPSTcpServer::_tcp_server = NULL;
+std::shared_ptr<WHPSTcpServer> WHPSTcpServer::_tcp_server;
 // WHPSTcpServer::GC WHPSTcpServer::_gc;
 
 WHPSTcpServer::WHPSTcpServer()
@@ -22,18 +22,16 @@ WHPSTcpServer::WHPSTcpServer()
 WHPSTcpServer::~WHPSTcpServer()
 {
         cout << "WHPSTcpServer::~WHPSTcpServer" << endl;
-        // _tp.stop();     // stop()自动调用，释放线程资源，防止内存泄漏
-        // _thread_pool.stop();
 }
 
 WHPSTcpServer* WHPSTcpServer::Get()
 {
-        if (!_tcp_server)
+        if (!_tcp_server.get())
         {
-                _tcp_server = new WHPSTcpServer();
+                _tcp_server = std::shared_ptr<WHPSTcpServer>(new WHPSTcpServer());
         }
 
-        return _tcp_server;
+        return _tcp_server.get();
 }
 
 bool WHPSTcpServer::isValid()

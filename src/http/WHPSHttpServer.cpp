@@ -1,7 +1,8 @@
 
 #include "WHPSHttpServer.h"
 
-WHPSHttpServer* WHPSHttpServer::_http_server = NULL;
+// WHPSHttpServer* WHPSHttpServer::_http_server = NULL;
+std::shared_ptr<WHPSHttpServer> WHPSHttpServer::_http_server;
 
 WHPSHttpServer::WHPSHttpServer()
         : _tcp_server(GetWHPSTcpServer())
@@ -18,12 +19,12 @@ WHPSHttpServer::~WHPSHttpServer()
 /*static */
 WHPSHttpServer* WHPSHttpServer::Get()
 {
-        if (!_http_server)
+        if (!_http_server.get())
         {
-                _http_server = new WHPSHttpServer();
+                _http_server = std::shared_ptr<WHPSHttpServer>(new WHPSHttpServer());
         }
 
-        return _http_server;
+        return _http_server.get();
 }
 
 /* 启动http服务 */

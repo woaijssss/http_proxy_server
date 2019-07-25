@@ -30,7 +30,6 @@ public:         // 测试接口
         void stop()
         {
                 _tcp_server->stop();
-                ImplSingleton<WHPSHttpServer>::free();
         }
 
 private:        // 业务函数
@@ -48,7 +47,8 @@ private:        // 业务函数
 public:     // 后面需要增加一些接口，用来进行外部监控（比如：当前http有效连接数等）
 
 private:
-        static WHPSHttpServer* _http_server;
+        // static WHPSHttpServer* _http_server;
+        static std::shared_ptr<WHPSHttpServer> _http_server;
         WHPSTcpServer* _tcp_server;
 
         Map<std::string, sp_HttpSession> _http_sess_list;    // http列表

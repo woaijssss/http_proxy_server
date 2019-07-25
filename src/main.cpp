@@ -32,6 +32,14 @@ int main(int argc, char const *argv[])
         WHPSHttpServer& server_ptr = GetWHPSHttpServer();
         p_server = &server_ptr;
 
+        GetWHPSHttpServer();
+        GetWHPSHttpServer();
+        GetWHPSHttpServer();
+        GetWHPSHttpServer();
+        GetWHPSHttpServer();
+        GetWHPSHttpServer();
+        GetWHPSHttpServer();
+
         server_ptr.start();
 
         return 0;
