@@ -17,7 +17,7 @@ WHPSHttpServer::~WHPSHttpServer()
 }
 
 /*static */
-WHPSHttpServer* WHPSHttpServer::Get()
+WHPSHttpServer* WHPSHttpServer::GetInstance()
 {
         if (!_http_server.get())
         {

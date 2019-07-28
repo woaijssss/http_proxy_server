@@ -24,7 +24,7 @@ WHPSTcpServer::~WHPSTcpServer()
         cout << "WHPSTcpServer::~WHPSTcpServer" << endl;
 }
 
-WHPSTcpServer* WHPSTcpServer::Get()
+WHPSTcpServer* WHPSTcpServer::GetInstance()
 {
         if (!_tcp_server.get())
         {

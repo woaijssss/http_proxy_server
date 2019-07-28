@@ -13,7 +13,7 @@
         {                                                       \
                 return SingletonRegister::Function<             \
                                         TypeName                \
-                                        >::Get();               \
+                                        >::GetInstance();       \
         }
 
 // 可以得到函数 inline XXXX& GetXXXX();的定义
@@ -22,7 +22,7 @@
         {                                                       \
                 return SingletonRegister::Function<             \
                                         TypeName                \
-                                        >::GetObj();            \
+                                        >::GetInstanceObj();    \
         }
 
 /* 单例构造器 */
@@ -41,24 +41,24 @@ public:
         struct Function
         {
                 /* 构造返回指针的构造函数 */
-                static Type* Get();
+                static Type* GetInstance();
 
                 /* 构造返回单例对象的构造函数 */
-                static Type& GetObj();
+                static Type& GetInstanceObj();
         };
 
 };
 
 template<class Type>
-Type* SingletonRegister::Function<Type>::Get()
+Type* SingletonRegister::Function<Type>::GetInstance()
 {
-        return Type::Get();
+        return Type::GetInstance();
 }
 
 template<class Type>
-Type& SingletonRegister::Function<Type>::GetObj()
+Type& SingletonRegister::Function<Type>::GetInstanceObj()
 {
-        return *Type::Get();
+        return *Type::GetInstance();
 }
 
 #endif  // __SINGLETONS_REGISTER_H__

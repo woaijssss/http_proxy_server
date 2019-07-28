@@ -1,8 +1,6 @@
 
 #include "WHPSEpollEventLoop.h"
 
-static int g_nthreads = 0;     // 可做成配置
-
 WHPSEpollEventLoop::WHPSEpollEventLoop(int maxevents /*= 1024*/, int timeout /*= 100*/)
         : _poller(maxevents, timeout)
         , _event_queue()

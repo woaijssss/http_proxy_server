@@ -5,17 +5,6 @@ using namespace std;
 #include "WHPSTcpSession.h"
 #include "util.h"
 
-static void TestSend(WHPSTcpSession* sp_tcp_session)
-{
-        string msg;
-        for (int i = 0; i < 10000; i++)
-        {
-                //string msg((char*)p);
-                msg += (char) 0xaa;
-        }
-        sp_tcp_session->send(msg);
-}
-
 WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr)
         : std::enable_shared_from_this<WHPSTcpSession>()
         , _c_addr(c_addr)
@@ -160,8 +149,8 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
         long bytes_transferred = 0;
         while (true)
         {
-                int w_nbytes = write(_conn_sock.get(), buffer_out.c_str(),
-                                                buffer_out.size());
+                // int w_nbytes = write(_conn_sock.get(), buffer_out.c_str(), buffer_out.size());
+                int w_nbytes = ::send(_conn_sock.get(), buffer_out.c_str(), buffer_out.size(), 0);
                 bytes_transferred += w_nbytes;
 
                 if (w_nbytes > 0)   // 该笔数据已发送
@@ -263,7 +252,8 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
                 // int r_nbyte = read(_conn_sock.get(), buffer, 1);
                 /* 参考nginx实现方式
                  */
-                int r_nbyte = recvfrom(_conn_sock.get(), buffer, 1024, 0, NULL, NULL);
+                // int r_nbyte = recvfrom(_conn_sock.get(), buffer, 1024, 0, NULL, NULL);
+                int r_nbyte = recv(_conn_sock.get(), buffer, 1024, 0);
 
                 if (r_nbyte > 0)
                 {

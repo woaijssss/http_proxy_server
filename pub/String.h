@@ -28,6 +28,9 @@ public:
         /* 按照sep拆分字符串 */
         SVector split(const char* sep);
 
+	/* 默认过滤字符串中的空格 */
+	std::string strip();
+
         /* 过滤字符串中，带有chr的字符 */
         std::string strip(const char* chr);
 

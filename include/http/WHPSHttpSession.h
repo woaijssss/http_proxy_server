@@ -5,6 +5,7 @@
 #include <string>
 
 #include "WHPSTcpSession.h"
+#include "WHPSHttpParser.h"
 
 /* http session：单个http连接，基于tcp session的tcp连接，二者为强依赖关系
  * HttpSession的实例化，必须依赖于TcpSession；
@@ -49,6 +50,8 @@ private:
         // 先使用这种方式测试http功能，后续引入工作线程池后，可以将发送消息的任务，加入到工作线程队列里
         const sp_TcpSession& _tcp_session;      // tcp连接对象
         HttpSessionCB _http_closeCB;            // http连接断开回调函数
+
+        WHPSHttpParser _http_parser;            // http解析器
 };
 
 #endif  // __WHPS_HTTP_SESSION_H__

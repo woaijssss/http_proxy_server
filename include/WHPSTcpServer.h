@@ -28,7 +28,7 @@ public:
         virtual ~WHPSTcpServer();
 
         /* 获取单例实例 */
-        static WHPSTcpServer* Get();
+        static WHPSTcpServer* GetInstance();
 
         /* 应用侧检查句柄是否有效 */
         bool isValid();

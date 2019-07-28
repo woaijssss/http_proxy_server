@@ -33,9 +33,9 @@ CXXFLAGS+=-O2
 LDFLAGS+=-O2 -s
 else
 CPPFLAGS+=-DDEBUG
-CFLAGS+=-O0 -g
-CXXFLAGS+=-O0 -g
-LDFLAGS+=-O0 -g
+CFLAGS+=-O3 -g
+CXXFLAGS+=-O3 -g
+LDFLAGS+=-O3 -g
 endif
 
 .PHONY: all release clean

@@ -79,7 +79,7 @@ static int load(const string& filename, string& f_buff)
 #if 1
         f_buff = "HTTP/1.1 200 OK \r\n"
 //                 "Connection:close \r\n"
-                "Content-Type:application/x-gzip\r\n"
+                // "Content-Type:application/x-gzip\r\n"
                  // "Content-Type:text/html\r\n"
                  "Content-Length: " + to_string(length) + "\r\n"
                  "\r\n";
@@ -92,7 +92,37 @@ static int load(const string& filename, string& f_buff)
         return 0;
 }
 
-#define TestSendMsg(TypeName1, TypeName2) load(TypeName1, TypeName2)                 
+
+#define TestSendMsg(TypeName1, TypeName2) load(TypeName1, TypeName2)         
+
+static void TestSend(const WHPSHttpSession::sp_TcpSession& tcp_session)
+{
+        string& buff = tcp_session->getBufferIn();
+        string test_msg;
+        // load("/home/wenhan/server/webResource/html/index.html", test_msg);
+#if 1
+        int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/html/index.html", test_msg);
+#else
+        // int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/curl-7.26.0.tar.gz", test_msg);
+        int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/数据结构(c语言版).pdf", test_msg);
+#endif
+
+        if (res < 0)
+        {
+                string tmp = "404 not found!";
+                test_msg = "HTTP/1.1 200 OK \r\n"
+                             "Content-Type:text/html\r\n"
+                             "Content-Length: " + to_string(tmp.size()) + "\r\n"
+                             "\r\n"
+                             + tmp;
+        }
+
+        cout << "test_msg.size: " << test_msg.size() << endl;
+        buff.clear();     // 假设已经处理完毕
+        tcp_session->send(test_msg);
+
+        // tcp_session->close();           // 不确定是否需要服务器来释放连接？（目前测试chrome浏览器，必须由服务器释放）
+}        
 
 
 WHPSHttpSession::WHPSHttpSession(const sp_TcpSession& tcp_session)
@@ -121,32 +151,10 @@ void WHPSHttpSession::setHttpCloseCallback(HttpSessionCB cb)
 
 void WHPSHttpSession::onHttpMessage(const sp_TcpSession& tcp_session)
 {
+        _http_parser.parseHttpRequest(tcp_session->getBufferIn());
         tcp_session->setProcessingFlag(true);
-        string& buff = tcp_session->getBufferIn();
 
-        string test_msg;
-        // load("/home/wenhan/server/webResource/html/index.html", test_msg);
-#if 0
-        int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/html/index.html", test_msg);
-#else
-        int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/curl-7.26.0.tar.gz", test_msg);
-#endif
-
-        if (res < 0)
-        {
-                string tmp = "404 not found!";
-                test_msg = "HTTP/1.1 200 OK \r\n"
-                             "Content-Type:text/html\r\n"
-                             "Content-Length: " + to_string(tmp.size()) + "\r\n"
-                             "\r\n"
-                             + tmp;
-        }
-
-        cout << "test_msg.size: " << test_msg.size() << endl;
-        tcp_session->getBufferIn().clear();     // 假设已经处理完毕
-        tcp_session->send(test_msg);
-
-        // tcp_session->close();           // 不确定是否需要服务器来释放连接？（目前测试chrome浏览器，必须由服务器释放）
+        TestSend(tcp_session);
 }
 
 void WHPSHttpSession::onHttpSend(const sp_TcpSession& tcp_session)

@@ -68,6 +68,17 @@ string String::strip(const char* chr)
         return res;
 }
 
+string String::strip()
+{
+        string res = _str;
+
+        for (size_t i = 0; (i = res.find(' ')) != std::string::npos;) {
+                res.replace(i, 1, "");
+        }
+
+        return res;
+}
+
 void String::replace(const string& src, const string& des)
 {
         size_t pos = _str.find(src);
