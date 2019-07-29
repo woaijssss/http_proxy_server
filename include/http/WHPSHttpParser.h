@@ -3,7 +3,6 @@
 #define __WHPS_HTTP_PARSER_H__
 
 #include <map>
-#include <string>
 
 #include "String.h"
 
@@ -26,12 +25,11 @@ struct HttpRequestContext
         std::string                             _body;          // 请求体
 };
 
-
-
 class WHPSHttpParser
 {
-        using SpVector = String::SVector;       // SplitVector
 public:
+        using SpVector = String::SVector;       // SplitVector
+
         WHPSHttpParser();
         ~WHPSHttpParser();
 

@@ -1,10 +1,28 @@
 
 #include <iostream>
 #include <string.h>
+#include <sstream>      // for std::istringstream
+#include <iterator>     // for std::istream_iterator
 
+#include "WHPSImplMacroBase.h"
 #include "WHPSHttpParser.h"
+#include "util.h"
 
 using namespace std;
+
+/* 针对http请求行第一行，获取：
+ *      请求方法、url和http版本信息
+ */
+static WHPSHttpParser::SpVector GetUrl(const string& sstr)
+{
+        stringstream iss(sstr);
+        WHPSHttpParser::SpVector req_line;
+        std::copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter(req_line));
+
+        return req_line;
+}
+
+Impl_GET_CONTENT(Url, WHPSHttpParser::SpVector)
 
 WHPSHttpParser::WHPSHttpParser()
         : _crlf("\r\n")
@@ -20,7 +38,6 @@ WHPSHttpParser::~WHPSHttpParser()
 void WHPSHttpParser::parseHttpRequest(std::string& raw_msg)
 {
         HttpRequestContext context;
-        memset(&context, 0, sizeof(context));
 
         cout << "======" << endl;
         // cout << raw_msg << endl;
@@ -30,24 +47,6 @@ void WHPSHttpParser::parseHttpRequest(std::string& raw_msg)
         this->parseSequence(vrow_seq, context);
 
         cout << "======" << endl;
-}
-
-void WHPSHttpParser::parseSequence(SpVector& vrow_seq, HttpRequestContext& context)
-{
-        if (!vrow_seq.size())   // 如果行序列为空，则直接返回
-        {
-                return;
-        }
-
-        if (!this->getFirstLine(vrow_seq, context))
-        {
-                return;
-        }
-
-        for (auto& seq_line: vrow_seq)  // 编译行序列
-        {
-                cout << seq_line << endl;
-        }
 }
 
 /*
@@ -60,18 +59,34 @@ void WHPSHttpParser::parseSequence(SpVector& vrow_seq, HttpRequestContext& conte
                 std::string                             _body;          // 请求体
         };
  */
+void WHPSHttpParser::parseSequence(SpVector& vrow_seq, HttpRequestContext& context)
+{
+        if (!vrow_seq.size())   // 如果行序列为空，则直接返回
+        {
+                return;
+        }
+
+        if (!this->getFirstLine(vrow_seq, context))     // http请求第一行(特殊处理)
+        {
+                return;
+        }
+
+        for (auto& seq_line: vrow_seq)  // 编译行序列
+        {
+                cout << seq_line << endl;
+        }
+}
 
 bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& context)
 {
         String first_line = String(vrow_seq[0]);
-        SpVector req_line = first_line.split(" ");
-
+        SpVector req_line = GetContent(first_line.str());
+        
         if (req_line.size() != 3)
         {
                 return false;
         }
 
-        cout << "-----" << req_line.size() << endl;
         context._method = req_line[0];
         context._url = req_line[1];
         context._version = req_line[2];
