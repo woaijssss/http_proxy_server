@@ -22,10 +22,26 @@ static WHPSHttpParser::SpVector GetUrl(const string& sstr)
         return req_line;
 }
 
+static void GetKvSplit(HttpHeader__& header, const string& sstr, const string& sep)
+{
+        String s__(sstr);
+        WHPSHttpParser::SpVector spv = s__.splitOnce(":");
+
+        // if (spv.size() == 2)
+        {
+                header[spv[0]] = spv[1];
+        }
+}
+
+// 提取请求行中，第一行Url的内容
 Impl_GET_CONTENT(Url, WHPSHttpParser::SpVector)
 
+// 根据":"拆分成header的key和value
+Impl_GET_KV_SPLIT(":", HttpHeader__)
+
 WHPSHttpParser::WHPSHttpParser()
-        : _crlf("\r\n")
+        : _crlf_old("\n")
+        , _crlf("\r\n")
 {
 
 }
@@ -35,18 +51,15 @@ WHPSHttpParser::~WHPSHttpParser()
 
 }
 
+#include "WHPSLog.h"
 void WHPSHttpParser::parseHttpRequest(std::string& raw_msg)
 {
         HttpRequestContext context;
-
-        cout << "======" << endl;
-        // cout << raw_msg << endl;
+        WHPSLogDebug(NULL, raw_msg.c_str());
 
         // 当前没有做包完整性校验，测试阶段默认一次请求一个完整的包
         SpVector vrow_seq = String(raw_msg).split(_crlf);
         this->parseSequence(vrow_seq, context);
-
-        cout << "======" << endl;
 }
 
 /*
@@ -71,10 +84,8 @@ void WHPSHttpParser::parseSequence(SpVector& vrow_seq, HttpRequestContext& conte
                 return;
         }
 
-        for (auto& seq_line: vrow_seq)  // 编译行序列
-        {
-                cout << seq_line << endl;
-        }
+        this->getHeaderInfo(vrow_seq, context);         // http请求header信息
+        // this->getBodyInfo();
 }
 
 bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& context)
@@ -95,5 +106,23 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
         cout << "url    : " << context._url << endl;
         cout << "version: " << context._version << endl;
 
+        vrow_seq.erase(vrow_seq.begin());       // 处理之后，需要将第一行删除
+
         return true;
+}
+
+void WHPSHttpParser::getHeaderInfo(SpVector& vrow_seq, HttpRequestContext& context)
+{
+        for (auto& seq_line: vrow_seq)  // 遍历行序列
+        {
+                if (seq_line == "\0")   // 可能出现空行，调过解析
+                {
+                        continue;
+                }
+
+                cout << "size: " << seq_line.size() << endl;
+                /* 将每一行，按照指定符号拆分成map k-v键值对形式 */
+                // cout << seq_line << endl;
+                GetSplit(context._header, seq_line);
+        }
 }

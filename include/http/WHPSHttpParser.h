@@ -15,14 +15,16 @@
  */
 /* class WHPSHttpParser; */
 
+typedef std::map<std::string, std::string>  HttpHeader__;
+
 /* http请求内容 */
 struct HttpRequestContext
 {
-        std::string                             _method;        // 请求方法
-        std::string                             _url;           // 请求资源路径
-        std::string                             _version;       // 协议版本
-        std::map<std::string, std::string>      _header;        // 请求头(K-V格式)
-        std::string                             _body;          // 请求体
+        std::string     _method;        // 请求方法
+        std::string     _url;           // 请求资源路径
+        std::string     _version;       // 协议版本
+        HttpHeader__    _header;        // 请求头(K-V格式)
+        std::string     _body;          // 请求体
 };
 
 class WHPSHttpParser
@@ -49,7 +51,11 @@ private:
         /* 第一行(请求行)要特殊处理 */
         bool getFirstLine(SpVector& vrow_seq, HttpRequestContext& context);
 
+        /* 获取http请求头信息 */
+        void getHeaderInfo(SpVector& vrow_seq, HttpRequestContext& context);
+
 private:
+        const char* _crlf_old/* = "\n"*/;   // 兼容老版本或不完整的http，提高兼容性(详见协议)
         const char* _crlf/* = "\r\n"*/;   // 标准http请求行，都是以"\r\n"结尾分割
 };
 

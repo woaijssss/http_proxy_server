@@ -20,14 +20,22 @@ static void WHPSFlushToFile(const char* message);
 
 static std::string MSG(const char* fmt, va_list& ap)
 {
+        string s_res;
         char* message = new char[1024];       // 1024大小先写死
         time_t timer = time(NULL);
         strftime(message, 23, "[%Y-%m-%d %H:%M:%S] ", localtime(&timer));
 
-        vsprintfGet(message+22, fmt, ap);
-        string s(message);
+        if (fmt)
+        {
+                vsprintfGet(message+22, fmt, ap);
+        }
+        else
+        {
+                sprintf(message+22, "%s", va_arg(ap, const char*));
+        }
+        s_res = string(message);
         delete[] message;
-        return s;
+        return s_res;
 }
 
 /* 外部无法实例化 */

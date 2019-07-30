@@ -10,6 +10,9 @@ BIN_DIR:=bin
 
 SRC:=$(wildcard $(SRC_DIR)/*.cpp) \
 	$(wildcard $(PUB)/*.cpp) \
+	$(wildcard $(PUB)/pub_macro/*.cpp) \
+	$(wildcard $(PUB)/pub_log/*.cpp) \
+	$(wildcard $(PUB)/stdio/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(HTTP)/*.cpp)
 
 
@@ -17,7 +20,12 @@ SRC:=$(wildcard $(SRC_DIR)/*.cpp) \
 OBJ:=$(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
 BIN:=whps
 
-CPPFLAGS+=-Iinclude -I$(PUB) -I$(PUB)/pub_macro -Iinclude/$(HTTP)
+CPPFLAGS+=-Iinclude \
+		-I$(PUB) \
+		-I$(PUB)/pub_macro \
+		-I$(PUB)/pub_log \
+		-I$(PUB)/stdio \
+		-Iinclude/$(HTTP)
 
 CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -MMD -D_GLIBCXX_USE_NANOSLEEP \
 	-Wno-deprecated -Wdeprecated-declarations \
@@ -32,7 +40,7 @@ CFLAGS+=-O2
 CXXFLAGS+=-O2
 LDFLAGS+=-O2 -s
 else
-CPPFLAGS+=-DDEBUG
+CPPFLAGS+=-D__DEBUG__
 CFLAGS+=-O3 -g
 CXXFLAGS+=-O3 -g
 LDFLAGS+=-O3 -g

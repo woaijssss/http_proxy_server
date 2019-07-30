@@ -25,6 +25,9 @@ public:
         const std::string& str() const;
         std::string Str() const;
 
+        /* 按照sep拆分字符串(仅拆分一次) */
+        SVector splitOnce(const char* sep);
+
         /* 按照sep拆分字符串 */
         SVector split(const char* sep);
 

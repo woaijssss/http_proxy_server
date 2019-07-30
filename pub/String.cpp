@@ -40,6 +40,24 @@ string String::Str() const
         return _str;
 }
 
+String::SVector String::splitOnce(const char* sep)
+{
+        SVector v;
+        size_t pos = 0;
+        string s1 = _str;
+
+        pos = s1.find(sep);
+        if (pos != string::npos) 
+        {
+                const string& s = s1.substr(0, pos);
+                v.push_back(s);
+                s1 = s1.substr(pos + strlen(sep), _str.size());
+                v.push_back(s1);
+        }
+
+        return v;
+}
+
 String::SVector String::split(const char* sep)
 {
         SVector v;
