@@ -12,10 +12,16 @@
                 return Get##TypeName(sstr);                     \
         }
 
-#define Impl_GET_KV_SPLIT(__sep, KvType)                                \
+#define Impl_GET_KV_SPLIT(KvType, __sep)                                \
         inline void GetSplit(KvType& st, const std::string& sstr)       \
         {                                                               \
-                GetKvSplit(st, sstr, __sep);                            \
+                return GetKvSplit(st, sstr, __sep);                     \
+        }
+
+#define Impl_GET_CONTACT(dstType, srcType, __crlf)                      \
+        inline bool GetContact(dstType& dt, srcType& st)                \
+        {                                                               \
+                return GetContactContent(dt, st, __crlf);               \
         }
 
 #endif  // __WHPS_IMPL_MACRO_BASE_H__

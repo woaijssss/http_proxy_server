@@ -85,7 +85,7 @@ void WHPSLog::printToFile(const std::string& msg)
 void WHPSFlushToFile(const char* message) 
 {
         static bool print_time = true; //是否要打印时间: 当 debug_mode 为真，且上一次是换行符结尾。
-        int fd = open("./test.log", O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
+        int fd = open("./log/test.log", O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
 
         if (fd == -1) {
                 perror("open (log)");

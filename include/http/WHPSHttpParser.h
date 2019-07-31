@@ -16,6 +16,7 @@
 /* class WHPSHttpParser; */
 
 typedef std::map<std::string, std::string>  HttpHeader__;
+typedef std::string                         HttpBody__;
 
 /* http请求内容 */
 struct HttpRequestContext
@@ -53,6 +54,9 @@ private:
 
         /* 获取http请求头信息 */
         void getHeaderInfo(SpVector& vrow_seq, HttpRequestContext& context);
+
+        /* 获取http请求体信息 */
+        bool getBodyInfo(SpVector& vrow_seq, HttpRequestContext& context);
 
 private:
         const char* _crlf_old/* = "\n"*/;   // 兼容老版本或不完整的http，提高兼容性(详见协议)
