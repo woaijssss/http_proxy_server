@@ -6,6 +6,8 @@
 
 #include "WHPSTcpSession.h"
 #include "WHPSHttpParser.h"
+#include "HttpWhpsFactory.h"
+#include "HttpWhps.h"   // for aplication layer call
 
 /* http session：单个http连接，基于tcp session的tcp连接，二者为强依赖关系
  * HttpSession的实例化，必须依赖于TcpSession；
@@ -46,12 +48,23 @@ private:
 
         /* http异常错误回调 */
         void onHttpError(const sp_TcpSession& tcp_session);
+
+private:
+        /* http层根据Connection字段值，来判断是否通知tcp层
+         * 发送数据后断开连接，作通知功能。
+         */
+        void notifyToClose(const sp_TcpSession& tcp_session);
+
 private:
         // 先使用这种方式测试http功能，后续引入工作线程池后，可以将发送消息的任务，加入到工作线程队列里
         const sp_TcpSession& _tcp_session;      // tcp连接对象
         HttpSessionCB _http_closeCB;            // http连接断开回调函数
 
         WHPSHttpParser _http_parser;            // http解析器
+
+private:
+        HttpWhpsFactory* _http_whps_factory;    // 应用层实例化工厂类对象
+        HttpWhps* _http_whps;                   // 应用层（业务层）调用句柄
 };
 
 #endif  // __WHPS_HTTP_SESSION_H__

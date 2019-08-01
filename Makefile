@@ -4,6 +4,7 @@ BUILD:=debug
 # DIRS
 PUB:=pub
 HTTP:=http
+FACTORY:=factory
 SRC_DIR:=src
 BUILD_DIR:=build
 BIN_DIR:=bin
@@ -13,9 +14,9 @@ SRC:=$(wildcard $(SRC_DIR)/*.cpp) \
 	$(wildcard $(PUB)/pub_macro/*.cpp) \
 	$(wildcard $(PUB)/pub_log/*.cpp) \
 	$(wildcard $(PUB)/stdio/*.cpp) \
-	$(wildcard $(SRC_DIR)/$(HTTP)/*.cpp)
-
-
+	$(wildcard $(SRC_DIR)/$(HTTP)/*.cpp) \
+	$(wildcard $(SRC_DIR)/$(FACTORY)/*.cpp) \
+	$(wildcard test_develop/*.cpp) 
 
 OBJ:=$(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
 BIN:=whps
@@ -25,7 +26,9 @@ CPPFLAGS+=-Iinclude \
 		-I$(PUB)/pub_macro \
 		-I$(PUB)/pub_log \
 		-I$(PUB)/stdio \
-		-Iinclude/$(HTTP)
+		-Iinclude/$(HTTP) \
+		-Iinclude/$(FACTORY) \
+		-Itest_develop
 
 CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -MMD -D_GLIBCXX_USE_NANOSLEEP \
 	-Wno-deprecated -Wdeprecated-declarations \

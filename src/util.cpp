@@ -12,6 +12,12 @@ void exitService(int status)
         exit(status);
 }
 
+void delayMs(const unsigned int& ms)
+{
+        const timespec ts = {0, ms};
+        nanosleep(&ts, NULL);        // 线程级别的睡眠（毫秒级）
+}
+
 string getHexString(unsigned char* s, const int& len)
 {
         std::ostringstream out;

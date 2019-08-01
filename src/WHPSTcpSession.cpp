@@ -34,7 +34,7 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
 
 WHPSTcpSession::~WHPSTcpSession()
 {
-        cout << "~WHPSTcpSession" << endl;
+        cout << "~WHPSTcpSession---" << this->getNetInfo() << endl;
         this->delFromEventLoop();
         _conn_sock.close();
         // _conn_sock.close();
@@ -86,11 +86,8 @@ WHPSConnSocket& WHPSTcpSession::getConn()
 
 void WHPSTcpSession::close()
 {
-        // this->send(_buffer_out);
-        // _http_onClose(shared_from_this());
-        // _loop.addTask(std::bind(_cb_cleanup, shared_from_this()));
-        // _is_connect = false;
-//        this->onNewClose(0);
+        _is_wait = true;
+        _is_processing = false;
 }
 
 void WHPSTcpSession::addToEventLoop()
@@ -124,6 +121,11 @@ void WHPSTcpSession::send(const std::string& msg)
                 else        // 数据发送完毕
                 {
                         events = _base_events;      // 数据发送完毕，无需继续监听写操作
+                        _http_onSend(shared_from_this());
+                        if (_is_wait)
+                        {
+                                this->onNewClose(0);
+                        }
                 }
 
                 _event_chn.setEvents(events);
@@ -311,6 +313,10 @@ void WHPSTcpSession::onNewWrite(error_code error)
                 {
                         events = _base_events;      // 数据发送完毕，无需继续监听写操作
                         _http_onSend(shared_from_this());
+                        if (_is_wait)
+                        {
+                                this->onNewClose(0);
+                        }
                 }
 
                 _event_chn.setEvents(events);
@@ -342,10 +348,9 @@ void WHPSTcpSession::onNewClose(error_code error)
          *      （2）关闭socket
          *      （3）通知主socket对象和EventLoop对象删除该句柄资源
          */
-//        if (_buffer_in.size() || _buffer_out.size() || _is_processing)
+       // if (_buffer_in.size() || _buffer_out.size() || _is_processing)
         if (_buffer_in.size() || _buffer_out.size())
         {
-                // _is_wait = true;
                 if (_buffer_in.size())
                 {
                         _http_onMessage(shared_from_this());
@@ -353,6 +358,11 @@ void WHPSTcpSession::onNewClose(error_code error)
         }
         else
         {
+                if (_is_wait)   // 如果服务端主动关闭，需要有延迟来保证对端接收数据完毕
+                {
+                        delayMs(0);
+                }
+
                 cout << "=========close close" << endl;
                 _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
                 _http_onClose(shared_from_this());      // 清除应用层回调相关标志位

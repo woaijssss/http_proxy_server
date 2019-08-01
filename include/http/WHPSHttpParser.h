@@ -28,6 +28,11 @@ struct HttpRequestContext
         std::string     _body;          // 请求体
 };
 
+struct HttpResponseContext
+{
+
+};
+
 class WHPSHttpParser
 {
 public:
@@ -38,7 +43,7 @@ public:
 
 public:
         /* 从原始数据解析出http各项参数 */
-        void parseHttpRequest(std::string& raw_msg);
+        void parseHttpRequest(std::string& raw_msg, HttpRequestContext& context);
 
 private:        
         /* 以下为各部分的解析方法，参数必须包含行序列和请求内容结构，

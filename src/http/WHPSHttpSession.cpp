@@ -124,9 +124,10 @@ static void TestSend(const WHPSHttpSession::sp_TcpSession& tcp_session)
         // tcp_session->close();           // 不确定是否需要服务器来释放连接？（目前测试chrome浏览器，必须由服务器释放）
 }        
 
-
 WHPSHttpSession::WHPSHttpSession(const sp_TcpSession& tcp_session)
         : _tcp_session(tcp_session)
+        , _http_whps_factory(GetHttpWhpsFactory())      // 获取单例工厂句柄
+        , _http_whps(_http_whps_factory->create())      // 获取应用层回调句柄
 {
         tcp_session->setHttpMessageCallback(std::bind(&WHPSHttpSession::onHttpMessage, this, std::placeholders::_1));
         tcp_session->setHttpSendCallback(std::bind(&WHPSHttpSession::onHttpSend, this, std::placeholders::_1));
@@ -137,6 +138,11 @@ WHPSHttpSession::WHPSHttpSession(const sp_TcpSession& tcp_session)
 WHPSHttpSession::~WHPSHttpSession()
 {
         cout << __FUNCTION__ << endl;
+        if (_http_whps)
+        {
+                delete _http_whps;
+                _http_whps = NULL;  // 后续加到工厂中释放资源
+        }
 }
 
 const WHPSHttpSession::sp_TcpSession& WHPSHttpSession::getTcpSession() const
@@ -151,10 +157,30 @@ void WHPSHttpSession::setHttpCloseCallback(HttpSessionCB cb)
 
 void WHPSHttpSession::onHttpMessage(const sp_TcpSession& tcp_session)
 {
-        _http_parser.parseHttpRequest(tcp_session->getBufferIn());
-        tcp_session->setProcessingFlag(true);
+        HttpRequestContext context;
+        HttpResponseContext response;
+        _http_parser.parseHttpRequest(tcp_session->getBufferIn(), context);     // 解析获取http请求内容
 
-        TestSend(tcp_session);
+        /* 调用处理部分逻辑 */
+        if (context._method == "GET" || context._method == "DELETE")
+        {
+                _http_whps->doGet(context, response);
+        }
+        else if (context._method == "POST" || context._method == "PUT")
+        {
+                _http_whps->doPost(context, response);
+        }
+        else
+        {
+                cout << "---WHPSHttpSession::onHttpMessage not support method: [" << context._method << "]" << endl;
+        }
+        ////////////////////////////
+
+
+        // tcp_session->setProcessingFlag(true);
+
+
+        // TestSend(tcp_session);
 }
 
 void WHPSHttpSession::onHttpSend(const sp_TcpSession& tcp_session)
@@ -175,4 +201,9 @@ void WHPSHttpSession::onHttpError(const sp_TcpSession& tcp_session)
         cout << "WHPSHttpSession::onHttpError" << endl;
         tcp_session->setProcessingFlag(false);
         _http_closeCB(tcp_session);
+}
+
+void WHPSHttpSession::notifyToClose(const sp_TcpSession& tcp_session)
+{
+        tcp_session->close();    // 模拟 Connection: close 的情况
 }

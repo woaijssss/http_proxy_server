@@ -87,9 +87,8 @@ WHPSHttpParser::~WHPSHttpParser()
 }
 
 #include "WHPSLog.h"
-void WHPSHttpParser::parseHttpRequest(std::string& raw_msg)
+void WHPSHttpParser::parseHttpRequest(std::string& raw_msg, HttpRequestContext& context)
 {
-        HttpRequestContext context;
         // WHPSLogDebug(NULL, raw_msg.c_str());
 
 #if 0   // 用于调试http输出的原始字符
@@ -191,7 +190,7 @@ void WHPSHttpParser::getHeaderInfo(SpVector& vrow_seq, HttpRequestContext& conte
                         continue;
                 }
 
-                cout << "size: " << seq_line.size() << endl;
+                // cout << "size: " << seq_line.size() << endl;
                 /* 将每一行，按照指定符号拆分成map k-v键值对形式 */
                 // cout << seq_line << endl;
                 GetSplit(context._header, seq_line);

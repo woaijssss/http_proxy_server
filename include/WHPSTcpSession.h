@@ -131,7 +131,7 @@ private:
         void onNewError(error_code error);
         /**********************************************************************/
 
-private:
+private:    // 网络层各对象
         struct sockaddr_in _c_addr;     // 保存客户端的连接信息
         WHPSEpollEventLoop& _loop;      // 引用外部事件循环
         WHPSConnSocket _conn_sock;      // 连接句柄
