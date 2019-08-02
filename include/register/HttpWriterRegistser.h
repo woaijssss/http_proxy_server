@@ -16,7 +16,7 @@ class HttpWriterRegistser: public ImplRegisterBase<T>
 public:
         using cbFunc = typename ImplRegisterBase<T>::cbFunc;
 public:
-        HttpWriterRegistser(cbFunc cb_func)
+        HttpWriterRegistser()
                 : ImplRegisterBase<T>()
         {
 
@@ -28,9 +28,9 @@ public:
 
 public:
         /* 注册http回写接口 */
-        virtual void registObj()
+        virtual void registObj(cbFunc cb)
         {
-
+                _cb_func = cb;
         }
 
         virtual cbFunc getRegistObj()

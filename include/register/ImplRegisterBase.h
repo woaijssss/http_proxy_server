@@ -31,7 +31,7 @@ protected:
 
 protected:      // 接口集
         /* 注册接口入口 */
-        virtual void registObj() = 0;
+        virtual void registObj(cbFunc cb) = 0;
 
         /* 获取注册的接口 */
         virtual cbFunc getRegistObj() = 0;

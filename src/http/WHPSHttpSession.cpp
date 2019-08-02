@@ -13,8 +13,8 @@ WHPSHttpSession::WHPSHttpSession(const sp_TcpSession& tcp_session)
         , _http_whps_factory(GetHttpWhpsFactory())      // 获取单例工厂句柄
         , _http_whps(_http_whps_factory->create())      // 获取应用层回调句柄
         , _writer_func(std::bind(&WHPSHttpSession::sendHttpMessage, this, std::placeholders::_1))
-        , _writer(_writer_func)
 {
+        _writer.registObj(std::bind(&WHPSHttpSession::sendHttpMessage, this, std::placeholders::_1));
         tcp_session->setHttpMessageCallback(std::bind(&WHPSHttpSession::onHttpMessage, this, std::placeholders::_1));
         tcp_session->setHttpSendCallback(std::bind(&WHPSHttpSession::onHttpSend, this, std::placeholders::_1));
         tcp_session->setHttpCloseCallback(std::bind(&WHPSHttpSession::onHttpClose, this, std::placeholders::_1));
