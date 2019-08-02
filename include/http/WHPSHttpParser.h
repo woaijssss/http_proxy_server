@@ -5,6 +5,8 @@
 #include <map>
 
 #include "String.h"
+#include "WHPSRequest.h"
+#include "WHPSResponse.h"
 
 /* HTTP请求报文解析
  *  主要功能：
@@ -14,24 +16,6 @@
  *      （4）将解析后的资源信息、请求头、请求体合成一个大的结构体，返回给外部调用
  */
 /* class WHPSHttpParser; */
-
-typedef std::map<std::string, std::string>  HttpHeader__;
-typedef std::string                         HttpBody__;
-
-/* http请求内容 */
-struct HttpRequestContext
-{
-        std::string     _method;        // 请求方法
-        std::string     _url;           // 请求资源路径
-        std::string     _version;       // 协议版本
-        HttpHeader__    _header;        // 请求头(K-V格式)
-        std::string     _body;          // 请求体
-};
-
-struct HttpResponseContext
-{
-
-};
 
 class WHPSHttpParser
 {
