@@ -3,10 +3,11 @@
 
 using namespace std;
 
-WHPSResponseWrapper::WHPSResponseWrapper()
+WHPSResponseWrapper::WHPSResponseWrapper(cbFunc cb)
         : _version("HTTP/1.1")
         , _st_code("200")
         , _status("OK")
+        , _writer(cb)
 {
         this->initParams();
 }

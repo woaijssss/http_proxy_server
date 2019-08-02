@@ -8,6 +8,7 @@
 #include "WHPSHttpParser.h"
 #include "HttpWhpsFactory.h"
 #include "HttpWhps.h"   // for aplication layer call
+#include "HttpWriterRegistser.h"
 
 /* http session：单个http连接，基于tcp session的tcp连接，二者为强依赖关系
  * HttpSession的实例化，必须依赖于TcpSession；
@@ -22,6 +23,7 @@ public:
         using sp_HttpSession = std::shared_ptr<WHPSHttpSession>;
         // using HttpSessionCB = std::function<void(const sp_HttpSession&)>;
         using HttpSessionCB = std::function<void(const sp_TcpSession&)>;
+        using WriterFunc = HttpWriterRegistser<WHPSHttpSession>::cbFunc;
 public:
         /* http session的实例化，必须依赖于tcp session，是一一对应的关系 */
         WHPSHttpSession(const sp_TcpSession& tcp_session);
@@ -55,6 +57,11 @@ private:
          */
         void notifyToClose(const sp_TcpSession& tcp_session);
 
+private:        // writer
+        /* 客户端回写接口
+         */
+        void sendHttpMessage(const std::string& msg);
+
 private:
         // 先使用这种方式测试http功能，后续引入工作线程池后，可以将发送消息的任务，加入到工作线程队列里
         const sp_TcpSession& _tcp_session;      // tcp连接对象
@@ -65,6 +72,9 @@ private:
 private:
         HttpWhpsFactory* _http_whps_factory;    // 应用层实例化工厂类对象
         HttpWhps* _http_whps;                   // 应用层（业务层）调用句柄
+
+        WriterFunc _writer_func;
+        HttpWriterRegistser<WHPSHttpSession> _writer;   // 数据发送注册器
 };
 
 #endif  // __WHPS_HTTP_SESSION_H__

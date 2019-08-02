@@ -3,7 +3,8 @@
 
 using namespace std;
 
-HttpResponseContext::HttpResponseContext()
+HttpResponseContext::HttpResponseContext(cbFunc cb)
+        : WHPSResponseWrapper(cb)
 {
 
 }

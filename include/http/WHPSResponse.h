@@ -4,14 +4,17 @@
 
 #include "WHPSResponseWrapper.h"
 
+class WHPSHttpSession;
 /* http响应类实体 */
 struct HttpResponseContext: public WHPSResponseWrapper
 {
+public:
+        using cbFunc = WHPSResponseWrapper::cbFunc;
 private:
         HttpResponseContext& getResponse();
 
 public:
-        HttpResponseContext();
+        HttpResponseContext(cbFunc cb);
 
         virtual ~HttpResponseContext();
 

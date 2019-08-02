@@ -71,7 +71,7 @@ static int load(const string& filename, string& f_buff)
         f_buff = "HTTP/1.1 200 OK \r\n"
 //                 "Connection:close \r\n"
                 // "Content-Type:application/x-gzip\r\n"
-                 // "Content-Type:text/html\r\n"
+                  "Content-Type:text/html\r\n"
                  "Content-Length: " + to_string(length) + "\r\n"
                  "\r\n";
 #endif
@@ -84,10 +84,9 @@ static int load(const string& filename, string& f_buff)
 
 #define TestSendMsg(TypeName1, TypeName2) load(TypeName1, TypeName2)         
 
-#if 0
-static void TestSend(const WHPSHttpSession::sp_TcpSession& tcp_session)
+#if 1
+static string TestSend()
 {
-        string& buff = tcp_session->getBufferIn();
         string test_msg;
         // load("/home/wenhan/server/webResource/html/index.html", test_msg);
 #if 1
@@ -101,15 +100,14 @@ static void TestSend(const WHPSHttpSession::sp_TcpSession& tcp_session)
         {
                 string tmp = "404 not found!";
                 test_msg = "HTTP/1.1 200 OK \r\n"
-                             "Content-Type:text/html\r\n"
                              "Content-Length: " + to_string(tmp.size()) + "\r\n"
                              "\r\n"
                              + tmp;
         }
 
         cout << "test_msg.size: " << test_msg.size() << endl;
-        buff.clear();     // 假设已经处理完毕
-        tcp_session->send(test_msg);
+
+        return test_msg;
 
         // tcp_session->close();           // 不确定是否需要服务器来释放连接？（目前测试chrome浏览器，必须由服务器释放）
 }   
@@ -132,7 +130,7 @@ void HelloWhps::doGet(HttpWhpsRequest request, HttpWhpsResponse response)
         cout << "================>: " << response.getHeader() << endl;
 
         WhpsWriter& writer = response.getWriter();
-        // writer.write();
+        writer.write(TestSend());
 }
 
 void HelloWhps::doPost(HttpWhpsRequest request, HttpWhpsResponse response)
