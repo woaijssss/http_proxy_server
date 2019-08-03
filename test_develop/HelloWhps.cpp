@@ -71,7 +71,7 @@ static int load(const string& filename, string& f_buff)
         f_buff = "HTTP/1.1 200 OK \r\n"
 //                 "Connection:close \r\n"
                 // "Content-Type:application/x-gzip\r\n"
-                  "Content-Type:text/html\r\n"
+//                  "Content-Type:text/html\r\n"
                  "Content-Length: " + to_string(length) + "\r\n"
                  "\r\n";
 #endif
@@ -89,7 +89,7 @@ static string TestSend()
 {
         string test_msg;
         // load("/home/wenhan/server/webResource/html/index.html", test_msg);
-#if 1
+#if 0
         int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/html/index.html", test_msg);
 #else
         // int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/curl-7.26.0.tar.gz", test_msg);
@@ -130,7 +130,8 @@ void HelloWhps::doGet(HttpWhpsRequest request, HttpWhpsResponse response)
         cout << "================>: " << response.getHeader() << endl;
 
         WhpsWriter& writer = response.getWriter();
-        writer.write(TestSend());
+        string msg = TestSend();
+        writer.write(msg);
 }
 
 void HelloWhps::doPost(HttpWhpsRequest request, HttpWhpsResponse response)

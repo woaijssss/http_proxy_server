@@ -64,7 +64,7 @@ private:        // writer
 
 private:
         // 先使用这种方式测试http功能，后续引入工作线程池后，可以将发送消息的任务，加入到工作线程队列里
-        const sp_TcpSession& _tcp_session;      // tcp连接对象
+        const sp_TcpSession _tcp_session;      // tcp连接对象
         HttpSessionCB _http_closeCB;            // http连接断开回调函数
 
         WHPSHttpParser _http_parser;            // http解析器

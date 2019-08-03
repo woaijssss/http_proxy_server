@@ -27,7 +27,12 @@ public:
         WHPSResponseWrapper* _getResponse();
 
 protected:      /* 标准响应头函数*/
+        /* 设置Content-Length字段值
+         */
         void _setContentLength(const std::string& length);
+
+        /* 设置Content-type字段值
+         */
         void _setContentType(const std::string& type);
 
 //-----------------------------------------------------------------------------------
@@ -74,7 +79,7 @@ private:
         std::string             _status/* = "OK"*/;         // http状态信息
         HttpResponseBody        _body;                      // 响应体
 
-        WhpsWriter              _writer;                    // 发送者   
+        WhpsWriter              _writer;                    // 发送器
 };
 
 #endif

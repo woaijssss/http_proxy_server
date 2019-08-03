@@ -120,6 +120,7 @@ void WHPSTcpSession::send(const std::string& msg)
                 }
                 else        // 数据发送完毕
                 {
+                        cout << "++++======================================" << endl;
                         events = _base_events;      // 数据发送完毕，无需继续监听写操作
                         _http_onSend(shared_from_this());
                         if (_is_wait)
@@ -311,6 +312,7 @@ void WHPSTcpSession::onNewWrite(error_code error)
                 }
                 else        // 数据发送完毕
                 {
+                        cout << "++++======================================" << endl;
                         events = _base_events;      // 数据发送完毕，无需继续监听写操作
                         _http_onSend(shared_from_this());
                         if (_is_wait)
