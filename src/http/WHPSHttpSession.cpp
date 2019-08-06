@@ -47,7 +47,6 @@ void WHPSHttpSession::onHttpMessage(const sp_TcpSession& tcp_session)
         cout << "WHPSHttpSession::onHttpMessage" << endl;
         HttpRequestContext context;
         HttpResponseContext response(_writer_func);
-        cout << "_____________________________--" << endl;
         _http_parser.parseHttpRequest(tcp_session->getBufferIn(), context);     // 解析获取http请求内容
 
         /* 调用处理部分逻辑 */
@@ -63,13 +62,6 @@ void WHPSHttpSession::onHttpMessage(const sp_TcpSession& tcp_session)
         {
                 cout << "---WHPSHttpSession::onHttpMessage not support method: [" << context._method << "]" << endl;
         }
-        ////////////////////////////
-
-
-        // tcp_session->setProcessingFlag(true);
-
-
-        // TestSend(tcp_session);
 }
 
 void WHPSHttpSession::onHttpSend(const sp_TcpSession& tcp_session)

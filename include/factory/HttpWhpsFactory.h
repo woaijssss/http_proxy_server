@@ -51,7 +51,7 @@ public:
         {
                 // 当前测试，先写死一个子类
                 // std::shared_ptr<HelloWhps> ptr(new HelloWhps());
-                HelloWhps* ptr = new HelloWhps();
+                HttpWhps* ptr = new HelloWhps();
                 return ptr;
         }
 

@@ -18,6 +18,9 @@ enum LogLevel
 
 void WHPSLogEventEx(int log_level, const char* fmt, va_list& va);
 
+/* 抽象日志事件接口
+ * 通过该接口，可以定义多个日志级别对应的函数
+ */
 #define IMPL_WHPSLogEvent_(log_level)                                   \
         inline void WHPSLogEvent_##log_level(const char* fmt, ...)      \
         {                                                               \

@@ -68,12 +68,12 @@ $(BIN_DIR)/$(BIN): $(OBJ)
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	@echo "(CXX) $@"
-	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -c -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -c -o $@
 
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
-	@echo "(CXX) $@"
-	@$(CC) $(CFLAGS) $< -c -o $@
+	echo "(CXX) $@"
+	$(CC) $(CFLAGS) $< -c -o $@
 
 clean:
 	@rm -rf $(BUILD_DIR) $(BIN_DIR)

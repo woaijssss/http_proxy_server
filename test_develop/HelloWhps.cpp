@@ -89,11 +89,12 @@ static string TestSend()
 {
         string test_msg;
         // load("/home/wenhan/server/webResource/html/index.html", test_msg);
-#if 0
-        int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/html/index.html", test_msg);
+#if 1
+        // int res = TestSendMsg("./webResource/html/index.html", test_msg);
+        int res = TestSendMsg("./webResource/file_test/1.png", test_msg);
 #else
         // int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/curl-7.26.0.tar.gz", test_msg);
-        int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/数据结构(c语言版).pdf", test_msg);
+        int res = TestSendMsg("./webResource/file_test/数据结构(c语言版).pdf", test_msg);
 #endif
 
         if (res < 0)
@@ -125,7 +126,7 @@ HelloWhps::~HelloWhps()
 
 void HelloWhps::doGet(HttpWhpsRequest request, HttpWhpsResponse response)
 {
-	cout << "HelloWhps::doGet" << endl;
+        cout << "HelloWhps::doGet" << endl;
         response.setContentType("text/html;charset=UTF-8");
         cout << "================>: " << response.getHeader() << endl;
 
