@@ -58,7 +58,7 @@ Type* SingletonRegister::Function<Type>::GetInstance()
 template<class Type>
 Type& SingletonRegister::Function<Type>::GetInstanceObj()
 {
-        return *Type::GetInstance();
+        return Type::GetInstance();
 }
 
 #endif  // __SINGLETONS_REGISTER_H__

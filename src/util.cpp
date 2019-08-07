@@ -4,6 +4,7 @@
 #include <iomanip>
 
 #include "util.h"
+#include "WHPSConfig.h"
 
 using namespace std;
 
@@ -28,4 +29,9 @@ string getHexString(unsigned char* s, const int& len)
         }
 
         return out.str();
+}
+
+void initConfig()
+{
+        GetWebSourceConfig().readConfig();
 }

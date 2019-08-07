@@ -6,6 +6,7 @@
 #include <signal.h>
 
 #include "WHPSHttpServer.h"
+#include "util.h"
 
 using namespace std;
 
@@ -27,6 +28,8 @@ int main(int argc, char const *argv[])
         signal(SIGUSR2, sigHandler);
         signal(SIGINT, sigHandler); 
         signal(SIGPIPE, SIG_IGN);
+
+        initConfig();   // 初始化加载配置文件
 
         // p_server = WHPSTcpServer::Get();
         WHPSHttpServer& server_ptr = GetWHPSHttpServer();

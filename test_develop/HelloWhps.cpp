@@ -85,13 +85,13 @@ static int load(const string& filename, string& f_buff)
 #define TestSendMsg(TypeName1, TypeName2) load(TypeName1, TypeName2)         
 
 #if 1
-static string TestSend()
+static string TestSend(const string& base, const string& resource)
 {
         string test_msg;
         // load("/home/wenhan/server/webResource/html/index.html", test_msg);
 #if 1
         // int res = TestSendMsg("./webResource/html/index.html", test_msg);
-        int res = TestSendMsg("./webResource/file_test/1.png", test_msg);
+        int res = TestSendMsg(base + resource, test_msg);
 #else
         // int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/curl-7.26.0.tar.gz", test_msg);
         int res = TestSendMsg("./webResource/file_test/数据结构(c语言版).pdf", test_msg);
@@ -124,15 +124,20 @@ HelloWhps::~HelloWhps()
 
 }
 
+#include "WebSourceConfig.h"
+/* 静态资源自动加载功能（通过配置，获取静态资源路径，并写回给前端） */
+static void TestStaticResource(HttpWhpsRequest request, HttpWhpsResponse response)
+{
+        // response.setContentType("text/html;charset=UTF-8");
+        string msg = TestSend(WebSourceConfig::GetInstance().get("rootDir"), request._url);
+        
+        response.getWriter().write(msg);
+}
+
 void HelloWhps::doGet(HttpWhpsRequest request, HttpWhpsResponse response)
 {
         cout << "HelloWhps::doGet" << endl;
-        response.setContentType("text/html;charset=UTF-8");
-        cout << "================>: " << response.getHeader() << endl;
-
-        WhpsWriter& writer = response.getWriter();
-        string msg = TestSend();
-        writer.write(msg);
+        TestStaticResource(request, response);
 }
 
 void HelloWhps::doPost(HttpWhpsRequest request, HttpWhpsResponse response)

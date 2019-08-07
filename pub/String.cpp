@@ -139,3 +139,17 @@ size_t String::find(const char& c)
         return _str.find(c);
 }
 
+
+const string& String::encode(const string& type)
+{
+        _str = Codec::encode(_str, type);
+
+        return _str;
+}
+        
+const string& String::decode(const string& type)
+{
+        _str = Codec::decode(_str, type);
+
+        return _str;
+}

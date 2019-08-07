@@ -17,14 +17,14 @@ WHPSHttpServer::~WHPSHttpServer()
 }
 
 /*static */
-WHPSHttpServer* WHPSHttpServer::GetInstance()
+WHPSHttpServer& WHPSHttpServer::GetInstance()
 {
         if (!_http_server.get())
         {
                 _http_server = std::shared_ptr<WHPSHttpServer>(new WHPSHttpServer());
         }
 
-        return _http_server.get();
+        return *_http_server.get();
 }
 
 /* 启动http服务 */

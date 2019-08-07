@@ -21,7 +21,7 @@ public:
 
 public:
         /* 获取单例对象句柄 */
-        static WHPSHttpServer* GetInstance();
+        static WHPSHttpServer& GetInstance();
 
         /* 启动http服务 */
         void start();

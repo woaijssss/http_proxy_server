@@ -6,6 +6,8 @@ PUB:=pub
 HTTP:=http
 FACTORY:=factory
 REGISTER:=register
+CONFIG:=config
+
 SRC_DIR:=src
 BUILD_DIR:=build
 BIN_DIR:=bin
@@ -18,6 +20,7 @@ SRC:=$(wildcard $(SRC_DIR)/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(HTTP)/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(FACTORY)/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(REGISTER)/*.cpp) \
+	$(wildcard $(SRC_DIR)/$(CONFIG)/*.cpp) \
 	$(wildcard test_develop/*.cpp) 
 
 OBJ:=$(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
@@ -31,6 +34,7 @@ CPPFLAGS+=-Iinclude \
 		-Iinclude/$(HTTP) \
 		-Iinclude/$(FACTORY) \
 		-Iinclude/$(REGISTER) \
+		-Iinclude/$(CONFIG) \
 		-Itest_develop
 
 CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -MMD -D_GLIBCXX_USE_NANOSLEEP \

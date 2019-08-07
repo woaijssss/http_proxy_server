@@ -149,7 +149,7 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
         }
 
         context._method = req_line[0];
-        context._url = req_line[1];
+        context._url = String(req_line[1]).decode("UrlCode");
         context._version = req_line[2];
 
         cout << "method : " << context._method  << endl;

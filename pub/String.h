@@ -12,7 +12,10 @@
 #include <string>
 #include <iostream>
 
-class String: public std::string {
+#include "Codec.h"
+
+class String: public std::string 
+{
 public:
         typedef std::vector<std::string> SVector;
 
@@ -53,6 +56,14 @@ public:
         size_t count(const std::string& sub);
 
         size_t find(const char& c);
+
+        /* 字符串编码
+         */
+        const std::string& encode(const std::string& type = "utf-8");
+        
+        /* 字符串解码
+         */
+        const std::string& decode(const std::string& type = "utf-8");
 private:
         std::string _str;
 };
