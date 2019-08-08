@@ -11,6 +11,9 @@
 class WebSourceConfig: public ImplSingleton<WebSourceConfig>, public ImplConfig
 {
 public:
+        using ConfigType = ImplConfig::ConfigType;
+        using ConfigTypeWithSection = ImplConfig::ConfigTypeWithSection;
+public:
         static WebSourceConfig& GetInstance();
 
         WebSourceConfig();
@@ -20,6 +23,23 @@ public:
 public:
         virtual bool readConfig();
 
+public:
+        virtual void set(const std::string& section, 
+                         const std::string& key, 
+                         const std::string& val);
+
+        /* 读取指定配置
+         */
+        virtual const std::string& get(const std::string& section, 
+                                       const std::string& key);
+
+        /* 读取所有配置
+         */
+        virtual ConfigTypeWithSection& getAllConfigWithSection();
+
+        void print();
+
+private:
         /* 设置配置 K-V 对
          */
         virtual void set(const std::string& key, const std::string& val);

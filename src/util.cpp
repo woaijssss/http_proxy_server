@@ -33,5 +33,9 @@ string getHexString(unsigned char* s, const int& len)
 
 void initConfig()
 {
-        GetWebSourceConfig().readConfig();
+        if (!GetWebSourceConfig().readConfig())
+        {
+                cout << "Config file load failed..." << endl;
+                exit(-1);
+        }
 }

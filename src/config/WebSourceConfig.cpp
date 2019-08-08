@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "String.h"
 #include "WebSourceConfig.h"
 
 using namespace std;
@@ -38,36 +39,75 @@ bool WebSourceConfig::readConfig()
                 cout << _webConfigPath + ": cannot read." << endl;
                 exit(-1);       // 没有找到配置文件即退出进程
         }
-
+        
         bool c = true;
         size_t num = 1;
+        string currentSection;
 
         for (string line; getline(in, line); ++num) 
         {
                 // 支持使用"#"进行注释，以及使用空行分隔
-                if (line[0] == '#' || !line.size()) 
+                if (line[0] == '#' || !line.size() || line[0] == '\r' || line[0] == '\n') 
                 {
                         continue;
                 }
 
-                const size_t pos = line.find('=');
+                string secTmp = this->findSection(line);
+                if (!secTmp.empty())  // 找到section
+                {
+                        currentSection = secTmp;
+                        // _whpsSaverWithSection[currentSection] = Map<string, string>();      // 初始化section的key
+                        _whpsSaverWithSection[currentSection].swap(map<string, string>());
+                }
+                else    // 根据当前section进行填写值
+                {
+                        if (currentSection.size())
+                        {
+                                String line_(line);
+                                SVector sv = line_.split("=");
 
-                if (pos != string::npos) 
-                {
-                        // _whpsSaver[line.substr(0, pos)] = line.substr(pos + 1);
-                        this->set(line.substr(0, pos), line.substr(pos + 1));
-                } 
-                else    // 没有找到分割符 '=' ，格式错误
-                {
-                        c = false;
-                        cout << _webConfigPath + " [" + to_string(num) + "]:delimiter '=' not found." << endl;
-                        break;
+                                if (sv.size())
+                                {
+                                        this->set(currentSection, sv[0], sv[1]);
+                                } 
+                                else    // 没有找到分割符 '=' ，格式错误
+                                {
+                                        c = false;
+                                        cout << _webConfigPath + " [" + to_string(num) + "]:delimiter '=' not found." << endl;
+                                        break;
+                                }
+                        }
                 }
         }
 
         in.close();
 
+        if (_whpsSaverWithSection.empty())
+        {
+                c = false;
+        }
+
         return c;
+}
+
+void WebSourceConfig::set(const string& section, 
+                         const string& key, 
+                         const string& val)
+{
+        _whpsSaverWithSection[section][key] = val;
+}
+
+const string& WebSourceConfig::get(const string& section, 
+                                       const string& key)
+{
+        cout << "--------->section: " << _whpsSaverWithSection[section][key]+"123123213213" << endl;
+        _whpsSaverWithSection[section][key] = "/home/wenhan/http_proxy_server/webResource";
+        return _whpsSaverWithSection[section][key];
+}
+
+WebSourceConfig::ConfigTypeWithSection& WebSourceConfig::getAllConfigWithSection()
+{
+        return _whpsSaverWithSection;
 }
 
 void WebSourceConfig::set(const std::string& key, const std::string& val)
@@ -82,7 +122,18 @@ const std::string& WebSourceConfig::get(const std::string& key)
         return val;
 }
 
-ImplConfig::ConfigType& WebSourceConfig::getAllConfig()
+WebSourceConfig::ConfigType& WebSourceConfig::getAllConfig()
 {
         return _whpsSaver;
+}
+
+void WebSourceConfig::print()
+{
+        for (auto& mPari: _whpsSaverWithSection)
+        {
+                for (auto& obj: mPari.second)
+                {
+                        cout << mPari.first<< "----" << obj.first << ": " << obj.second << endl;
+                }
+        }
 }

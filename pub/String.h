@@ -68,4 +68,6 @@ private:
         std::string _str;
 };
 
+typedef String::SVector SVector;
+
 #endif /* STRING_H_ */

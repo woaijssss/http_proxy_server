@@ -52,6 +52,10 @@ static int load(const string& filename, string& f_buff)
                time_t    st_ctime;   // time of last status change 
         };
  */
+
+        cout << "++++++++++++++++++++++++++++++++++" << endl;
+        cout << filename << endl;
+        cout << "++++++++++++++++++++++++++++++++++" << endl;
         std::ifstream in;   
         in.open(filename, std::ios::in | std::ios::binary);      // open input file
 
@@ -129,7 +133,7 @@ HelloWhps::~HelloWhps()
 static void TestStaticResource(HttpWhpsRequest request, HttpWhpsResponse response)
 {
         // response.setContentType("text/html;charset=UTF-8");
-        string msg = TestSend(WebSourceConfig::GetInstance().get("rootDir"), request._url);
+        string msg = TestSend(WebSourceConfig::GetInstance().get("whps", "rootDir"), request._url);
         
         response.getWriter().write(msg);
 }

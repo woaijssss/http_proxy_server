@@ -46,6 +46,12 @@ public:
                 std::lock_guard<std::mutex> lock(__mutex);
                 return std::map<__K, __V>::at(k);
         }
+
+        void swap(std::map<__K, __V> x)
+        {
+                std::lock_guard<std::mutex> lock(__mutex);
+                std::map<__K, __V>::swap(x);
+        }
 private:
         std::mutex __mutex;
 };
