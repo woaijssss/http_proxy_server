@@ -104,7 +104,7 @@ static string TestSend(const string& base, const string& resource)
         if (res < 0)
         {
                 string tmp = "404 not found!";
-                test_msg = "HTTP/1.1 200 OK \r\n"
+                test_msg = "HTTP/1.1 404 not found \r\n"
                              "Content-Length: " + to_string(tmp.size()) + "\r\n"
                              "\r\n"
                              + tmp;
