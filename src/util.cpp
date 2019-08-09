@@ -38,4 +38,6 @@ void initConfig()
                 cout << "Config file load failed..." << endl;
                 exit(-1);
         }
+
+        GetWebSourceConfig().print();
 }

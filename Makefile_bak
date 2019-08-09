@@ -10,7 +10,7 @@ CONFIG:=config
 
 SRC_DIR:=src
 BUILD_DIR:=build
-BIN_DIR:=lib
+BIN_DIR:=bin
 
 SRC:=$(wildcard $(SRC_DIR)/*.cpp) \
 	$(wildcard $(PUB)/*.cpp) \
@@ -24,16 +24,7 @@ SRC:=$(wildcard $(SRC_DIR)/*.cpp) \
 	$(wildcard test_develop/*.cpp) 
 
 OBJ:=$(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
-# BIN:=whps
-# 动态库名称
-BIN_NAME:=libwhps
-# 动态库版本
-BIN_VERSION:=1
-# 动态库子版本
-BIN_SUBVERSION:=0.0
-BIN_SOFT:=$(BIN_NAME).so
-BIN_MID:=$(BIN_SOFT).$(BIN_VERSION)
-BIN:=$(BIN_MID).$(BIN_SUBVERSION)
+BIN:=whps
 
 CPPFLAGS+=-Iinclude \
 		-I$(PUB) \
@@ -51,9 +42,7 @@ CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -MMD -D_GLIBCXX_USE_NANOSLEEP \
 	-Wunused-function \
 	-Wno-unused-parameter  # 设置此项，不提示“未使用变量”，正式程序需要去掉 
 
-CXXFLAGS+=-fPIC
-
-LDLIBS:=-pthread -lrt -shared
+LDLIBS:=-pthread -lrt
 
 ifeq ($(BUILD), release)
 CPPFLAGS+=-DNDEBUG
@@ -79,8 +68,6 @@ $(BIN_DIR)/$(BIN): $(OBJ)
 	@mkdir -p $(dir $@)
 	@echo "(LD) $@"
 	@$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
-	@cd $(BIN_DIR) && ln -fs $(BIN) $(BIN_MID)
-	@cd $(BIN_DIR) && ln -fs $(BIN_MID) $(BIN_SOFT) 
 
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)

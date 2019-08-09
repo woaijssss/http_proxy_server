@@ -14,11 +14,10 @@ typedef std::string                         HttpBody__;
 #define HttpResponseHeader      HttpHeader__
 #define HttpResponseBody        HttpBody__
 
-class WHPSHttpSession;
 class WHPSResponseWrapper
 {
 public:
-        using cbFunc = HttpWriterRegistser<WHPSHttpSession>::cbFunc;
+        using cbFunc = HttpWriterRegistser::cbFunc;
 public:
         WHPSResponseWrapper(cbFunc cb);
         virtual ~WHPSResponseWrapper();

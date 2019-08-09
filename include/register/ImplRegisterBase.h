@@ -12,7 +12,7 @@
 #include <string>
 
 /* 功能注册器接口 */
-template<class T>
+// template<class T>
 class ImplRegisterBase
 {
 public:

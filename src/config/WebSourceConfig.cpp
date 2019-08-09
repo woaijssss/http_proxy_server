@@ -64,6 +64,7 @@ bool WebSourceConfig::readConfig()
                         if (currentSection.size())
                         {
                                 String line_(line);
+                                line_.strip("\r");
                                 SVector sv = line_.split("=");
 
                                 if (sv.size())
@@ -100,8 +101,6 @@ void WebSourceConfig::set(const string& section,
 const string& WebSourceConfig::get(const string& section, 
                                        const string& key)
 {
-        cout << "--------->section: " << _whpsSaverWithSection[section][key]+"123123213213" << endl;
-        _whpsSaverWithSection[section][key] = "/home/wenhan/http_proxy_server/webResource";
         return _whpsSaverWithSection[section][key];
 }
 

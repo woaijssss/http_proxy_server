@@ -34,11 +34,11 @@ public:
         /* 按照sep拆分字符串 */
         SVector split(const char* sep);
 
-	/* 默认过滤字符串中的空格 */
-	std::string strip();
+    	/* 默认过滤字符串中的空格 */
+    	void strip();
 
         /* 过滤字符串中，带有chr的字符 */
-        std::string strip(const char* chr);
+        void strip(const char* chr);
 
         /* 使用des替换src，仅匹配一次 */
         void replace(const std::string& src, const std::string& des);
@@ -56,6 +56,8 @@ public:
         size_t count(const std::string& sub);
 
         size_t find(const char& c);
+
+        size_t size();
 
         /* 字符串编码
          */

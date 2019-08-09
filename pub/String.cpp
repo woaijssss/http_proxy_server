@@ -75,26 +75,18 @@ String::SVector String::split(const char* sep)
         return v;
 }
 
-string String::strip(const char* chr)
+void String::strip()
 {
-        string res = _str;
-
-        for (size_t i = 0; (i = res.find('\n')) != std::string::npos;) {
-                res.replace(i, 1, "");
+        for (size_t i = 0; (i = _str.find(' ')) != std::string::npos;) {
+                _str.replace(i, 1, "");
         }
-
-        return res;
 }
 
-string String::strip()
+void String::strip(const char* chr)
 {
-        string res = _str;
-
-        for (size_t i = 0; (i = res.find(' ')) != std::string::npos;) {
-                res.replace(i, 1, "");
+        for (size_t i = 0; (i = _str.find(chr)) != std::string::npos;) {
+                _str.replace(i, 1, "");
         }
-
-        return res;
 }
 
 void String::replace(const string& src, const string& des)
@@ -139,6 +131,10 @@ size_t String::find(const char& c)
         return _str.find(c);
 }
 
+size_t String::size()
+{
+        return _str.size();
+}
 
 const string& String::encode(const string& type)
 {

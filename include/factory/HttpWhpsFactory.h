@@ -8,10 +8,14 @@
 #include "SingletonRegister.h"
 #include "FactoryBase.h"
 #include "HttpWhps.h"
+#include "WHPSConfig.h"
 
 #include "HelloWhps.h"  // for function create() test（测试）
 
-/* HttpWhps应用层子类实例化的工厂类
+#include <iostream>
+using namespace std;
+
+/* HttpWhps应用层子类实例化的工厂类（动态对象创建工厂）
  * 该类只会获取一个继承自HttpWhps的子类信息，并将其实例化
  * 返回基类HttpWhps的指针
  * （该文件内容应在编译时自动生成！）
@@ -51,6 +55,10 @@ public:
         {
                 // 当前测试，先写死一个子类
                 // std::shared_ptr<HelloWhps> ptr(new HelloWhps());
+
+                string whpsName = GetWebSourceConfig().get("whps", "whps-name");    // 获取whps实例的名字
+                // 以下添加从实例注册中心获取实例对象
+
                 HttpWhps* ptr = new HelloWhps();
                 return ptr;
         }

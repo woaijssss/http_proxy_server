@@ -10,14 +10,15 @@
 
 #include "ImplRegisterBase.h"
 
-template<class T>
-class HttpWriterRegistser: public ImplRegisterBase<T>
+// template<class T>
+// class HttpWriterRegistser: public ImplRegisterBase<T>
+class HttpWriterRegistser: public ImplRegisterBase
 {
 public:
-        using cbFunc = typename ImplRegisterBase<T>::cbFunc;
+        using cbFunc = typename ImplRegisterBase::cbFunc;
 public:
         HttpWriterRegistser()
-                : ImplRegisterBase<T>()
+                : ImplRegisterBase()
         {
 
         }

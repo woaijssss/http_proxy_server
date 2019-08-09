@@ -23,7 +23,7 @@ public:
         using sp_HttpSession = std::shared_ptr<WHPSHttpSession>;
         // using HttpSessionCB = std::function<void(const sp_HttpSession&)>;
         using HttpSessionCB = std::function<void(const sp_TcpSession&)>;
-        using WriterFunc = HttpWriterRegistser<WHPSHttpSession>::cbFunc;
+        using WriterFunc = HttpWriterRegistser::cbFunc;
 public:
         /* http session的实例化，必须依赖于tcp session，是一一对应的关系 */
         WHPSHttpSession(const sp_TcpSession& tcp_session);
@@ -74,7 +74,7 @@ private:
         HttpWhps* _http_whps;                   // 应用层（业务层）调用句柄
 
         WriterFunc _writer_func;
-        HttpWriterRegistser<WHPSHttpSession> _writer;   // 数据发送注册器
+        HttpWriterRegistser _writer;   // 数据发送注册器
 };
 
 #endif  // __WHPS_HTTP_SESSION_H__

@@ -6,62 +6,26 @@
 #include <memory>
 #include <string.h>
 
+#include "DynamicFactory.h"
+
 using namespace std;
 
-class Abstract
+class Basic1 : public WhpsObject<Basic1>
 {
 public:
-        virtual ~Abstract() {}
-        virtual void foo() = 0;
-};
+        Basic1() {}
+        virtual ~Basic1() {}
 
-// 写成类的原因是函数内部可以定义类，不能定义函数
-#define GETCLASS(__x) \
-        class N \
-        { \
-        public: \
-                static Abstract* create() \
-                { \
-                        return (new __x()); \
-                } \
-        };
-
-class Basic: public Abstract
-{
-public:
-        Basic() {}
-        virtual ~Basic() {}
-
-        // 重写父类方法
-        virtual void foo()
+        virtual void doGet()
         {
-                cout << "Basic::foo" << endl;
+                cout << "doGet..." << endl;
         }
-
-private:
-        int i, j, k, l, s, p;
 };
-
-void func(string className)
-{
-        // GETCLASS(Basic)         // 写在这里的目的，是为了运行期实例化，而不是编译期
-        // GETCLASS("Basic")
-        // GETCLASS()
-
-        // Abstract* p = N::create(Basic);
-        shared_ptr<Abstract> p1;
-        {
-                shared_ptr<Abstract> p(new Basic());
-                p1 = p;
-        }
-
-        // std::copy(p1, p, sizeof(Basic));
-
-        p1->foo();
-}
 
 int main()
 {
-        func("Basic");
+        HttpWhps* p1 = HttpWhpsFactory::Instance().get("Basic1");
+        p1->doGet();
+
         return 0;
 }

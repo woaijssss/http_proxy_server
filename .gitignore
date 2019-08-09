@@ -1,7 +1,8 @@
 # self-style
 bin/
 build/
-log
+log/
+lib/
 git/
 Debug/
 a.out

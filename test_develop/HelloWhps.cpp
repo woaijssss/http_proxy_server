@@ -92,14 +92,8 @@ static int load(const string& filename, string& f_buff)
 static string TestSend(const string& base, const string& resource)
 {
         string test_msg;
-        // load("/home/wenhan/server/webResource/html/index.html", test_msg);
-#if 1
         // int res = TestSendMsg("./webResource/html/index.html", test_msg);
         int res = TestSendMsg(base + resource, test_msg);
-#else
-        // int res = TestSendMsg("/home/wenhan/http_proxy_server/webResource/file_test/curl-7.26.0.tar.gz", test_msg);
-        int res = TestSendMsg("./webResource/file_test/数据结构(c语言版).pdf", test_msg);
-#endif
 
         if (res < 0)
         {
@@ -109,8 +103,6 @@ static string TestSend(const string& base, const string& resource)
                              "\r\n"
                              + tmp;
         }
-
-        cout << "test_msg.size: " << test_msg.size() << endl;
 
         return test_msg;
 
@@ -133,7 +125,7 @@ HelloWhps::~HelloWhps()
 static void TestStaticResource(HttpWhpsRequest request, HttpWhpsResponse response)
 {
         // response.setContentType("text/html;charset=UTF-8");
-        string msg = TestSend(WebSourceConfig::GetInstance().get("whps", "rootDir"), request._url);
+        string msg = TestSend(WebSourceConfig::GetInstance().get("StaticResource", "rootDir"), request._url);
         
         response.getWriter().write(msg);
 }
