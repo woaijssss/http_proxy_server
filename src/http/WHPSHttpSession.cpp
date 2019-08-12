@@ -5,13 +5,17 @@
 
 #include "WHPSHttpSession.h"
 #include "util.h"
+#include "WHPSConfig.h"
+
+#include "WhpsObject.h"
 
 using namespace std;     
 
 WHPSHttpSession::WHPSHttpSession(const sp_TcpSession& tcp_session)
         : _tcp_session(tcp_session)
-        , _http_whps_factory(GetHttpWhpsFactory())      // 获取单例工厂句柄
-        , _http_whps(_http_whps_factory->create())      // 获取应用层回调句柄
+        , _obj_name(GetWebSourceConfig().get("whps", "whps-name"))
+        , _http_whps_factory(GetHttpWhpsFactory())          // 获取单例工厂句柄
+        , _http_whps(_http_whps_factory->get(_obj_name))    // 获取应用层回调句柄
 {
         _writer_func = std::bind(&WHPSHttpSession::sendHttpMessage, this, std::placeholders::_1);
         // 注册http响应消息回调
@@ -19,17 +23,17 @@ WHPSHttpSession::WHPSHttpSession(const sp_TcpSession& tcp_session)
         tcp_session->setHttpMessageCallback(std::bind(&WHPSHttpSession::onHttpMessage, this, std::placeholders::_1));
         tcp_session->setHttpSendCallback(std::bind(&WHPSHttpSession::onHttpSend, this, std::placeholders::_1));
         tcp_session->setHttpCloseCallback(std::bind(&WHPSHttpSession::onHttpClose, this, std::placeholders::_1));
-        tcp_session->setHttpErrorCallback(std::bind(&WHPSHttpSession::onHttpError, this, std::placeholders::_1));
+        tcp_session->setHttpErrorCallback(std::bind(&WHPSHttpSession::onHttpClose, this, std::placeholders::_1));
 }
 
 WHPSHttpSession::~WHPSHttpSession()
 {
         cout << __FUNCTION__ << endl;
-        if (_http_whps)
-        {
-                delete _http_whps;
-                _http_whps = NULL;  // 后续加到工厂中释放资源
-        }
+        // if (_http_whps)
+        // {
+        //         delete _http_whps;
+        //         _http_whps = NULL;  // 后续加到工厂中释放资源
+        // }
 }
 
 const WHPSHttpSession::sp_TcpSession& WHPSHttpSession::getTcpSession() const
@@ -44,9 +48,23 @@ void WHPSHttpSession::setHttpCloseCallback(HttpSessionCB cb)
 
 void WHPSHttpSession::onHttpMessage(const sp_TcpSession& tcp_session)
 {
+
         cout << "WHPSHttpSession::onHttpMessage" << endl;
+
         HttpRequestContext context;
         HttpResponseContext response(_writer_func);
+
+#if 1
+        _http_whps = _http_whps_factory->get(_obj_name);
+        if (!_http_whps)
+        {
+                cout << "WHPSHttpSession::onHttpMessage whps object is not callable...." << endl;
+                // response.getWriter().write(" ");
+                tcp_session->close();
+                return;
+        }
+#endif
+
         _http_parser.parseHttpRequest(tcp_session->getBufferIn(), context);     // 解析获取http请求内容
 
         /* 调用处理部分逻辑 */
@@ -74,8 +92,26 @@ void WHPSHttpSession::onHttpSend(const sp_TcpSession& tcp_session)
 void WHPSHttpSession::onHttpClose(const sp_TcpSession& tcp_session)
 {
         cout << "WHPSHttpSession::onHttpClose" << endl;
+        if (tcp_session)
+        {
+                cout << "**********************" << endl;
+        }
+        else
+        {
+                cout << "_____________________" << endl;
+        }
         tcp_session->setProcessingFlag(false);
+        cout << "==========" << endl;
+        if (_http_closeCB)
+        {
+                cout << "callable" << endl;
+        }
+        else
+        {
+                cout << "not callable" << endl;
+        }
         _http_closeCB(tcp_session);
+        cout << "==========" << endl;
 }
 
 void WHPSHttpSession::onHttpError(const sp_TcpSession& tcp_session)

@@ -24,6 +24,7 @@ public:
         // using HttpSessionCB = std::function<void(const sp_HttpSession&)>;
         using HttpSessionCB = std::function<void(const sp_TcpSession&)>;
         using WriterFunc = HttpWriterRegistser::cbFunc;
+        using HttpPtrType = HttpWhpsFactory::HttpPtrType;
 public:
         /* http session的实例化，必须依赖于tcp session，是一一对应的关系 */
         WHPSHttpSession(const sp_TcpSession& tcp_session);
@@ -70,8 +71,11 @@ private:
         WHPSHttpParser _http_parser;            // http解析器
 
 private:
+        const std::string& _obj_name;           // 配置文件中，配置的子类名称
         HttpWhpsFactory* _http_whps_factory;    // 应用层实例化工厂类对象
-        HttpWhps* _http_whps;                   // 应用层（业务层）调用句柄
+        // HttpWhps* _http_whps;                        
+        HttpPtrType _http_whps;                 // 应用层（业务层）调用句柄
+
 
         WriterFunc _writer_func;
         HttpWriterRegistser _writer;   // 数据发送注册器

@@ -1,6 +1,19 @@
 
 BUILD:=debug
 
+# 二进制目标文件输出
+# BIN:=whps
+# 动态库名称
+BIN_NAME:=libwhps
+# 动态库版本
+BIN_VERSION:=1
+# 动态库子版本
+BIN_SUBVERSION:=0.0
+BIN_SOFT:=$(BIN_NAME).so
+BIN_MID:=$(BIN_SOFT).$(BIN_VERSION)
+BIN:=$(BIN_MID).$(BIN_SUBVERSION)
+
+
 # DIRS
 PUB:=pub
 HTTP:=http
@@ -20,20 +33,9 @@ SRC:=$(wildcard $(SRC_DIR)/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(HTTP)/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(FACTORY)/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(REGISTER)/*.cpp) \
-	$(wildcard $(SRC_DIR)/$(CONFIG)/*.cpp) \
-	$(wildcard test_develop/*.cpp) 
+	$(wildcard $(SRC_DIR)/$(CONFIG)/*.cpp)
 
 OBJ:=$(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
-# BIN:=whps
-# 动态库名称
-BIN_NAME:=libwhps
-# 动态库版本
-BIN_VERSION:=1
-# 动态库子版本
-BIN_SUBVERSION:=0.0
-BIN_SOFT:=$(BIN_NAME).so
-BIN_MID:=$(BIN_SOFT).$(BIN_VERSION)
-BIN:=$(BIN_MID).$(BIN_SUBVERSION)
 
 CPPFLAGS+=-Iinclude \
 		-I$(PUB) \
@@ -62,9 +64,9 @@ CXXFLAGS+=-O2
 LDFLAGS+=-O2 -s
 else
 CPPFLAGS+=-D__DEBUG__
-CFLAGS+=-O3 -g
-CXXFLAGS+=-O3 -g
-LDFLAGS+=-O3 -g
+CFLAGS+=-O1 -g
+CXXFLAGS+=-O1 -g
+LDFLAGS+=-O1 -g
 endif
 
 .PHONY: all release clean

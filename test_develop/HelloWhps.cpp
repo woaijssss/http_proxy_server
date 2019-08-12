@@ -8,7 +8,6 @@
 #include <iostream>
 using namespace std;
 
-
 static size_t getFileTotalSize(const ifstream& in)
 {
         struct stat stat__;

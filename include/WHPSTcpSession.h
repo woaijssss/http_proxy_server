@@ -3,6 +3,7 @@
 #define __WHPS_TCP_SESSION_H__
 
 #include <memory>
+#include <mutex>
 
 #include "WHPSConnSocket.h"
 #include "WHPSEventHandler.h"

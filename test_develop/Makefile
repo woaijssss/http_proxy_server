@@ -10,11 +10,11 @@ CONFIG:=config
 
 SRC_DIR:=src
 BUILD_DIR:=build
-BIN_DIR:=bin
+BIN_DIR:=../bin
 
 SRC:=$(wildcard ./*.cpp) 
 
-OBJ:=$(addprefix $(BUILD_DIR)/, $(:.cpp=.o))
+OBJ:=$(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
 BIN:=whps
 
 CPPFLAGS+= -I. -I../include \
@@ -46,17 +46,20 @@ CXXFLAGS+=-O3 -g
 LDFLAGS+=-O3 -g
 endif
 
-.PHONY: all release clean
+#.PHONY: all release clean
+.PHONY: all debug clean
 
-../$(BIN_DIR)/$(BIN):*.cpp 
+$(BIN_DIR)/$(BIN):$(OBJ)
 	@mkdir -p $(dir $@)
 	@echo "(LD) $@"
 	@$(CXX) $^ $(CPPFLAGS) $(LDFLAGS) $(LDLIBS) -std=c++11 -o $@
 
-clean:
-	@rm -rf $(BUILD_DIR) $(BIN_DIR)
+$(BUILD_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	@echo "(CXX) $@"
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -c -o $@
 
-clean_all:
-	@rm -rf $(BUILD_DIR)/* $(BIN_DIR)/*
+clean:
+	@rm -rf $(BUILD_DIR) $(BIN_DIR)/$(BIN)
 
 -include $(OBJ:.o=.d)

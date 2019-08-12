@@ -8,6 +8,7 @@ cat \
         src/*.cpp \
         src/http/*.cpp \
         src/factory/* \
+        src/register/* \
         pub/*.h \
         pub/*.cpp \
         pub/pub_macro/* \

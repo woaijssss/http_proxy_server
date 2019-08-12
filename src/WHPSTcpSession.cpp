@@ -27,7 +27,7 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         _event_chn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0)); // 注册数据接收回调函数
         _event_chn.setWriteCallback(std::bind(&WHPSTcpSession::onNewWrite, this, 0)); // 注册数据发送回调函数
         _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0)); // 注册连接关闭回调函数
-        _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewError, this, 0)); // 注册异常错误回调函数
+        _event_chn.setErrorCallback(std::bind(&WHPSTcpSession::onNewError, this, 0)); // 注册异常错误回调函数
 
         // 还需要注册发送数据和超时回调
 }
@@ -37,6 +37,7 @@ WHPSTcpSession::~WHPSTcpSession()
         cout << "~WHPSTcpSession---" << this->getNetInfo() << endl;
         this->delFromEventLoop();
         _conn_sock.close();
+        cout << "~~WHPSTcpSession end---" << this->getNetInfo() << endl;
         // _conn_sock.close();
 }
 
@@ -88,6 +89,9 @@ void WHPSTcpSession::close()
 {
         _is_wait = true;
         _is_processing = false;
+        _buffer_in.clear();
+        _buffer_out.clear();
+        this->onNewClose(0);
 }
 
 void WHPSTcpSession::addToEventLoop()
@@ -152,8 +156,8 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
         long bytes_transferred = 0;
         while (true)
         {
-                // int w_nbytes = write(_conn_sock.get(), buffer_out.c_str(), buffer_out.size());
-                int w_nbytes = ::send(_conn_sock.get(), buffer_out.c_str(), buffer_out.size(), 0);
+                int w_nbytes = write(_conn_sock.get(), buffer_out.c_str(), buffer_out.size());
+                // int w_nbytes = ::send(_conn_sock.get(), buffer_out.c_str(), buffer_out.size(), 0);
                 bytes_transferred += w_nbytes;
 
                 if (w_nbytes > 0)   // 该笔数据已发送
@@ -221,6 +225,7 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
 
 void WHPSTcpSession::onNewRead(error_code error)
 {
+        cout << "WHPSTcpSession::onNewRead" << endl;
         int res = this->readTcpMessage(_buffer_in);
 
         if (res > 0)
@@ -366,20 +371,29 @@ void WHPSTcpSession::onNewClose(error_code error)
                 }
 
                 cout << "=========close close" << endl;
-                _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
                 _http_onClose(shared_from_this());      // 清除应用层回调相关标志位
+                _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
+                // _cb_cleanup(shared_from_this());
                 _is_connect = false;
         }
 }
 
 void WHPSTcpSession::onNewError(error_code error)
 {
+        // if (this)
+        // {
+        //         this->close();
+        // }
+        // else
+        // {
+        //         cout << "*********************this is null" << endl;
+        // }
+        // return;
         /* 关闭数据需要做两件事情
          *      （1）关闭socket
          *      （2）通知主socket对象和EventLoop对象删除该句柄资源
          */
-
-        cout << "WHPSTcpSession::onNewError" << endl;
+        cout << "WHPSTcpSession::onNewError: " << shared_from_this().use_count() << endl;
         _http_onError(shared_from_this());
         //sp_TcpSession& sp_tcp_session = std::make_shared<WHPSTcpSession>(*this);
 //        _cb_cleanup(sp_tcp_session);  // 执行清理回调函数
@@ -387,7 +401,7 @@ void WHPSTcpSession::onNewError(error_code error)
         // this->delFromEventLoop();
         //sp_TcpSession sp_tcp_session = shared_from_this();      // 返回this类的智能指针
         _cb_cleanup(shared_from_this());
-        // _conn_sock.close();
+        _is_connect = false;
 }
 
 void WHPSTcpSession::setHttpMessageCallback(httpCB cb)

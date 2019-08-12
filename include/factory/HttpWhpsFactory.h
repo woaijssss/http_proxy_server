@@ -10,8 +10,6 @@
 #include "HttpWhps.h"
 #include "WHPSConfig.h"
 
-#include "HelloWhps.h"  // for function create() test（测试）
-
 #include <iostream>
 using namespace std;
 
@@ -21,8 +19,12 @@ using namespace std;
  * （该文件内容应在编译时自动生成！）
  * 单例模式
  */
+class HttpWhps;
 class HttpWhpsFactory: public ImplSingleton<HttpWhpsFactory>, public FactoryBase
 {
+public:
+        using CreateFunction = std::function<std::shared_ptr<HttpWhps>()>;
+        using HttpPtrType = std::shared_ptr<HttpWhps>;
 public:
         static HttpWhpsFactory* GetInstance()
         {
@@ -51,20 +53,35 @@ public:
          * （1）获取所有继承自HttpWhps类的子类；
          * （2）所有子类中，只实例化最新的一个；
          */
-        HttpWhps* create()
-        {
-                // 当前测试，先写死一个子类
-                // std::shared_ptr<HelloWhps> ptr(new HelloWhps());
+        // HttpWhps* create()
+        // {
+        //         // 当前测试，先写死一个子类
+        //         // std::shared_ptr<HelloWhps> ptr(new HelloWhps());
 
-                string whpsName = GetWebSourceConfig().get("whps", "whps-name");    // 获取whps实例的名字
-                // 以下添加从实例注册中心获取实例对象
+        //         string whpsName = GetWebSourceConfig().get("whps", "whps-name");    // 获取whps实例的名字
+        //         // 以下添加从实例注册中心获取实例对象
 
-                HttpWhps* ptr = new HelloWhps();
-                return ptr;
-        }
+        //         HttpWhps* ptr = new HelloWhps();
+        //         return ptr;
+        // }
+
+public:
+        HttpPtrType get(const std::string& type);
+public:
+        bool create(const std::string& type_name);
+
+        HttpPtrType _create(const std::string & type_name);
+ 
+        // 解析类型名称（转换为 A::B::C 的形式）
+        static std::string readTypeName(const char* name);
+ 
+        bool regist(const char * name, CreateFunction func);
 
 private:
         static std::shared_ptr<HttpWhpsFactory> _http_whps_factory;
+
+        Map<std::string, CreateFunction> _create_function_map;     // 对象名和创建函数的对应关系
+        Map<std::string, HttpPtrType> _map_ptr;                    // 对象名和指针句柄的对应关系
 };
 
 GET_SINGLETON_OBJECT_PTR(HttpWhpsFactory)

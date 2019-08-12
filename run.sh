@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# 获取脚本所在目录
+TOPDIR=`dirname $0`
+ABSOLUTE_PATH=$(cd $TOPDIR;pwd)
+
+CONFIG_PATH=$ABSOLUTE_PATH/conf
+LIB_PATH=$ABSOLUTE_PATH/lib
+BIN=whps
+
+cd $ABSOLUTE_PATH
+
+export LD_LIBRARY_PATH=$LIB_PATH:$LD_LIBRARY_PATH
+gdb bin/$BIN 

@@ -49,6 +49,8 @@ void WHPSHttpServer::onNewSession(const sp_TcpSession& tcp_session)
 
 void WHPSHttpServer::onNewClose(const sp_TcpSession& tcp_session)
 {
+        cout << "WHPSHttpServer::onNewClose before" << endl;
         _http_sess_list.erase(tcp_session->getNetInfo());
+        cout << "WHPSHttpServer::onNewClose end" << endl;
         cout << "WHPSHttpServer::onNewClose-----size: " << _http_sess_list.size() << endl;
 }

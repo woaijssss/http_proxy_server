@@ -10,11 +10,11 @@
 
 using namespace std;
 
-class Basic1 : public WhpsObject<Basic1>
+class Basic111 : public WhpsObject<Basic111>
 {
 public:
-        Basic1() {}
-        virtual ~Basic1() {}
+        Basic111() {}
+        virtual ~Basic111() {}
 
         virtual void doGet()
         {
@@ -24,7 +24,7 @@ public:
 
 int main()
 {
-        HttpWhps* p1 = HttpWhpsFactory::Instance().get("Basic1");
+        shared_ptr<HttpWhps> p1 = HttpWhpsFactory::Instance().get("Basic111");
         p1->doGet();
 
         return 0;

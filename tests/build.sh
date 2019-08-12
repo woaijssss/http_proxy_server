@@ -23,7 +23,7 @@ g++ test_file.cpp -std=c++11 -g -o $BIN/test_file
 
 g++ test_map.cpp -std=c++11 -I../pub/ -g -o $BIN/test_map
 
-# g++ DynamicFactory.cpp -I. -std=c++11 -g -fPIC -shared -o libdymc.so
+g++ DynamicFactory.cpp -I. -std=c++11 -g -fPIC -shared -o libdymc.so
 g++ test_reflect.cpp -I. -std=c++11 -g -o $BIN/test_reflect
 
 g++ test_vector.cpp -std=c++11 -I../pub -g -o $BIN/test_vector
