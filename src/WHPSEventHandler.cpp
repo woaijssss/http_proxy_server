@@ -9,7 +9,13 @@ WHPSEventHandler::WHPSEventHandler()
 
 WHPSEventHandler::~WHPSEventHandler()
 {
-	std::cout << "WHPSEventHandler::~WHPSEventHandler" << std::endl;
+        std::lock_guard<std::mutex> lock(_mutex);
+	std::cout << "WHPSEventHandler::~WHPSEventHandler before" << std::endl;
+        _cb_read = nullptr;
+        _cb_write = nullptr;
+        _cb_error = nullptr;
+        _cb_close = nullptr;
+        std::cout << "WHPSEventHandler::~WHPSEventHandler end" << std::endl;
 }
 
 void WHPSEventHandler::setFd(const int& fd)
@@ -67,6 +73,14 @@ void __stdcall WHPSEventHandler::__setCallback(__callback_t& __cb_s, __callback_
         __cb_s = __cb_d;
 }
 
+void WHPSEventHandler::onCall(CbFunc cb)
+{
+        std::lock_guard<std::mutex> lock(_mutex);
+        if (cb)
+        {
+                cb();
+        }
+}
 
 #include <iostream>
 /* 执行回调函数接口 */

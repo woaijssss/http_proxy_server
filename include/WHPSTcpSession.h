@@ -21,7 +21,7 @@ public:
         using TcpSessionCB = std::function<void(const sp_TcpSession&)>;
 
         // 应用层回调函数类型
-        using httpCB = std::function<void(const sp_TcpSession&)>;
+        using httpCB = std::function<void()>;
 public:
         WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr);
         ~WHPSTcpSession();
@@ -130,6 +130,15 @@ private:
 
         /* 异常错误事件处理回调 */
         void onNewError(error_code error);
+
+        void onCall(httpCB cb);
+        /* 清除当前session的所有资源
+         * 包括：
+         * （1）所有回调函数指针置空
+         * （2）socket关闭
+         * （3）buffer缓存清空
+         */
+        void release();
         /**********************************************************************/
 
 private:    // 网络层各对象
@@ -159,6 +168,8 @@ private:        // 应用层回调函数定义
         httpCB _http_onSend;            // http发送数据回调函数
         httpCB _http_onClose;           // http连接关闭回调函数
         httpCB _http_onError;           // http异常错误回调函数
+
+        std::mutex _mutex;
 };
 
 typedef WHPSTcpSession::TcpSessionCB    TcpSessionCB;

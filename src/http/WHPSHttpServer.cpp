@@ -44,13 +44,19 @@ void WHPSHttpServer::onNewSession(const sp_TcpSession& tcp_session)
         cout << "WHPSHttpServer::onNewConnection: " << tcp_session->getNetInfo() << endl;
         sp_HttpSession http_session(new WHPSHttpSession(tcp_session));
         http_session->setHttpCloseCallback(std::bind(&WHPSHttpServer::onNewClose, this, std::placeholders::_1));
-        _http_sess_list[tcp_session->getNetInfo()] = http_session;
+        char addr[1024] = {0};
+        sprintf(addr, "%ld", (long)tcp_session.get());
+        string str(addr);
+        _http_sess_list[tcp_session->getNetInfo() + str] = http_session;
 }
 
 void WHPSHttpServer::onNewClose(const sp_TcpSession& tcp_session)
 {
         cout << "WHPSHttpServer::onNewClose before" << endl;
-        _http_sess_list.erase(tcp_session->getNetInfo());
+        char addr[1024] = {0};
+        sprintf(addr, "%ld", (long)tcp_session.get());
+        string str(addr);
+        _http_sess_list.erase(tcp_session->getNetInfo() + str);
         cout << "WHPSHttpServer::onNewClose end" << endl;
         cout << "WHPSHttpServer::onNewClose-----size: " << _http_sess_list.size() << endl;
 }

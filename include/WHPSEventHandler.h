@@ -2,6 +2,8 @@
 #ifndef __WHPS_EVENT_HANDLER_H__
 #define __WHPS_EVENT_HANDLER_H__
 
+#include <mutex>
+
 #include "ImplEventHandler.h"
 #include "WHPSTcpSocket.h"
 
@@ -68,11 +70,15 @@ private:
         /* 执行回调函数接口 */
         virtual void __stdcall __exCallback();
 
+        void onCall(CbFunc cb);
+
 private:
         CbFunc _cb_read;      // 读回调
         CbFunc _cb_write;     // 写回调
         CbFunc _cb_error;     // 错误回调
         CbFunc _cb_close;     // 关闭回调
+
+        std::mutex _mutex;
 };
 
 #endif  // __WHPS_EVENT_HANDLER_H__

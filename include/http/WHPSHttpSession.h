@@ -22,12 +22,13 @@ public:
         using sp_TcpSession = WHPSTcpSession::sp_TcpSession;
         using sp_HttpSession = std::shared_ptr<WHPSHttpSession>;
         // using HttpSessionCB = std::function<void(const sp_HttpSession&)>;
-        using HttpSessionCB = std::function<void(const sp_TcpSession&)>;
+        using HttpSessionCB = std::function<void()>;
+        using HttpSessionCB_ = std::function<void(const sp_TcpSession&)>;
         using WriterFunc = HttpWriterRegistser::cbFunc;
         using HttpPtrType = HttpWhpsFactory::HttpPtrType;
 public:
         /* http session的实例化，必须依赖于tcp session，是一一对应的关系 */
-        WHPSHttpSession(const sp_TcpSession& tcp_session);
+        WHPSHttpSession(const sp_TcpSession tcp_session);
 
         ~WHPSHttpSession();
 
@@ -36,27 +37,27 @@ public:
         const sp_TcpSession& getTcpSession() const;
 
         /* 设置http连接回调函数，提供HttpServer当前释放的http session */
-        void setHttpCloseCallback(HttpSessionCB cb);
+        void setHttpCloseCallback(HttpSessionCB_ cb);
 
 private:
         // 统一格式类型，参数全部采用tcp session
         /* http接收消息回调 */
-        void onHttpMessage(const sp_TcpSession& tcp_session);
+        void onHttpMessage();
 
         /* http发送消息回调 */
-        void onHttpSend(const sp_TcpSession& tcp_session);
+        void onHttpSend();
 
         /* http连接关闭回调 */
-        void onHttpClose(const sp_TcpSession& tcp_session);
+        void onHttpClose();
 
         /* http异常错误回调 */
-        void onHttpError(const sp_TcpSession& tcp_session);
+        void onHttpError();
 
 private:
         /* http层根据Connection字段值，来判断是否通知tcp层
          * 发送数据后断开连接，作通知功能。
          */
-        void notifyToClose(const sp_TcpSession& tcp_session);
+        void notifyToClose();
 
 private:        // writer
         /* 客户端回写接口
@@ -66,7 +67,7 @@ private:        // writer
 private:
         // 先使用这种方式测试http功能，后续引入工作线程池后，可以将发送消息的任务，加入到工作线程队列里
         const sp_TcpSession _tcp_session;      // tcp连接对象
-        HttpSessionCB _http_closeCB;            // http连接断开回调函数
+        HttpSessionCB_ _http_closeCB;            // http连接断开回调函数
 
         WHPSHttpParser _http_parser;            // http解析器
 
