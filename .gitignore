@@ -7,7 +7,7 @@ git/
 Debug/
 a.out
 */a.out
-webResource/
+#webResource/
 
 # Prerequisites
 *.d

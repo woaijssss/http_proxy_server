@@ -6,11 +6,11 @@ using namespace std;
 #include "util.h"
 
 WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr)
-                                : std::enable_shared_from_this<WHPSTcpSession>(), _c_addr(c_addr), _loop(
-                                                                loop), _conn_sock(fd), _base_events(
-                                                                EPOLLIN | EPOLLPRI), _is_connect(
-                                                                true), _is_processing(false), _is_wait(
-                                                                false)
+        : std::enable_shared_from_this<WHPSTcpSession>(), _c_addr(c_addr), _loop(
+                                        loop), _conn_sock(fd), _base_events(
+                                        EPOLLIN | EPOLLPRI), _is_connect(
+                                        true), _is_processing(false), _is_wait(
+                                        false)
 {
         _conn_sock.setOption();
         this->getEndpointInfo();
@@ -200,9 +200,11 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
         long bytes_transferred = 0;
         while (true)
         {
-                int w_nbytes = write(_conn_sock.get(), buffer_out.c_str(),
-                                                buffer_out.size());
-                // int w_nbytes = ::send(_conn_sock.get(), buffer_out.c_str(), buffer_out.size(), 0);
+                // int w_nbytes = write(_conn_sock.get(), buffer_out.c_str(), buffer_out.size());
+                /* 写入数据可能产生 SIGPIPE 信号
+                 * 对发送函数设置 MSG_NOSIGNAL，可忽略此信号，不至于进程退出
+                 */
+                int w_nbytes = ::send(_conn_sock.get(), buffer_out.c_str(), buffer_out.size(), MSG_NOSIGNAL);
                 bytes_transferred += w_nbytes;
 
                 if (w_nbytes > 0)   // 该笔数据已发送
