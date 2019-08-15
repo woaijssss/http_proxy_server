@@ -121,12 +121,11 @@ void WHPSTcpServer::onNewSession()
 
 void WHPSTcpServer::onCleanUpResource(const sp_TcpSession& sp_tcp_session)
 {
-        cout << "WHPSTcpServer::onCleanUpResource-----size: " << _tcp_sess_list.size() << endl;
+        cout << "WHPSTcpServer::onCleanUpResource-----size before: " << _tcp_sess_list.size() << endl;
         _tcp_sess_list.erase(sp_tcp_session->getConn().get());
-        cout << "WHPSTcpServer::onCleanUpResource-----size: " << _tcp_sess_list.size() << endl;
+        cout << "WHPSTcpServer::onCleanUpResource-----size after: " << _tcp_sess_list.size() << endl;
 
-        cout << "WHPSTcpServer::onCleanUpResource-----usecount: " << sp_tcp_session.use_count()
-                                        << endl;
+        // cout << "WHPSTcpServer::onCleanUpResource-----usecount: " << sp_tcp_session.use_count() << endl;
 
         if (!_tcp_sess_list.size())     // 主要是释放map的内存，可能没用（后面换个方法）
         {

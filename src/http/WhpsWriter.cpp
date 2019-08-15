@@ -21,8 +21,4 @@ void WhpsWriter::write(const string& msg)
         {
                 _cb_func(msg);
         }
-        else
-        {
-                cout << "--->: not callable" << endl;
-        }
 }

@@ -10,7 +10,6 @@ std::shared_ptr<HttpWhpsFactory> HttpWhpsFactory::_http_whps_factory;
 
 HttpWhpsFactory::HttpPtrType HttpWhpsFactory::get(const std::string& type)
 {
-        cout << "HttpWhpsFactory::get: " << type << endl;
         return _map_ptr[type];
 }
 
@@ -60,7 +59,7 @@ bool HttpWhpsFactory::regist(const char * name, CreateFunction func)
 {
         if (!func)
         {
-                cout << "false" << endl;
+                cout << "HttpWhpsFactory::regist false" << endl;
                 return false;
         }
 

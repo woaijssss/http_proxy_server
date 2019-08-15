@@ -17,7 +17,6 @@ WHPSHttpSession::WHPSHttpSession(const sp_TcpSession _tcp_session)
         , _http_whps_factory(GetHttpWhpsFactory())          // 获取单例工厂句柄
         , _http_whps(_http_whps_factory->get(_obj_name))    // 获取应用层回调句柄
 {
-		cout << "WHPSHttpSession::WHPSHttpSession" << endl;
         _writer_func = std::bind(&WHPSHttpSession::sendHttpMessage, this, std::placeholders::_1);
         // 注册http响应消息回调
         _writer.registObj(std::bind(&WHPSHttpSession::sendHttpMessage, this, std::placeholders::_1));
@@ -29,7 +28,6 @@ WHPSHttpSession::WHPSHttpSession(const sp_TcpSession _tcp_session)
 
 WHPSHttpSession::~WHPSHttpSession()
 {
-        cout << __FUNCTION__ << endl;
         // if (_http_whps)
         // {
         //         delete _http_whps;
@@ -49,9 +47,7 @@ void WHPSHttpSession::setHttpCloseCallback(HttpSessionCB_ cb)
 
 void WHPSHttpSession::onHttpMessage()
 {
-
         cout << "WHPSHttpSession::onHttpMessage" << endl;
-
         HttpRequestContext context;
         HttpResponseContext response(_writer_func);
 
@@ -92,10 +88,9 @@ void WHPSHttpSession::onHttpSend()
 
 void WHPSHttpSession::onHttpClose()
 {
-        cout << "WHPSHttpSession::onHttpClose before" << endl;
+        cout << "WHPSHttpSession::onHttpClose" << endl;
 //        _tcp_session->setProcessingFlag(false);
         _http_closeCB(_tcp_session);
-        cout << "WHPSHttpSession::onHttpClose after" << endl;
 }
 
 void WHPSHttpSession::onHttpError()

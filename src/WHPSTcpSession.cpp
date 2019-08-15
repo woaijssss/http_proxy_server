@@ -34,8 +34,6 @@ WHPSTcpSession::~WHPSTcpSession()
         cout << "~WHPSTcpSession---" << this->getNetInfo() << endl;
         this->release();
         _conn_sock.close();
-        cout << "~~WHPSTcpSession end---" << this->getNetInfo() << endl;
-        // _conn_sock.close();
 }
 
 void WHPSTcpSession::getEndpointInfo()
@@ -119,37 +117,40 @@ void WHPSTcpSession::onCall(httpCB cb)
         }
 #endif
 
-        cout << "WHPSTcpSession::onCall before" << endl;
         if (!cb)
         {
-                cout << "WHPSTcpSession::onCall not callable" << endl;
                 return;
         }
 
         cb();
-        cout << "WHPSTcpSession::onCall after" << endl;
 }
 
 void WHPSTcpSession::release()
 {
+        try
         {
-                std::lock_guard<std::mutex> lock(_mutex);
-
-                if (!_is_connect)
                 {
-                        return;
+                        std::lock_guard<std::mutex> lock(_mutex);
+                        if (!_is_connect)
+                        {
+                                return;
+                        }
+
+                        this->delFromEventLoop();
+                          _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
+                        _is_connect = false;
+                        _is_wait = true;
+                        _is_processing = false;
+                        _buffer_in.clear();
+                        _buffer_out.clear();
                 }
 
-                this->delFromEventLoop();
-        //        _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
-                _is_connect = false;
-                _is_wait = true;
-                _is_processing = false;
-                _buffer_in.clear();
-                _buffer_out.clear();
+                _cb_cleanup(shared_from_this());
         }
-
-        _cb_cleanup(shared_from_this());
+        catch (exception& e)
+        {
+                cout << "WHPSTcpSession::release: " << e.what() << endl;
+        }
 }
 
 void WHPSTcpSession::send(const std::string& msg)
@@ -220,40 +221,26 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
                 }
                 else if (w_nbytes == 0)
                 {
-                        cout << "w_nbytes----errno: " << w_nbytes << "----"
-                                                        << errno << endl;
                         if (errno == EAGAIN)    // 数据正确的发送完成，再次调用的返回结果
                         {
-                                cout << "write errno == EAGAIN, 发送完成!---"
-                                                                << endl;
                                 res = bytes_transferred;
-                                // res = 0;
                         }
 
                         break;
                 }
                 else    // 写数据异常
                 {
-                        cout << "write error: w_nbytes----errno: " << w_nbytes
-                                                        << "----" << errno
-                                                        << endl;
                         if (errno == EAGAIN)    // tcp发送缓冲区满了，下次继续发送
                         {
-                                cout
-                                                                << "write errno == EAGAIN, tcp发送缓冲区满了，下次继续发送!"
-                                                                << bytes_transferred
-                                                                << endl;
-                                // res = bytes_transferred;
-
                                 /* 这里统一返回1！
                                  *  若返回bytes_transferred，当写一次出错时，同时errno是EAGAIN，不应关闭
                                  *  但实际的bytes_transferred结果为-1，会导致异常关闭。
                                  */
-                                res = 100;
+                                res = 1;
                         }
                         else if (errno == EPIPE) // 客户端已经close，并发了RST，继续wirte会报EPIPE，返回0，表示close
                         {
-                                cout << "EPIPE..." << endl;
+				// pass
                         }
                         else if (errno == EINTR) // 中断，write()会返回-1，同时置errno为EINTR
                         {
@@ -274,7 +261,6 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
 #include <thread>
 void WHPSTcpSession::onNewRead(error_code error)
 {
-        cout << "WHPSTcpSession::onNewRead" << endl;
         int res = this->readTcpMessage(_buffer_in);
 
         if (res > 0)
@@ -315,7 +301,6 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
 
                 if (r_nbyte > 0)
                 {
-                        // cout << getHexString(buffer, r_nbyte) << endl;
                         _buffer_in.append(buffer, r_nbyte);     // 每次追加写入数据
                         bytes_transferred += r_nbyte;
                 }
@@ -326,7 +311,7 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
                 }
                 else    // 读数据异常(-1)
                 {
-                        // cout << "r_nbyte----errno: " << r_nbyte << "----" << errno << endl;     // 异步时，当缓冲区无数据时，read会返回-1,即：读完了
+                        // 异步时，当缓冲区无数据时，read会返回-1,即：读完了
                         /* 在非阻塞模式下调用了阻塞操作，在该操作没有完成就返回这个错误，
                          * 这个错误不会破坏socket的同步，下次循环接着recv就可以。
                          */
@@ -357,8 +342,6 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
 
 void WHPSTcpSession::onNewWrite(error_code error)
 {
-        cout << "-----------------------WHPSTcpSession::onNewWrite: "
-                                        << _buffer_out.size() << endl;
         int res = this->sendTcpMessage(_buffer_out);    // 需要判别发送的结果，从而决定要不要关闭连接
 
         if (res > 0)    // 正确发送数据
@@ -425,7 +408,7 @@ void WHPSTcpSession::onNewClose(error_code error)
                         delayMs(0);
                 }
 
-                cout << "=========close close" << endl;
+                // cout << "=========close close" << endl;
 //                _http_onClose(shared_from_this());      // 清除应用层回调相关标志位
                 this->onCall(_http_onClose);
                 this->release();
@@ -434,6 +417,7 @@ void WHPSTcpSession::onNewClose(error_code error)
 
 void WHPSTcpSession::onNewError(error_code error)
 {
+        cout << "WHPSTcpSession::onNewError: " << this->getNetInfo() << endl;
         if (!_is_connect)
         {
                 return;
@@ -442,8 +426,6 @@ void WHPSTcpSession::onNewError(error_code error)
          *      （1）关闭socket
          *      （2）通知主socket对象和EventLoop对象删除该句柄资源
          */
-        cout << "WHPSTcpSession::onNewError: " << shared_from_this().use_count()
-                                        << endl;
         this->onCall(_http_onError);
         this->release();
 }

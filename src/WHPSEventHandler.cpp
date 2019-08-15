@@ -10,12 +10,10 @@ WHPSEventHandler::WHPSEventHandler()
 WHPSEventHandler::~WHPSEventHandler()
 {
         std::lock_guard<std::mutex> lock(_mutex);
-	std::cout << "WHPSEventHandler::~WHPSEventHandler before" << std::endl;
         _cb_read = nullptr;
         _cb_write = nullptr;
         _cb_error = nullptr;
         _cb_close = nullptr;
-        std::cout << "WHPSEventHandler::~WHPSEventHandler end" << std::endl;
 }
 
 void WHPSEventHandler::setFd(const int& fd)
@@ -91,22 +89,18 @@ void __stdcall WHPSEventHandler::__exCallback()
          */
         if (events & EPOLLRDHUP)         // 对端异常关闭事件
         {
-                std::cout << "epoll type: EPOLLRDHUP" << std::endl;
                 _cb_close();
         }
         else if (events & (EPOLLIN | EPOLLPRI))  //读事件，对端有数据或者正常关闭
         {
-                std::cout << "epoll type: EPOLLIN" << std::endl;
                 _cb_read();
         }
         else if (events & EPOLLOUT)  //写事件
         {
-                std::cout << "epoll type: EPOLLOUT" << std::endl;
                 _cb_write();
         }
         else    // 目前连接错误还没有测试过(未出现)
         {
-                std::cout << "epoll type: error" << std::endl;
                 _cb_error();  //连接错误
         }
 }

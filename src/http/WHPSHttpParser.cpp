@@ -149,7 +149,7 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
         }
 
         context._method = req_line[0];
-        context._url = String(req_line[1]).decode("UrlCode");
+        context._url = String(req_line[1]).decode("UrlCode");	// 防止中文
         context._version = req_line[2];
 
         cout << "method : " << context._method  << endl;
@@ -190,9 +190,7 @@ void WHPSHttpParser::getHeaderInfo(SpVector& vrow_seq, HttpRequestContext& conte
                         continue;
                 }
 
-                // cout << "size: " << seq_line.size() << endl;
                 /* 将每一行，按照指定符号拆分成map k-v键值对形式 */
-                // cout << seq_line << endl;
                 GetSplit(context._header, seq_line);
         }
 
