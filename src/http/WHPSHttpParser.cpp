@@ -151,10 +151,11 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
         context._method = req_line[0];
         context._url = String(req_line[1]).decode("UrlCode");	// 防止中文
         context._version = req_line[2];
+        context._isStatic = this->checkResourceType(context._url);  // 判断资源类型
 
-        cout << "method : " << context._method  << endl;
-        cout << "url    : " << context._url << endl;
-        cout << "version: " << context._version << endl;
+        // cout << "method : " << context._method  << endl;
+        // cout << "url    : " << context._url << endl;
+        // cout << "version: " << context._version << endl;
 
         vrow_seq.erase(vrow_seq.begin());       // 处理之后，需要将第一行删除
 
@@ -171,6 +172,26 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
                 && context._method != "DELETE")
         {
                 cout << "not support " << context._method << endl;
+                return false;
+        }
+
+        return true;
+}
+
+bool WHPSHttpParser::checkResourceType(const std::string& url)
+{
+        /* （1）检测的关键是 url 中是否带有相应的关键字符（比如"?"、"&"、"="等字符）
+         * （2）静态资源格式必须符合：
+         *          http://192.168.12.250:3000/A/B/C/D/1.png
+         *      对应的 url 应为：
+         *          /A/B/C/D/1.png
+         *      <注意>：url不能包含"?"、"&"、"="等任何与参数相关的字符
+         * （3）若上述格式全部满足，仍然找不到文件，则报错并返回404
+         */
+        String sUrl(url);
+
+        if (sUrl.matchCase("?") || sUrl.matchCase("&") || sUrl.matchCase("="))
+        {
                 return false;
         }
 

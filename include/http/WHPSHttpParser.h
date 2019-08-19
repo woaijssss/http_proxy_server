@@ -41,6 +41,12 @@ private:
         /* 第一行(请求行)要特殊处理 */
         bool getFirstLine(SpVector& vrow_seq, HttpRequestContext& context);
 
+        /* 提取第一行请求后，根据url格式来判断请求的是否是静态资源；
+         * 如果是静态资源，无需调用至用户应用层，在系统层直接返回资源文件；
+         * 如果不是静态资源，则需要调用至用户层，并通过用户开发的应用程序返回相应的资源。
+         */
+        bool checkResourceType(const std::string& url);
+
         /* 获取http请求头信息 */
         void getHeaderInfo(SpVector& vrow_seq, HttpRequestContext& context);
 

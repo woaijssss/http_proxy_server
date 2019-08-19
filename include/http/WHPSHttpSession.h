@@ -10,6 +10,28 @@
 #include "HttpWhps.h"   // for aplication layer call
 #include "HttpWriterRegistser.h"
 
+/* 系统静态资源处理器（不应对外可见，后面放到源文件里）
+ */
+class WhpsSysResource: public HttpWhps
+{
+public:
+        WhpsSysResource(const std::string& rootPath);
+
+        virtual ~WhpsSysResource();
+
+public:
+        virtual void doGet(HttpWhpsRequest request, HttpWhpsResponse response);
+
+        virtual void doPost(HttpWhpsRequest request, HttpWhpsResponse response) {}
+
+private:
+        /* 处理静态资源请求 */
+        void getResouceFile(const std::string& path, std::string& msg);
+
+private:
+        const std::string& _rootPath;   // 静态资源根目录
+};
+
 /* http session：单个http连接，基于tcp session的tcp连接，二者为强依赖关系
  * HttpSession的实例化，必须依赖于TcpSession；
  * 
@@ -40,9 +62,17 @@ public:
         void setHttpCloseCallback(HttpSessionCB_ cb);
 
 private:
-        // 统一格式类型，参数全部采用tcp session
         /* http接收消息回调 */
         void onHttpMessage();
+
+        /* 消息回调处理程序 */
+        void onCallback(HttpRequestContext& request, HttpResponseContext& response);
+
+        /* 静态资源请求处理 */
+        void onStaticRequest(HttpRequestContext& request, HttpResponseContext& response);
+
+        /* 动态资源请求处理 */
+        void onDynamicRequest(HttpRequestContext& request, HttpResponseContext& response);
 
         /* http发送消息回调 */
         void onHttpSend();
@@ -73,6 +103,7 @@ private:
 
 private:
         const std::string& _obj_name;           // 配置文件中，配置的子类名称
+        WhpsSysResource _whps_static_processor; // 系统静态资源处理器
         HttpWhpsFactory* _http_whps_factory;    // 应用层实例化工厂类对象
         // HttpWhps* _http_whps;                        
         HttpPtrType _http_whps;                 // 应用层（业务层）调用句柄

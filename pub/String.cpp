@@ -136,6 +136,11 @@ size_t String::size()
         return _str.size();
 }
 
+bool String::matchCase(const char* c)
+{
+        return _str.find(c) != string::npos;
+}
+
 const string& String::encode(const string& type)
 {
         _str = Codec::encode(_str, type);

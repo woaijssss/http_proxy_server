@@ -127,8 +127,6 @@ void WHPSTcpSession::onCall(httpCB cb)
 
 void WHPSTcpSession::release()
 {
-        try
-        {
                 {
                         std::lock_guard<std::mutex> lock(_mutex);
                         if (!_is_connect)
@@ -137,7 +135,7 @@ void WHPSTcpSession::release()
                         }
 
                         this->delFromEventLoop();
-                          _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
+                          // _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
                         _is_connect = false;
                         _is_wait = true;
                         _is_processing = false;
@@ -145,6 +143,8 @@ void WHPSTcpSession::release()
                         _buffer_out.clear();
                 }
 
+        try
+        {
                 _cb_cleanup(shared_from_this());
         }
         catch (exception& e)

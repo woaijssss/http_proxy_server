@@ -59,6 +59,9 @@ public:
 
         size_t size();
 
+        /* 判断字符子串是否在String中存在 */
+        bool matchCase(const char* c);
+
         /* 字符串编码
          */
         const std::string& encode(const std::string& type = "utf-8");
