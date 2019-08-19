@@ -66,6 +66,7 @@ protected:
 
 private:
         int _mode;
+        int _tcp_port;   // tcp监听端口
 };
 
 #endif 	// __WHPSSOCKET_H__

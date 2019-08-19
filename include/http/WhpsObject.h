@@ -12,11 +12,13 @@ template<class T>
 class WhpsObject : public WhpsObjRegisterBase, public HttpWhps
 {
 public:
+        using HttpPtrType = HttpWhpsFactory::HttpPtrType;
+public:
         // static WhpsObjRegisterBase * CreateObject()
-        static std::shared_ptr<HttpWhps> CreateObject()
+        static HttpPtrType CreateObject()
         {
                 // return new T();
-                std::shared_ptr<HttpWhps> ptr(new T());
+                HttpPtrType ptr(new T());
                 return ptr;
         }
  
@@ -30,7 +32,7 @@ public:
                         }
                         else
                         {
-                                cout << "regist success" << endl;
+                                cout << "regist success: " << typeid(T).name() << endl;
                         }
                 }
 

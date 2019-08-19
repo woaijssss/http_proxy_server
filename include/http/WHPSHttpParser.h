@@ -16,7 +16,6 @@
  *      （4）将解析后的资源信息、请求头、请求体合成一个大的结构体，返回给外部调用
  */
 /* class WHPSHttpParser; */
-
 class WHPSHttpParser
 {
 public:
