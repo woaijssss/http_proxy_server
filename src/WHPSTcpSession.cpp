@@ -6,11 +6,14 @@ using namespace std;
 #include "util.h"
 
 WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr)
-        : std::enable_shared_from_this<WHPSTcpSession>(), _c_addr(c_addr), _loop(
-                                        loop), _conn_sock(fd), _base_events(
-                                        EPOLLIN | EPOLLPRI), _is_connect(
-                                        true), _is_processing(false), _is_wait(
-                                        false)
+        : std::enable_shared_from_this<WHPSTcpSession>()
+        , _c_addr(c_addr)
+        , _loop(loop)
+        , _conn_sock(fd)
+        , _base_events(EPOLLIN | EPOLLPRI)
+        , _is_connect(true)
+        , _is_processing(false)
+        , _is_wait(false)
 {
         _conn_sock.setOption();
         this->getEndpointInfo();

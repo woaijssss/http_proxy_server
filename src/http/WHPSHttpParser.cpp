@@ -22,7 +22,7 @@ static WHPSHttpParser::SpVector GetUrl(const string& sstr)
         return req_line;
 }
 
-static void GetKvSplit(HttpHeader__& header, const string& sstr, const string& sep)
+static void GetKvSplit(HttpRequestContext& request, const string& sstr, const string& sep)
 {
         if (sstr.empty())
         {
@@ -34,7 +34,8 @@ static void GetKvSplit(HttpHeader__& header, const string& sstr, const string& s
 
         if (spv.size() == 2)         // 最好加上，双层判断保险
         {
-                header[spv[0]] = spv[1];
+                // header[spv[0]] = spv[1];
+                request.setHeader(spv[0], spv[1]);
         }
 }
 
@@ -42,7 +43,7 @@ static void GetKvSplit(HttpHeader__& header, const string& sstr, const string& s
  *      当前是按照文本保存，一般是json或text
  *      但若要支持文件上传等功能，可能需要做二进制数据的缓存（后续扩展）
  */
-static bool GetContactContent(HttpBody__& body, WHPSHttpParser::SpVector& vrow_seq, const char* crlf)
+static bool GetContactContent(HttpRequestContext& request, WHPSHttpParser::SpVector& vrow_seq, const char* crlf)
 {
         if (vrow_seq.empty())
         {
@@ -60,7 +61,8 @@ static bool GetContactContent(HttpBody__& body, WHPSHttpParser::SpVector& vrow_s
          * 而vrow_seq序列在处理请求行的时候，已经将读取完的数据在序列中清除，
          * 因此，获取body时，不需要再进行拼接了，序列中下标为0的元素，就是body。
          */
-        body = vrow_seq[0];
+        // body = vrow_seq[0];
+        request.setBody(vrow_seq[0]);
 #endif
 
         return true;
@@ -70,9 +72,9 @@ static bool GetContactContent(HttpBody__& body, WHPSHttpParser::SpVector& vrow_s
 Impl_GET_CONTENT(Url, WHPSHttpParser::SpVector)
 
 // 根据":"拆分成header的key和value
-Impl_GET_KV_SPLIT(HttpHeader__, ":")
+Impl_GET_KV_SPLIT(HttpRequestContext, ":")
 
-Impl_GET_CONTACT(HttpBody__, WHPSHttpParser::SpVector, "\r\n")
+Impl_GET_CONTACT(HttpRequestContext, WHPSHttpParser::SpVector, "\r\n")
 
 WHPSHttpParser::WHPSHttpParser()
         : _crlf_old("\n")
@@ -148,10 +150,11 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
                 return false;
         }
 
-        context._method = req_line[0];
-        context._url = String(req_line[1]).decode("UrlCode");	// 防止中文
-        context._version = req_line[2];
-        context._isStatic = this->checkResourceType(context._url);  // 判断资源类型
+        const string& method = req_line[0];
+        context.setMethod(method);
+        context.setUrl(String(req_line[1]).decode("UrlCode"));	// 防止中文
+        context.setVersion(req_line[2]);
+        context.setFlag(this->checkResourceType(context.getUrl()));  // 判断资源类型
 
         // cout << "method : " << context._method  << endl;
         // cout << "url    : " << context._url << endl;
@@ -166,12 +169,12 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
          *      DELETE
          * 四种方法 
         */
-        if (context._method != "GET"
-                && context._method != "POST"
-                && context._method != "PUT"
-                && context._method != "DELETE")
+        if (method != "GET"
+                && method != "POST"
+                && method != "PUT"
+                && method != "DELETE")
         {
-                cout << "not support " << context._method << endl;
+                cout << "not support " << method << endl;
                 return false;
         }
 
@@ -212,7 +215,7 @@ void WHPSHttpParser::getHeaderInfo(SpVector& vrow_seq, HttpRequestContext& conte
                 }
 
                 /* 将每一行，按照指定符号拆分成map k-v键值对形式 */
-                GetSplit(context._header, seq_line);
+                GetSplit(context, seq_line);
         }
 
         vrow_seq.erase(vrow_seq.begin(), vrow_seq.begin()+count);
@@ -222,18 +225,19 @@ bool WHPSHttpParser::getBodyInfo(SpVector& vrow_seq, HttpRequestContext& context
 {
         /* GET和DELETE方法没有请求消息体
          */
-        if (context._method == "GET" || context._method == "DELETE")
+        const string& method = context.getMethod();
+        if (method == "GET" || method == "DELETE")
         {
                 return true;
         }
 
-        if (!GetContact(context._body, vrow_seq))
+        if (!GetContact(context, vrow_seq))
         {
                 return false;
         }
 
         cout << "==========" << endl;
-        cout << context._body << endl;
+        cout << context.getBody() << endl;
         cout << "==========" << endl;
 
         return true;

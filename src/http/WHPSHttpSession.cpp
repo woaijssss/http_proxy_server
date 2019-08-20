@@ -61,7 +61,8 @@ void WHPSHttpSession::onHttpMessage()
         {
                 cout << "WHPSHttpSession::onHttpMessage whps object is not callable...." << endl;
                 // response.getWriter().write(" ");
-                _tcp_session->close();
+                //_tcp_session->close();
+                this->notifyToClose();
                 return;
         }
 #endif
@@ -110,7 +111,7 @@ void WHPSHttpSession::sendHttpMessage(const string& msg)
 void WHPSHttpSession::onCallback(HttpRequestContext& request, HttpResponseContext& response)
 {
         /* 调用处理部分逻辑 */
-        if (request._isStatic)      // 静态资源
+        if (request.getFlag())      // 静态资源
         {
                 this->onStaticRequest(request, response);
         }
@@ -126,29 +127,31 @@ void WHPSHttpSession::onStaticRequest(HttpRequestContext& request, HttpResponseC
         /* 框架请求静态资源，仅支持 GET 方法获取
          * 不支持也没必要支持 POST、DELETE
          */
-        if (request._method == "GET")
+        if (request.getMethod() == "GET")
         {
                 _whps_static_processor.doGet(request, response);    // 通过静态资源处理器直接返回
+                // this->notifyToClose();
         }
         else
         {
-                cout << "WHPSHttpSession::onStaticRequest not support method: [" << request._method << "]" << endl;
+                cout << "WHPSHttpSession::onStaticRequest not support method: [" << request.getMethod() << "]" << endl;
         }
 }
 
 void WHPSHttpSession::onDynamicRequest(HttpRequestContext& request, HttpResponseContext& response)
 {
-        if (request._method == "GET" || request._method == "DELETE")
+        const string& method = request.getMethod();
+        if (method == "GET" || method == "DELETE")
         {
                 _http_whps->doGet(request, response);
         }
-        else if (request._method == "POST" || request._method == "PUT")
+        else if (method == "POST" || method == "PUT")
         {
                 _http_whps->doPost(request, response);
         }
         else
         {
-                cout << "WHPSHttpSession::onDynamicRequest not support method: [" << request._method << "]" << endl;
+                cout << "WHPSHttpSession::onDynamicRequest not support method: [" << method << "]" << endl;
         }
 }
 
@@ -170,7 +173,7 @@ void WhpsSysResource::doGet(HttpWhpsRequest request, HttpWhpsResponse response)
 {
         /* 静态资源自动加载功能（通过配置，获取静态资源路径，并写回给前端）
          */
-        string path = _rootPath + request._url;
+        string path = _rootPath + request.getUrl();
         string msg;
         this->getResouceFile(path, msg);
 

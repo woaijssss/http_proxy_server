@@ -36,6 +36,7 @@ void WebSourceConfig::init()
         _whpsSaverWithSection["whps"]["whps-name"] = "WhpsDefault";             // 默认whps对象
         _whpsSaverWithSection["StaticResource"]["rootDir"] = "./webResource";   // 静态资源根目录
         _whpsSaverWithSection["Server"]["tcpPort"] = "1024";                    // 默认监听tcp端口
+        _whpsSaverWithSection["Server"]["ioThreads"] = "4";                      // 默认io线程数
 }
 
 bool WebSourceConfig::readConfig()

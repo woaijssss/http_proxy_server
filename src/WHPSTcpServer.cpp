@@ -4,8 +4,9 @@ using namespace std;
 
 #include "WHPSTcpServer.h"
 #include "WHPSConnSocket.h"
+#include "WHPSConfig.h"
 
-static int g_nthreads = 1;     // 可做成配置(至少是1)
+// static int g_nthreads = 1;     // 可做成配置(至少是1)
 
 std::shared_ptr<WHPSTcpServer> WHPSTcpServer::_tcp_server;
 // WHPSTcpServer::GC WHPSTcpServer::_gc;
@@ -13,7 +14,7 @@ std::shared_ptr<WHPSTcpServer> WHPSTcpServer::_tcp_server;
 WHPSTcpServer::WHPSTcpServer()
         : ImplSingleton<WHPSTcpServer>()
         , _loop()
-        , _thread_pool(g_nthreads, _loop)
+        , _thread_pool(atoi(GetWebSourceConfig().get("Server", "ioThreads").c_str()), _loop)
         , _tcp_socket(SERVER_MODE)
 {
         
@@ -122,7 +123,7 @@ void WHPSTcpServer::onNewSession()
 void WHPSTcpServer::onCleanUpResource(const sp_TcpSession& sp_tcp_session)
 {
         _tcp_sess_list.erase(sp_tcp_session->getConn().get());
-        cout << "WHPSTcpServer::onCleanUpResource-----size after: " << _tcp_sess_list.size() << endl;
+        cout << "WHPSTcpServer::onCleanUpResource-----size: " << _tcp_sess_list.size() << endl;
 
         // cout << "WHPSTcpServer::onCleanUpResource-----usecount: " << sp_tcp_session.use_count() << endl;
 
