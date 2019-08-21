@@ -60,6 +60,7 @@ bool HttpWhpsFactory::regist(const char * name, CreateFunction func)
         if (!func)
         {
                 cout << "HttpWhpsFactory::regist false" << endl;
+
                 return false;
         }
 

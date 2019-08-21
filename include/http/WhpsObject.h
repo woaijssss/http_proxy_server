@@ -30,10 +30,6 @@ public:
                         {
                                 cout << "regist failed" << endl;
                         }
-                        else
-                        {
-                                cout << "regist success: " << typeid(T).name() << endl;
-                        }
                 }
 
                 inline void do_nothing()const { }

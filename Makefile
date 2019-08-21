@@ -12,11 +12,13 @@ SRC_DIR:=src
 BUILD_DIR:=build
 BIN_DIR:=bin
 
-SRC:=$(wildcard $(SRC_DIR)/*.cpp) \
+SRC:= \
 	$(wildcard $(PUB)/*.cpp) \
 	$(wildcard $(PUB)/pub_macro/*.cpp) \
 	$(wildcard $(PUB)/pub_log/*.cpp) \
 	$(wildcard $(PUB)/stdio/*.cpp) \
+	$(wildcard $(PUB)/stl/*.cpp) \
+	$(wildcard $(SRC_DIR)/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(HTTP)/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(FACTORY)/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(REGISTER)/*.cpp) \
@@ -31,13 +33,14 @@ CPPFLAGS+=-Iinclude \
 		-I$(PUB)/pub_macro \
 		-I$(PUB)/pub_log \
 		-I$(PUB)/stdio \
+		-I$(PUB)/stl \
 		-Iinclude/$(HTTP) \
 		-Iinclude/$(FACTORY) \
 		-Iinclude/$(REGISTER) \
 		-Iinclude/$(CONFIG) \
 		-Itest_develop
 
-CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -MMD -D_GLIBCXX_USE_NANOSLEEP \
+CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -MMD \
 	-Wno-deprecated -Wdeprecated-declarations \
 	-Wunused-function \
 	-Wno-unused-parameter  # 设置此项，不提示“未使用变量”，正式程序需要去掉 
@@ -72,12 +75,12 @@ $(BIN_DIR)/$(BIN): $(OBJ)
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	@echo "(CXX) $@"
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -c -o $@
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -c -o $@
 
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
-	echo "(CXX) $@"
-	$(CC) $(CFLAGS) $< -c -o $@
+	@echo "(CXX) $@"
+	@$(CC) $(CFLAGS) $< -c -o $@
 
 clean:
 	@rm -rf $(BUILD_DIR) $(BIN_DIR)

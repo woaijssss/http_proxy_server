@@ -54,15 +54,13 @@ void WHPSHttpSession::onHttpMessage()
         cout << "WHPSHttpSession::onHttpMessage" << endl;
         HttpRequestContext context;
         HttpResponseContext response(_writer_func);
-
 #if 1
         _http_whps = _http_whps_factory->get(_obj_name);
         if (!_http_whps)
         {
                 cout << "WHPSHttpSession::onHttpMessage whps object is not callable...." << endl;
-                // response.getWriter().write(" ");
-                //_tcp_session->close();
                 this->notifyToClose();
+
                 return;
         }
 #endif
@@ -74,22 +72,17 @@ void WHPSHttpSession::onHttpMessage()
 
 void WHPSHttpSession::onHttpSend()
 {
-        cout << "WHPSHttpSession::onHttpSend" << endl;
         _tcp_session->getBufferIn().clear();     // 假设已经处理完毕
-//        sleep(5);
 }
 
 void WHPSHttpSession::onHttpClose()
 {
-        cout << "WHPSHttpSession::onHttpClose" << endl;
-//        _tcp_session->setProcessingFlag(false);
         _http_closeCB(_tcp_session);
 }
 
 void WHPSHttpSession::onHttpError()
 {
         cout << "WHPSHttpSession::onHttpError" << endl;
-//        _tcp_session->setProcessingFlag(false);
         _http_closeCB(_tcp_session);
 }
 
@@ -102,10 +95,7 @@ void WHPSHttpSession::notifyToClose()
 
 void WHPSHttpSession::sendHttpMessage(const string& msg)
 {
-//        cout << "msg: " << msg << endl;
-
         _tcp_session->send(msg);
-//        _tcp_session->getBufferIn().clear();    // 测试
 }
 
 void WHPSHttpSession::onCallback(HttpRequestContext& request, HttpResponseContext& response)
@@ -123,7 +113,6 @@ void WHPSHttpSession::onCallback(HttpRequestContext& request, HttpResponseContex
 
 void WHPSHttpSession::onStaticRequest(HttpRequestContext& request, HttpResponseContext& response)
 {
-        cout << "WHPSHttpSession::onStaticRequest" << endl;
         /* 框架请求静态资源，仅支持 GET 方法获取
          * 不支持也没必要支持 POST、DELETE
          */
@@ -141,6 +130,7 @@ void WHPSHttpSession::onStaticRequest(HttpRequestContext& request, HttpResponseC
 void WHPSHttpSession::onDynamicRequest(HttpRequestContext& request, HttpResponseContext& response)
 {
         const string& method = request.getMethod();
+
         if (method == "GET" || method == "DELETE")
         {
                 _http_whps->doGet(request, response);

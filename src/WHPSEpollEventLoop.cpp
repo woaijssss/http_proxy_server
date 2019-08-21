@@ -54,7 +54,6 @@ void WHPSEpollEventLoop::loop()
 {
         while (!_is_stop)
         {
-                // cout << "------thread_call(" << (unsigned int)std::hash<std::thread::id>()(std::this_thread::get_id()) << ")" << endl;
                 _poller.poll(_event_queue);         // 获取当前所有的事件
 
                 /* 当前是线程池所有线程公用一个事件队列，不加锁会崩溃
@@ -77,7 +76,6 @@ void WHPSEpollEventLoop::loop()
 #include <unistd.h>
 void WHPSEpollEventLoop::loopOne()
 {
-        // cout << "WHPSEpollEventLoop::loopOne------thread_call(" << (unsigned int)std::hash<std::thread::id>()(std::this_thread::get_id()) << ")" << endl;
         _poller.poll(_event_queue);         // 获取当前所有的事件
 
         /* 当前是线程池所有线程，每个线程单独一个事件队列

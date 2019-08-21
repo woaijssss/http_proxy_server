@@ -27,7 +27,8 @@ WHPSTcpServer::~WHPSTcpServer()
 
 WHPSTcpServer* WHPSTcpServer::GetInstance()
 {
-        if (!_tcp_server.get())
+        // if (!_tcp_server.get())
+        if (!_tcp_server)
         {
                 _tcp_server = std::shared_ptr<WHPSTcpServer>(new WHPSTcpServer());
         }
@@ -56,12 +57,14 @@ bool WHPSTcpServer::start()
         if (_tcp_socket.init() < 0)     // 启动失败
         {
                 cout << "tcp socket init failed..." << endl;
+
                 return false;
         }
 
         if (!this->isValid())
         {
                 cout << "socket is invalid..." << endl;
+
                 return false;
         }
 
@@ -89,10 +92,10 @@ void WHPSTcpServer::onNewConnection(error_code error)
         if (error)      // 客户端连接错误
         {
                 cout << "error_code: " << error << endl;
+
                 return;
         }
 
-        cout << "a client has been connected..." << endl;
         this->onNewSession();
 }
 
@@ -124,8 +127,6 @@ void WHPSTcpServer::onCleanUpResource(const sp_TcpSession& sp_tcp_session)
 {
         _tcp_sess_list.erase(sp_tcp_session->getConn().get());
         cout << "WHPSTcpServer::onCleanUpResource-----size: " << _tcp_sess_list.size() << endl;
-
-        // cout << "WHPSTcpServer::onCleanUpResource-----usecount: " << sp_tcp_session.use_count() << endl;
 
         if (!_tcp_sess_list.size())     // 主要是释放map的内存，可能没用（后面换个方法）
         {

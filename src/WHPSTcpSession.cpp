@@ -34,7 +34,6 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
 
 WHPSTcpSession::~WHPSTcpSession()
 {
-        cout << "~WHPSTcpSession---" << this->getNetInfo() << endl;
         this->release();
         _conn_sock.close();
 }
@@ -50,7 +49,7 @@ void WHPSTcpSession::getEndpointInfo()
                 _net_info = _client_ip + ":" + to_string(_client_port);
         }
 
-        // cout << "客户端连接信息： " << (_client_ip + ":" + _client_port) << endl;
+	cout << "a client has been connected: " << _net_info << endl;
 }
 
 const std::string& WHPSTcpSession::getIp() const
@@ -152,7 +151,8 @@ void WHPSTcpSession::release()
         }
         catch (exception& e)
         {
-                cout << "WHPSTcpSession::release: " << e.what() << endl;
+                // pass
+                //cout << "WHPSTcpSession::release: " << e.what() << endl;
         }
 }
 
@@ -247,7 +247,7 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
                         }
                         else if (errno == EINTR) // 中断，write()会返回-1，同时置errno为EINTR
                         {
-
+				// pass
                         }
                         else
                         {
@@ -411,8 +411,6 @@ void WHPSTcpSession::onNewClose(error_code error)
                         delayMs(0);
                 }
 
-                // cout << "=========close close" << endl;
-//                _http_onClose(shared_from_this());      // 清除应用层回调相关标志位
                 this->onCall(_http_onClose);
                 this->release();
         }

@@ -14,4 +14,5 @@ cat \
         pub/pub_macro/* \
         pub/stdio/* \
         pub/pub_log/*\
+        pub/stl/*\
   > 1

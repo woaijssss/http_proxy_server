@@ -19,7 +19,8 @@ WHPSHttpServer::~WHPSHttpServer()
 /*static */
 WHPSHttpServer& WHPSHttpServer::GetInstance()
 {
-        if (!_http_server.get())
+        // if (!_http_server.get())
+        if (!_http_server)
         {
                 _http_server = std::shared_ptr<WHPSHttpServer>(new WHPSHttpServer());
         }
@@ -52,11 +53,9 @@ void WHPSHttpServer::onNewSession(const sp_TcpSession& tcp_session)
 
 void WHPSHttpServer::onNewClose(const sp_TcpSession& tcp_session)
 {
-        cout << "WHPSHttpServer::onNewClose before" << endl;
         char addr[1024] = {0};
         sprintf(addr, "%ld", (long)tcp_session.get());
         string str(addr);
         _http_sess_list.erase(tcp_session->getNetInfo() + str);
-        cout << "WHPSHttpServer::onNewClose end" << endl;
         cout << "WHPSHttpServer::onNewClose-----size: " << _http_sess_list.size() << endl;
 }

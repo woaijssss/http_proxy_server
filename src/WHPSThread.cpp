@@ -12,7 +12,6 @@ WHPSThread::WHPSThread(Task<task_t>& task)
 
 WHPSThread::~WHPSThread()
 {
-        // cout << "clean up the WHPSThread id: " << _thrd.getId() << endl;
         this->stop();
         _thrd.join();
 }
@@ -21,7 +20,6 @@ void WHPSThread::start()
 {
         task_func_t callback = std::bind(&WHPSThread::workFunc, this);
         _thrd.start(callback);
-        // cout << "this thread: " << _thrd.getId() << endl;
 }
 
 void WHPSThread::stop()

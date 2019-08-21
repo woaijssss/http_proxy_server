@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 
 #include "String.h"
@@ -18,12 +19,13 @@ WebSourceConfig::WebSourceConfig()
 
 WebSourceConfig::~WebSourceConfig()
 {
-        cout << "WebSourceConfig::~WebSourceConfig" << endl;
+
 }
 
 WebSourceConfig& WebSourceConfig::GetInstance()
 {
-        if (!_webSourceConfig.get())
+        // if (!_webSourceConfig.get())
+        if (!_webSourceConfig)
         {
                 _webSourceConfig = std::shared_ptr<WebSourceConfig>(new WebSourceConfig());
         }
@@ -44,7 +46,7 @@ bool WebSourceConfig::readConfig()
         ifstream in(_webConfigPath);
 
         if (!in) {
-                cout << _webConfigPath + ": cannot read." << endl;
+                cout << _webConfigPath + " cannot read." << endl;
                 exit(-1);       // 没有找到配置文件即退出进程
         }
         
@@ -136,11 +138,15 @@ WebSourceConfig::ConfigType& WebSourceConfig::getAllConfig()
 
 void WebSourceConfig::print()
 {
+	cout << "*********************configuration*********************" << endl;
+	cout.setf(ios::left); 
+	cout << setw(15) << "<section>" << "\t\t" << setw(15) << "<key>" << "\t\t" << setw(15) << "<value>" << endl;
         for (auto& mPari: _whpsSaverWithSection)
         {
                 for (auto& obj: mPari.second)
                 {
-                        cout << mPari.first<< "----" << obj.first << ": " << obj.second << endl;
+                        cout << setw(15) << mPari.first << "\t\t" << setw(15) << obj.first << "\t\t" << setw(15) << obj.second << endl;
                 }
         }
+	cout << "*******************************************************" << endl;
 }
