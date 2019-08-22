@@ -5,6 +5,7 @@
 
 #include "util.h"
 #include "WHPSConfig.h"
+#include "WHPSTimer.h"
 
 using namespace std;
 
@@ -40,4 +41,5 @@ void initConfig()
         }
 
         GetWebSourceConfig().print();
+        GetTimerManager();
 }

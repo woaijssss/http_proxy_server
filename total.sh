@@ -15,6 +15,5 @@ cat \
         pub/stdio/* \
         pub/pub_log/*\
         pub/stl/*\
-	tests/* \
 	test_develop/* \
   > 1
