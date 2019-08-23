@@ -6,7 +6,7 @@
 
 using namespace std;
 
-TimerManager tmg;
+// TimerManager tmg;
 
 WHPSTimer::WHPSTimer(TimerCallback cb, void* param, const int& interval)
         : _isActive(false), _id(interval/1)
@@ -79,14 +79,14 @@ void WHPSTimer::start()
 {
         _isActive = true;
         _fireTime = _interval+this->getMilliseconds();
-        tmg.addTimer(*this);
+        // tmg.addTimer(*this);
 }
 
 void WHPSTimer::stop()
 {
         _isActive = false;
         _fireTime = 0xFFFFFFFF;    // 设置为永久
-        tmg.delTimer(*this);
+        // tmg.delTimer(*this);
 }
 
 const int& WHPSTimer::id() const 
@@ -97,7 +97,7 @@ const int& WHPSTimer::id() const
 
 TimerManager::TimerManager()
         : Heap()
-        , _thrd(thread(&TimerManager::loop, this))
+        // , _thrd(thread(&TimerManager::loop, this))
 {
 
 }

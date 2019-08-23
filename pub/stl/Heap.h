@@ -13,8 +13,9 @@ class Heap
 public:
         using HeapIterator = typename std::list<T>::iterator;
 public:
-        Heap()
-                : _heap()
+        Heap(int flag = 0)
+                : _flag(flag)
+                , _heap()
         {
 
         }
@@ -32,13 +33,14 @@ public:
                  * 实际堆中的数据，从生成开始就是有序的
                  * 因此，每插入一个数据，后面可以做成二分查找，提高效率
                  */
+                std::lock_guard<std::mutex> lock(_mutex);
                 typename std::list<T>::iterator it = _heap.begin();
                 for (; it != _heap.end(); ++it)
                 {
                         /* 若使用 >= 可能存在有些节点一直取不到
                          * 仅使用 > 进行比较，提高鲁棒性
                          */
-                        if (item < *it)
+                        if (!_flag ? item < *it : item > *it)
                         {
                                 _heap.insert(it, item);
                                 /* 因为这里只插入一个节点后，break退出循环，所以不存在迭代器失效的问题 */
@@ -55,7 +57,7 @@ public:
         T pop()
         {
                 T item;
-                // std::lock_guard<std::mutex> lock(_mutex);
+                std::lock_guard<std::mutex> lock(_mutex);
                 if (_heap.size())
                 {
                         item = _heap.front();
@@ -67,6 +69,7 @@ public:
 
         void print()
         {
+                std::lock_guard<std::mutex> lock(_mutex);
                 for (auto& obj: _heap)
                 {
                         std::cout << obj << std::endl;
@@ -76,19 +79,19 @@ public:
 protected:
         T front()
         {
-                // std::lock_guard<std::mutex> lock(_mutex);
+                std::lock_guard<std::mutex> lock(_mutex);
                 return _heap.front();
         }
 
         size_t size()
         {
-                // std::lock_guard<std::mutex> lock(_mutex);
+                std::lock_guard<std::mutex> lock(_mutex);
                 return _heap.size();
         }
 
         HeapIterator find(const T& item)
         {
-                // std::lock_guard<std::mutex> lock(_mutex);
+                std::lock_guard<std::mutex> lock(_mutex);
                 // HeapIterator it = std::find(_heap.begin(), _heap.end(), item);
                 HeapIterator it = _heap.begin();
 
@@ -105,7 +108,7 @@ protected:
 
         void erase(HeapIterator hit)
         {
-                // std::lock_guard<std::mutex> lock(_mutex);
+                std::lock_guard<std::mutex> lock(_mutex);
                 _heap.erase(hit);
         }
 
@@ -115,6 +118,7 @@ protected:
         }
 
 private:
+        int _flag;          // 堆类型标识：0为最小堆(默认)，1为最大堆
         std::list<T> _heap;  // 方便随机删除和插入
         std::mutex _mutex;
 };

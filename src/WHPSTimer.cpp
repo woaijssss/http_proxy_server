@@ -8,7 +8,7 @@ using namespace std;
 
 std::shared_ptr<TimerManager> TimerManager::_timer_manager;
 
-WHPSTimer::WHPSTimer(TimerCallback cb, void* param, const int& interval)
+WHPSTimer::WHPSTimer(TimerCallback_t cb, void* param, const int& interval)
         : _isActive(false), _id(interval/1)
 {
         _interval = interval;
@@ -37,12 +37,12 @@ void WHPSTimer::setInterval(const int& interval)
         _interval = interval;
 }
 
-void WHPSTimer::setTimerCallback(TimerCallback cb)
+void WHPSTimer::setTimerCallback(TimerCallback_t cb)
 {
         _timeCB = cb;
 }
 
-WHPSTimer::TimerCallback WHPSTimer::getTimerCallback()
+WHPSTimer::TimerCallback_t WHPSTimer::getTimerCallback()
 {
         return _timeCB;
 }
@@ -84,10 +84,10 @@ void WHPSTimer::start()
 
 void WHPSTimer::stop()
 {
+        GetTimerManager()->delTimer(*this);
         _id = -1;
         _isActive = false;
         _fireTime = 0xFFFFFFFF;    // 设置为永久
-        GetTimerManager()->delTimer(*this);
 }
 
 const int& WHPSTimer::id() const 
@@ -128,6 +128,7 @@ void TimerManager::addTimer(WHPSTimer t)
 void TimerManager::delTimer(const WHPSTimer& t)
 {
         std::lock_guard<std::mutex> lock(_mutex);
+        cout << "TimerManager::delTimer" << endl;
         std::list<WHPSTimer>::iterator it = this->find(t);
 
         if (it != getHeap().end())
@@ -135,6 +136,10 @@ void TimerManager::delTimer(const WHPSTimer& t)
                 cout << "删除定时器： " << it->id() << endl;
                 this->erase(it);        
                 cout << "队列大小： " << this->size() << endl;
+        }
+        else
+        {
+                cout << "未找到定时器: " << t.id() << endl;
         }
 }
 
@@ -152,9 +157,9 @@ void TimerManager::stop()
         _thrd.join();
 }
 
-long TimerManager::waitTime()
+long TimerManager::waitTime(WHPSTimer& t)
 {
-        WHPSTimer t = this->front();
+        // WHPSTimer t = this->front();
         const long& fire_time = t.fireTime();
         const long& now = t.getMilliseconds();
 
@@ -167,20 +172,24 @@ void TimerManager::loop()
 {
         while (!_is_stop)
         {
-                std::lock_guard<std::mutex> lock(_mutex);
                 if (!this->size())
                 {
-                        usleep(100);
+                        usleep(10);
                         continue;
                 }
 
                 // std::this_thread::nanpsleep(this->waitTime());
-                std::this_thread::sleep_for(chrono::milliseconds(this->waitTime()));
-                WHPSTimer t = this->pop();
+                WHPSTimer t = this->front();
+                std::this_thread::sleep_for(chrono::milliseconds(this->waitTime(t)));
+                // WHPSTimer t = this->pop();
+                t = this->pop();
 
                 if (t.isValid())
                 {
-                        t.getTimerCallback()(t);
+                        {
+                                std::lock_guard<std::mutex> lock(_mutex);
+                                t.getTimerCallback()(t);        // 执行定时器回调
+                        }
                         t.start();
                 }
         }

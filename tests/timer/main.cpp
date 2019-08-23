@@ -9,17 +9,19 @@ void func(WHPSTimer& t)
         cout << t.id() << endl;
 }
 
-extern TimerManager tmg;
 int main()
 {
-#if 0
-        for (int i = 10; i > 0; i--)
-        {
-                WHPSTimer t(std::bind(&func, std::placeholders::_1), NULL, i*10);
-                t.start();
-        }
+#if 1
+        Heap<int> heap(1);
+        heap.push(9);
+        heap.push(11);
+        heap.push(2);
+        heap.push(5);
+        heap.push(4);
+        heap.push(8);
+        heap.push(1);
 
-        tmg.loop();
+        heap.print();
 #else
         WHPSTimer t1, t7;
         for (int i = 10; i > 0; i--)

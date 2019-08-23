@@ -43,3 +43,18 @@ void initConfig()
         GetWebSourceConfig().print();
         GetTimerManager();
 }
+
+/***************************************/
+// 使用该方法，可以动态的加载运行库
+#include <dlfcn.h>
+static void testPO()
+{
+        void* handle = dlopen("./bin/libtest.so", RTLD_LAZY);
+        if (!handle) {
+                cerr << "Cannot load library: " << dlerror() << '\n';
+                return; 
+        }
+
+        dlclose(handle);
+}
+/***************************************/

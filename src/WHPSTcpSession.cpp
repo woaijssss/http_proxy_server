@@ -84,11 +84,7 @@ WHPSConnSocket& WHPSTcpSession::getConn()
 
 void WHPSTcpSession::close()
 {
-        _is_wait = true;
-        _is_processing = false;
-        _buffer_in.clear();
-        _buffer_out.clear();
-        this->onNewClose(0);
+        this->release();
 }
 
 void WHPSTcpSession::addToEventLoop()
@@ -129,21 +125,21 @@ void WHPSTcpSession::onCall(httpCB cb)
 
 void WHPSTcpSession::release()
 {
+        {
+                std::lock_guard<std::mutex> lock(_mutex);
+                if (!_is_connect)
                 {
-                        std::lock_guard<std::mutex> lock(_mutex);
-                        if (!_is_connect)
-                        {
-                                return;
-                        }
-
-                        this->delFromEventLoop();
-                          // _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
-                        _is_connect = false;
-                        _is_wait = true;
-                        _is_processing = false;
-                        _buffer_in.clear();
-                        _buffer_out.clear();
+                        return;
                 }
+
+                this->delFromEventLoop();
+                  // _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
+                _is_connect = false;
+                _is_wait = true;
+                _is_processing = false;
+                _buffer_in.clear();
+                _buffer_out.clear();
+        }
 
         try
         {
@@ -453,10 +449,12 @@ void WHPSTcpSession::setHttpErrorCallback(httpCB cb)
 
 void WHPSTcpSession::setProcessingFlag(bool is_processing)
 {
+        std::lock_guard<std::mutex> lock(_mutex_processing_flag);
         _is_processing = is_processing;
 }
 
-const bool& WHPSTcpSession::getProcessingFlag() const
+const bool& WHPSTcpSession::getProcessingFlag()
 {
+        std::lock_guard<std::mutex> lock(_mutex_processing_flag);
         return _is_processing;
 }

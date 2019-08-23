@@ -15,10 +15,10 @@
 class WHPSTimer: public ImplTimer<WHPSTimer>
 {
 public:
-        using TimerCallback = ImplTimer<WHPSTimer>::TimerCallback;
+        using TimerCallback_t = ImplTimer<WHPSTimer>::TimerCallback_t;
 public:
         /* interval为触发间隔时间的毫秒数 */
-        WHPSTimer(TimerCallback cb = nullptr, void* param = NULL, const int& interval = -1);
+        WHPSTimer(TimerCallback_t cb = nullptr, void* param = NULL, const int& interval = -1);
 
         virtual ~WHPSTimer();
 
@@ -30,9 +30,9 @@ public:
         /* 设置定时器触发间隔时间 */
         virtual void setInterval(const int& interval);
 
-        virtual void setTimerCallback(TimerCallback cb);
+        virtual void setTimerCallback(TimerCallback_t cb);
 
-        virtual TimerCallback getTimerCallback();
+        virtual TimerCallback_t getTimerCallback();
 
         virtual void start();
 
@@ -87,7 +87,7 @@ private:
         void stop();
 
         /* 当前线程等待时间 */
-        long waitTime();
+        long waitTime(WHPSTimer& t);
 
         void onCallTask(WHPSTimer);
 

@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "WHPSTimer.h"
 #include "WHPSTcpSession.h"
 #include "WHPSHttpParser.h"
 #include "HttpWhpsFactory.h"
@@ -48,11 +49,15 @@ public:
         using HttpSessionCB_ = std::function<void(const sp_TcpSession&)>;
         using WriterFunc = HttpWriterRegistser::cbFunc;
         using HttpPtrType = HttpWhpsFactory::HttpPtrType;
+        using TimerCallback_t = WHPSTimer::TimerCallback_t;
 public:
         /* http session的实例化，必须依赖于tcp session，是一一对应的关系 */
         WHPSHttpSession(const sp_TcpSession tcp_session);
 
         ~WHPSHttpSession();
+
+        /* 定时器回调函数 */
+        void __stdcall TimerCallback(WHPSTimer& timer);
 
 public:
         /* 获取当前http连接对应的tcp连接 */
@@ -111,6 +116,9 @@ private:
 
         WriterFunc _writer_func;
         HttpWriterRegistser _writer;   // 数据发送注册器
+
+        TimerCallback_t _cb;
+        WHPSTimer _timer;
 };
 
 #endif  // __WHPS_HTTP_SESSION_H__

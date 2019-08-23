@@ -13,8 +13,9 @@ class Heap
 public:
         using HeapIterator = typename std::list<T>::iterator;
 public:
-        Heap()
-                : _heap()
+        Heap(int flag = 0)
+                : _flag(flag)
+                , _heap()
         {
 
         }
@@ -38,7 +39,7 @@ public:
                         /* 若使用 >= 可能存在有些节点一直取不到
                          * 仅使用 > 进行比较，提高鲁棒性
                          */
-                        if (item < *it)
+                        if (!_flag ? item < *it : item > *it)
                         {
                                 _heap.insert(it, item);
                                 /* 因为这里只插入一个节点后，break退出循环，所以不存在迭代器失效的问题 */
@@ -115,6 +116,7 @@ protected:
         }
 
 private:
+        int _flag;          // 堆类型标识：0为最小堆(默认)，1为最大堆
         std::list<T> _heap;  // 方便随机删除和插入
         std::mutex _mutex;
 };

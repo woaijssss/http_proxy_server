@@ -36,6 +36,11 @@ public:
                 return _buffer_out;
         }
 
+        WHPSEpollEventLoop& getLoop()
+        {
+                return _loop;
+        }
+
 public:
         /* 获取对端网络信息：
          *    ip、端口等
@@ -98,7 +103,7 @@ public:         // 应用层回调函数设置
 
         void setProcessingFlag(bool is_processing);
 
-        const bool& getProcessingFlag() const;
+        const bool& getProcessingFlag();
 
 private:
 
@@ -170,6 +175,7 @@ private:        // 应用层回调函数定义
         httpCB _http_onError;           // http异常错误回调函数
 
         std::mutex _mutex;
+        std::mutex _mutex_processing_flag;    // 数据处理标识锁
 };
 
 typedef WHPSTcpSession::TcpSessionCB    TcpSessionCB;
