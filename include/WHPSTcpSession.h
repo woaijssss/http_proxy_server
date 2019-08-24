@@ -165,7 +165,6 @@ private:    // 对应用服务层提供的可用数据
 
         bool _is_connect /*= true*/;    // 连接标志(默认为true)
 
-        bool _is_processing;             // 数据处理标志
         bool _is_wait;
 
 private:        // 应用层回调函数定义
@@ -175,7 +174,6 @@ private:        // 应用层回调函数定义
         httpCB _http_onError;           // http异常错误回调函数
 
         std::mutex _mutex;
-        std::mutex _mutex_processing_flag;    // 数据处理标识锁
 };
 
 typedef WHPSTcpSession::TcpSessionCB    TcpSessionCB;

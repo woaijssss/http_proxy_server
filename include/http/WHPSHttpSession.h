@@ -39,7 +39,7 @@ private:
  * （1）应用层的数据处理，入口应是：
  *      WHPSHttpSession::onHttpRecv()
  */
-class WHPSHttpSession
+class WHPSHttpSession: public std::enable_shared_from_this<WHPSHttpSession>
 {
 public:
         using sp_TcpSession = WHPSTcpSession::sp_TcpSession;
@@ -99,6 +99,10 @@ private:        // writer
          */
         void sendHttpMessage(const std::string& msg);
 
+        void setProcessingFlag(bool is_processing);
+
+        const bool& getProcessingFlag();
+
 private:
         // 先使用这种方式测试http功能，后续引入工作线程池后，可以将发送消息的任务，加入到工作线程队列里
         const sp_TcpSession _tcp_session;      // tcp连接对象
@@ -119,6 +123,9 @@ private:
 
         TimerCallback_t _cb;
         WHPSTimer _timer;
+
+        bool _is_processing;             // 数据处理标志
+        std::mutex _mutex_processing_flag;    // 数据处理标识锁
 };
 
 #endif  // __WHPS_HTTP_SESSION_H__

@@ -12,7 +12,6 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         , _conn_sock(fd)
         , _base_events(EPOLLIN | EPOLLPRI)
         , _is_connect(true)
-        , _is_processing(false)
         , _is_wait(false)
 {
         _conn_sock.setOption();
@@ -34,6 +33,7 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
 
 WHPSTcpSession::~WHPSTcpSession()
 {
+        cout << "WHPSTcpSession::~WHPSTcpSession" << endl;
         this->release();
         _conn_sock.close();
 }
@@ -136,7 +136,7 @@ void WHPSTcpSession::release()
                   // _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
                 _is_connect = false;
                 _is_wait = true;
-                _is_processing = false;
+//                _is_processing = false;
                 _buffer_in.clear();
                 _buffer_out.clear();
         }
@@ -447,14 +447,3 @@ void WHPSTcpSession::setHttpErrorCallback(httpCB cb)
         _http_onError = cb;
 }
 
-void WHPSTcpSession::setProcessingFlag(bool is_processing)
-{
-        std::lock_guard<std::mutex> lock(_mutex_processing_flag);
-        _is_processing = is_processing;
-}
-
-const bool& WHPSTcpSession::getProcessingFlag()
-{
-        std::lock_guard<std::mutex> lock(_mutex_processing_flag);
-        return _is_processing;
-}

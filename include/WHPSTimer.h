@@ -41,19 +41,21 @@ public:
         /* 获取当前时间毫秒数 */
         inline long getMilliseconds();
 
-        const int& id() const;
+        const unsigned long& id();
 
         bool operator<(WHPSTimer& right);
 
         bool operator>(WHPSTimer& right);
 
-        bool operator==(const WHPSTimer& right);
+        bool operator==(WHPSTimer& right);
 
         /* 判断当前定时器是否有效 */
         bool isValid();
 private:
         bool _isActive;         // 定时器活跃度标识
-        int _id;
+        bool _isStop;           // 是否已经停止
+        unsigned long _id;
+//        std::mutex _mutex;
 };
 
 /* 定时器管理器，应具备如下结构：
@@ -73,7 +75,7 @@ public:
         void addTimer(WHPSTimer t);
 
         /* 根据定时器id，从池中删除 */
-        void delTimer(const WHPSTimer& t);
+        void delTimer(WHPSTimer& t);
 
         void print();
 

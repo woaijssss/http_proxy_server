@@ -27,7 +27,7 @@ public:
 
 public:
         /* 插入一个新的节点 */
-        void push(T item)
+        void push(T& item)
         {
                 /* 当前插入方式为从前遍历
                  * 实际堆中的数据，从生成开始就是有序的
@@ -89,7 +89,7 @@ protected:
                 return _heap.size();
         }
 
-        HeapIterator find(const T& item)
+        HeapIterator find(T& item)
         {
                 std::lock_guard<std::mutex> lock(_mutex);
                 // HeapIterator it = std::find(_heap.begin(), _heap.end(), item);
