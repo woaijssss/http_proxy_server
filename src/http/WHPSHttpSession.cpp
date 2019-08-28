@@ -14,15 +14,16 @@
 
 using namespace std;     
 
-WHPSHttpSession::WHPSHttpSession(const sp_TcpSession _tcp_session)
+WHPSHttpSession::WHPSHttpSession(const sp_TcpSession _tcp_session, WHPSWorkerThreadPool& worker_thread_pool)
         : _tcp_session(_tcp_session)
         , _obj_name(GetWebSourceConfig().get("whps", "whps-name"))
         , _whps_static_processor(GetWebSourceConfig().get("StaticResource", "rootDir"))    // 静态资源处理器
         , _http_whps_factory(GetHttpWhpsFactory())          // 获取单例工厂句柄
         , _http_whps(_http_whps_factory->get(_obj_name))    // 获取应用层回调句柄
         , _cb(std::bind(&WHPSHttpSession::TimerCallback, this, std::placeholders::_1))
-        , _timer(_cb, NULL, 5*1000)
-        , _is_processing(false)
+        , _timer(_cb, NULL, 100)
+        , _conn_status(INIT)
+        , _worker_thread_pool(worker_thread_pool)
 {
         _writer_func = std::bind(&WHPSHttpSession::sendHttpMessage, this, std::placeholders::_1);
         // 注册http响应消息回调
@@ -33,7 +34,7 @@ WHPSHttpSession::WHPSHttpSession(const sp_TcpSession _tcp_session)
         _tcp_session->setHttpErrorCallback(std::bind(&WHPSHttpSession::onHttpClose, this));
 
         cout << "WHPSHttpSession::WHPSHttpSession start timer" << endl;
-        _timer.start();
+        // _timer.start();
         cout << "WHPSHttpSession::WHPSHttpSession start timer over" << endl;
 }
 
@@ -45,7 +46,6 @@ WHPSHttpSession::~WHPSHttpSession()
         //         _http_whps = NULL;  // 后续加到工厂中释放资源
         // }
         cout << "WHPSHttpSession::~WHPSHttpSession()" << endl;
-        _timer.stop();
 }
 
 const WHPSHttpSession::sp_TcpSession& WHPSHttpSession::getTcpSession() const
@@ -60,8 +60,15 @@ void WHPSHttpSession::setHttpCloseCallback(HttpSessionCB_ cb)
 
 void WHPSHttpSession::onHttpMessage()
 {
+        if (this->getConnStatus() > PROCESSING)
+        {
+                cout << "connectStatus flag is bigger than CLOSING..." << endl;
+                return;
+        }
+
+        this->setConnStatus(PROCESSING);
+
         cout << "WHPSHttpSession::onHttpMessage: " << _tcp_session->getNetInfo() << endl;
-        this->setProcessingFlag(true);
         HttpRequestContext request;
         HttpResponseContext response(_writer_func);
         _http_parser.parseHttpRequest(_tcp_session->getBufferIn(), request);     // 解析获取http请求内容
@@ -80,13 +87,32 @@ void WHPSHttpSession::onHttpSend()
 
 void WHPSHttpSession::onHttpClose()
 {
-        _http_closeCB(_tcp_session);
+        cout << "WHPSHttpSession::onHttpClose" << endl;
+        this->closeAll();
 }
 
 void WHPSHttpSession::onHttpError()
 {
         cout << "WHPSHttpSession::onHttpError" << endl;
-        _http_closeCB(_tcp_session);
+        this->closeAll();
+}
+
+void WHPSHttpSession::closeAll()
+{
+        cout << "WHPSHttpSession::onHttpError" << endl;
+        std::lock_guard<std::mutex> lock(_mutex);
+
+        if (this->getConnStatus() > CLOSING)
+        {
+                // cout << "WHPSHttpSession::onHttpError return" << endl;
+                return;
+        }
+
+        this->setConnStatus(DISCONNECTED);
+        _tcp_session->closeSession();
+
+        // this->notifyToClose();
+        _worker_thread_pool._task.addTask(std::bind(&WHPSHttpSession::notifyToClose, shared_from_this()));
 }
 
 void WHPSHttpSession::notifyToClose()
@@ -94,15 +120,34 @@ void WHPSHttpSession::notifyToClose()
         /* 当响应头中包含 Connection: close 的时候，需要服务端主动关闭连接
          */
         cout << "WHPSHttpSession::notifyToClose thread: " << std::this_thread::get_id() << endl;
-        if (_tcp_session)
+                // _tcp_session->closeSession();
+        _timer.stop();
+        _tcp_session->release();        // 释放tcp层资源
+        _http_closeCB(_tcp_session);
+}
+
+void WHPSHttpSession::TimerCallback(WHPSTimer& timer)
+{
+        std::lock_guard<std::mutex> lock(_mutex);
+        cout << "WHPSHttpSession::TimerCallback" << endl;
+
+        if (this->getConnStatus() < CLOSING)
         {
-                cout << "use count: " << _tcp_session.use_count() << endl;
-                _tcp_session->close();
-                _http_closeCB(_tcp_session);
+                cout << "set CLOSING" << endl;
+                this->setConnStatus(CLOSING);
+        }
+        else if (this->getConnStatus() == CLOSING)
+        {
+                cout << "add to task queue and stop the timer..." << endl;
+                this->setConnStatus(DISCONNECTED);
+                _tcp_session->closeSession();       // 马上关闭对外连接，并停止事件触发
+                timer.stop();
+                _worker_thread_pool._task.addTask(std::bind(&WHPSHttpSession::notifyToClose, shared_from_this())); // 执行清理回调函数
         }
         else
         {
-                cout << "tcp is closed" << endl;
+                cout << "disconnected" << endl;
+                timer.stop();
         }
 }
 
@@ -132,7 +177,6 @@ void WHPSHttpSession::onStaticRequest(HttpRequestContext& request, HttpResponseC
         if (request.getMethod() == "GET")
         {
                 _whps_static_processor.doGet(request, response);    // 通过静态资源处理器直接返回
-                // this->notifyToClose();
         }
         else
         {
@@ -147,6 +191,7 @@ void WHPSHttpSession::onDynamicRequest(HttpRequestContext& request, HttpResponse
         if (!_http_whps)
         {
                 cout << "WHPSHttpSession::onHttpMessage whps object is not callable...." << endl;
+                this->closeAll();
                 this->notifyToClose();
 
                 return;
@@ -166,31 +211,6 @@ void WHPSHttpSession::onDynamicRequest(HttpRequestContext& request, HttpResponse
         else
         {
                 cout << "WHPSHttpSession::onDynamicRequest not support method: [" << method << "]" << endl;
-        }
-}
-
-void WHPSHttpSession::setProcessingFlag(bool is_processing)
-{
-        std::lock_guard<std::mutex> lock(_mutex_processing_flag);
-        _is_processing = is_processing;
-}
-
-const bool& WHPSHttpSession::getProcessingFlag()
-{
-        std::lock_guard<std::mutex> lock(_mutex_processing_flag);
-        return _is_processing;
-}
-
-void __stdcall WHPSHttpSession::TimerCallback(WHPSTimer& timer)
-{
-        cout << "WHPSHttpSession::TimerCallback thread: " << std::this_thread::get_id() << endl;
-        if (!this->getProcessingFlag())
-        {
-                _tcp_session->getLoop().addTask(std::bind(&WHPSHttpSession::notifyToClose, shared_from_this())); // 执行清理回调函数
-        }
-        else
-        {
-                this->setProcessingFlag(false);
         }
 }
 

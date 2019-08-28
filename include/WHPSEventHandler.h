@@ -30,6 +30,8 @@ public:
         virtual ~WHPSEventHandler();
 
 public:
+        void stop();
+
         /* 设置当前处理的句柄描述符 */
         void setFd(const int& fd);
 
@@ -78,6 +80,7 @@ private:
         CbFunc _cb_error;     // 错误回调
         CbFunc _cb_close;     // 关闭回调
 
+        bool _is_stop /*= false*/;
         std::mutex _mutex;
 };
 

@@ -80,3 +80,63 @@ void WHPSThreadPool::stop()
                 delete _v_th[i];
         }
 }
+
+
+WHPSWorkerThreadPool::WHPSWorkerThreadPool(int size)
+        : _index(0)
+        , _size(size)
+{
+        this->createThreads();
+
+        if (_size > 100)
+        {
+                cout << "too many threads, exit..." << endl;
+                exit(-1);
+        }
+}
+
+WHPSWorkerThreadPool::WHPSWorkerThreadPool(int size, task_func_t callback)
+        : _index(0)
+        , _size(size)
+        , _callback(callback)
+{
+        this->createThreads();
+
+        if (_size > 100)
+        {
+                cout << "too many threads, exit..." << endl;
+                exit(-1);
+        }
+}
+
+WHPSWorkerThreadPool::~WHPSWorkerThreadPool()
+{
+        cout << "-------WHPSWorkerThreadPool::stop...." << endl;
+        this->stop();
+}
+
+void WHPSWorkerThreadPool::start()
+{
+        for (int i = 0; i < _size; i++)
+        {
+                _v_th[i]->start();
+        }
+}
+
+void WHPSWorkerThreadPool::createThreads()
+{
+        for (int i = 0; i < _size; i++)
+        {
+                WHPSWorkerThread* th = new WHPSWorkerThread(_task);
+                _v_th.push_back(th);
+        }
+}
+
+void WHPSWorkerThreadPool::stop()
+{
+        for (int i = 0; i < _size; i++)
+        {
+                // __v_th[i]->stop();
+                delete _v_th[i];
+        }
+}

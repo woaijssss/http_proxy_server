@@ -3,6 +3,7 @@
 #include "WHPSEventHandler.h"
 
 WHPSEventHandler::WHPSEventHandler()
+        : _is_stop(false)
 {
 
 }
@@ -19,6 +20,11 @@ WHPSEventHandler::~WHPSEventHandler()
 void WHPSEventHandler::setFd(const int& fd)
 {
         __setFd(fd);
+}
+
+void WHPSEventHandler::stop()
+{
+        _is_stop = true;
 }
 
 const int& WHPSEventHandler::getFd()
@@ -63,6 +69,11 @@ void WHPSEventHandler::setCallback(CbFunc& cb_s, CbFunc cb_d)
 
 void WHPSEventHandler::exCallback()
 {
+        if (_is_stop)
+        {
+                return;
+        }
+        
         this->__exCallback();
 }
 

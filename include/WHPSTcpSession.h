@@ -70,7 +70,15 @@ public:
         WHPSConnSocket& getConn();
 
         /* 主动关闭连接 */
-        void close();
+        void closeSession();
+        
+        /* 清除当前session的所有资源
+         * 包括：
+         * （1）所有回调函数指针置空
+         * （2）socket关闭
+         * （3）buffer缓存清空
+         */
+        void release();
 
         /* 将当前的客户端session的事件回调通道，加入到EventLoop事件循环中 */
         void addToEventLoop();
@@ -137,13 +145,6 @@ private:
         void onNewError(error_code error);
 
         void onCall(httpCB cb);
-        /* 清除当前session的所有资源
-         * 包括：
-         * （1）所有回调函数指针置空
-         * （2）socket关闭
-         * （3）buffer缓存清空
-         */
-        void release();
         /**********************************************************************/
 
 private:    // 网络层各对象

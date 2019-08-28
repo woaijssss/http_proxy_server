@@ -34,15 +34,15 @@ public:         // 测试接口
 
 private:        // 业务函数
         /* 接收新建连接的回调函数 */
-        void onNewConnection(const sp_TcpSession& tcp_session);
+        void onNewConnection(sp_TcpSession tcp_session);
 
         /* 处理新建连接，创建http session，并设置tcp session对应于http session的回调函数
          * 应由 onNewConnection() 内部调用
          */
-        void onNewSession(const sp_TcpSession& tcp_session);
+        void onNewSession(sp_TcpSession tcp_session);
 
         /* 连接断开回调函数 */
-        void onNewClose(const sp_TcpSession& tcp_session);
+        void onNewClose(sp_TcpSession tcp_session);
 
 public:     // 后面需要增加一些接口，用来进行外部监控（比如：当前http有效连接数等）
 
@@ -52,6 +52,7 @@ private:
         WHPSTcpServer* _tcp_server;
 
         Map<std::string, sp_HttpSession> _http_sess_list;    // http列表
+        WHPSWorkerThreadPool _worker_thread_pool;       // 工作线程池句柄
 };
 
 GET_SINGLETON_OBJECT(WHPSHttpServer)

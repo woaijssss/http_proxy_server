@@ -10,6 +10,7 @@
 #include "HttpWhpsFactory.h"
 #include "HttpWhps.h"   // for aplication layer call
 #include "HttpWriterRegistser.h"
+#include "WHPSThreadPool.h"
 
 /* 系统静态资源处理器（不应对外可见，后面放到源文件里）
  */
@@ -52,7 +53,7 @@ public:
         using TimerCallback_t = WHPSTimer::TimerCallback_t;
 public:
         /* http session的实例化，必须依赖于tcp session，是一一对应的关系 */
-        WHPSHttpSession(const sp_TcpSession tcp_session);
+        WHPSHttpSession(const sp_TcpSession _tcp_session, WHPSWorkerThreadPool& worker_thread_pool);
 
         ~WHPSHttpSession();
 
@@ -94,14 +95,25 @@ private:
          */
         void notifyToClose();
 
+        /* 关闭tcp层接口 */
+        void closeAll();
+
 private:        // writer
         /* 客户端回写接口
          */
         void sendHttpMessage(const std::string& msg);
 
-        void setProcessingFlag(bool is_processing);
+        void setConnStatus(int status)
+        {
+                std::lock_guard<std::mutex> lock(_mutex_status);
+                _conn_status = status;
+        }
 
-        const bool& getProcessingFlag();
+        const int& getConnStatus()
+        {
+                std::lock_guard<std::mutex> lock(_mutex_status);
+                return _conn_status;
+        }
 
 private:
         // 先使用这种方式测试http功能，后续引入工作线程池后，可以将发送消息的任务，加入到工作线程队列里
@@ -124,8 +136,19 @@ private:
         TimerCallback_t _cb;
         WHPSTimer _timer;
 
-        bool _is_processing;             // 数据处理标志
-        std::mutex _mutex_processing_flag;    // 数据处理标识锁
+        enum ConnStatus         // 连接状态枚举
+        {
+                INIT = 0,       // 初始状态
+                PROCESSING,     // 数据处理状态（有效状态）
+                CLOSING,        // 缓冲状态（在此期间接收到数据，可恢复到有效状态）
+                DISCONNECTED,   // 无效状态（释放资源、关闭连接等）
+                STOPPED         // 停止状态（什么处理都不做）
+        };
+
+        int _conn_status;             // 连接状态标志
+        WHPSWorkerThreadPool& _worker_thread_pool;
+        std::mutex _mutex_status;    // 数据处理标识锁
+        std::mutex _mutex;
 };
 
 #endif  // __WHPS_HTTP_SESSION_H__

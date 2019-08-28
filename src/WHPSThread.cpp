@@ -41,11 +41,52 @@ void WHPSThread::workFunc()
                 _loop.loopOne();
 
                 /* 处理Task queue中的内容，每次只取一个 */
-                this->excuteTask();
+//                this->excuteTask();
         }
 }
 
 void WHPSThread::excuteTask()
+{
+        _thrd.excuteTask();
+}
+
+
+
+
+WHPSWorkerThread::WHPSWorkerThread(Task<task_t>& task)
+        : _thrd(task)
+        , _is_stop(false)
+{
+
+}
+
+WHPSWorkerThread::~WHPSWorkerThread()
+{
+        this->stop();
+        _thrd.join();
+}
+
+void WHPSWorkerThread::start()
+{
+        task_func_t callback = std::bind(&WHPSWorkerThread::workFunc, this);
+        _thrd.start(callback);
+}
+
+void WHPSWorkerThread::stop()
+{
+        _is_stop = true;
+}
+
+void WHPSWorkerThread::workFunc()
+{
+        while (!_is_stop)
+        {
+                /* 处理Task queue中的内容，每次只取一个 */
+                this->excuteTask();
+        }
+}
+
+void WHPSWorkerThread::excuteTask()
 {
         _thrd.excuteTask();
 }

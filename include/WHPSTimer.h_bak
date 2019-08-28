@@ -22,10 +22,10 @@ public:
 
         virtual ~WHPSTimer();
 
-        virtual long fireTime();
+        virtual const long& fireTime();
 
         /* 返回定时器触发间隔时间 */
-        virtual int interval();
+        virtual const int& interval();
 
         /* 设置定时器触发间隔时间 */
         virtual void setInterval(const int& interval);

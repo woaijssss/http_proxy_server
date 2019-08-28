@@ -34,8 +34,8 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
 WHPSTcpSession::~WHPSTcpSession()
 {
         cout << "WHPSTcpSession::~WHPSTcpSession" << endl;
-        this->release();
-        _conn_sock.close();
+        // this->release();
+        // _conn_sock.close();
 }
 
 void WHPSTcpSession::getEndpointInfo()
@@ -82,9 +82,28 @@ WHPSConnSocket& WHPSTcpSession::getConn()
         return _conn_sock;
 }
 
-void WHPSTcpSession::close()
+void WHPSTcpSession::closeSession()
 {
-        this->release();
+        /* 该函数主要是关闭所有对外接口方法，包括但不限于：
+         * （1）socket句柄；
+         * （2）epoll事件循环；
+         * 并设置标志位，防止多次进入造成资源二次释放
+         */
+        // this->release();
+        cout << "WHPSTcpSession::closeSession" << endl;
+        std::lock_guard<std::mutex> lock(_mutex);
+        if (!_is_connect)
+        {
+                return;
+        }
+
+        this->delFromEventLoop();
+        _event_chn.stop();     // 直接停止调用回调
+        _is_connect = false;
+        _is_wait = true;
+          // _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
+        _buffer_in.clear();
+        _buffer_out.clear();
 }
 
 void WHPSTcpSession::addToEventLoop()
@@ -125,31 +144,24 @@ void WHPSTcpSession::onCall(httpCB cb)
 
 void WHPSTcpSession::release()
 {
-        {
-                std::lock_guard<std::mutex> lock(_mutex);
-                if (!_is_connect)
-                {
-                        return;
-                }
-
-                this->delFromEventLoop();
-                  // _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
-                _is_connect = false;
-                _is_wait = true;
-//                _is_processing = false;
-                _buffer_in.clear();
-                _buffer_out.clear();
-        }
+        cout << "WHPSTcpSession::release" << endl;
+        std::lock_guard<std::mutex> lock(_mutex);
 
         try
         {
-                _cb_cleanup(shared_from_this());
+                if (_cb_cleanup)
+                {
+                        _cb_cleanup(shared_from_this());
+                        _cb_cleanup = nullptr;
+                }
         }
         catch (exception& e)
         {
                 // pass
-                //cout << "WHPSTcpSession::release: " << e.what() << endl;
+                cout << "WHPSTcpSession::release exception: " << e.what() << endl;
         }
+        cout << "WHPSTcpSession::release end" << endl;
+        _conn_sock.close();
 }
 
 void WHPSTcpSession::send(const std::string& msg)
@@ -318,11 +330,7 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
                         {
                                 // pass
                                 // res = bytes_transferred;
-                                res =
-                                                                (bytes_transferred
-                                                                                                == 0) ?
-                                                                                                1 :
-                                                                                                bytes_transferred;
+                                res = (bytes_transferred == 0) ? 1 : bytes_transferred;
                         }
                         else if (errno == EINTR) // 中断，read()会返回-1，同时置errno为EINTR
                         {
@@ -408,7 +416,7 @@ void WHPSTcpSession::onNewClose(error_code error)
                 }
 
                 this->onCall(_http_onClose);
-                this->release();
+                // this->release();
         }
 }
 
@@ -424,7 +432,7 @@ void WHPSTcpSession::onNewError(error_code error)
          *      （2）通知主socket对象和EventLoop对象删除该句柄资源
          */
         this->onCall(_http_onError);
-        this->release();
+        // this->release();
 }
 
 void WHPSTcpSession::setHttpMessageCallback(httpCB cb)

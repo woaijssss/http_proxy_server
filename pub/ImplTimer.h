@@ -12,10 +12,10 @@ public:
         virtual ~ImplTimer() {}
 protected:
         /* 获取触发剩余时间的毫秒数 */
-        virtual const long& fireTime() = 0;
+        virtual long fireTime() = 0;
 
         /* 返回定时器触发间隔时间 */
-        virtual const int& interval() = 0;
+        virtual int interval() = 0;
 
         /* 设置定时器触发间隔时间 */
         virtual void setInterval(const int& interval) = 0;

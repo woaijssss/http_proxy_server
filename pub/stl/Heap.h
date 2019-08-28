@@ -34,7 +34,7 @@ public:
                  * 因此，每插入一个数据，后面可以做成二分查找，提高效率
                  */
                 std::lock_guard<std::mutex> lock(_mutex);
-                typename std::list<T>::iterator it = _heap.begin();
+                HeapIterator it = _heap.begin();
                 for (; it != _heap.end(); ++it)
                 {
                         /* 若使用 >= 可能存在有些节点一直取不到
@@ -67,31 +67,25 @@ public:
                 return item;
         }
 
-        void print()
-        {
-                std::lock_guard<std::mutex> lock(_mutex);
-                for (auto& obj: _heap)
-                {
-                        std::cout << obj << std::endl;
-                }
-        }
-
 protected:
+        /* 返回堆首元素 */
         T front()
         {
                 std::lock_guard<std::mutex> lock(_mutex);
                 return _heap.front();
         }
 
+        /* 返回当前堆的大小 */
         size_t size()
         {
                 std::lock_guard<std::mutex> lock(_mutex);
                 return _heap.size();
         }
 
+        /* 从堆中查找指定的元素 */
         HeapIterator find(T& item)
         {
-                std::lock_guard<std::mutex> lock(_mutex);
+//                std::lock_guard<std::mutex> lock(_mutex);
                 // HeapIterator it = std::find(_heap.begin(), _heap.end(), item);
                 HeapIterator it = _heap.begin();
 
@@ -106,12 +100,22 @@ protected:
                 return _heap.end();
         }
 
-        void erase(HeapIterator hit)
+        /* 从堆中删除指定元素 */
+        bool erase(T& item)
         {
                 std::lock_guard<std::mutex> lock(_mutex);
-                _heap.erase(hit);
+                HeapIterator it = this->find(item);
+
+                if (it != this->getHeap().end())
+                {
+                        _heap.erase(it);
+                        return true;
+                }
+
+                return false;
         }
 
+        /* 返回当前堆对象 */
         std::list<T>& getHeap()
         {
                 return _heap;
