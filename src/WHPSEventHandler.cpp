@@ -1,16 +1,18 @@
 #include <sys/epoll.h>
 
 #include "WHPSEventHandler.h"
+#include "WHPSEpollEventLoop.h"
 
-WHPSEventHandler::WHPSEventHandler()
-        : _is_stop(false)
+WHPSEventHandler::WHPSEventHandler(WHPSEpollEventLoop* loop)
+        : _loop(loop)
+        , _is_stop(false)
 {
 
 }
 
 WHPSEventHandler::~WHPSEventHandler()
 {
-        std::lock_guard<std::mutex> lock(_mutex);
+        _loop->deleteOneChannel(this);
         _cb_read = nullptr;
         _cb_write = nullptr;
         _cb_error = nullptr;

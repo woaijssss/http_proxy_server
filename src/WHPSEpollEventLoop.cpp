@@ -11,6 +11,7 @@ WHPSEpollEventLoop::WHPSEpollEventLoop(int maxevents /*= 1024*/, int timeout /*=
 
 WHPSEpollEventLoop::~WHPSEpollEventLoop()
 {
+        // std::lock_guard<std::mutex> lock(_mutex);
         _is_stop = true;
 }
 
@@ -73,11 +74,12 @@ void WHPSEpollEventLoop::loop()
         }
 }
 
+std::mutex g_mutex;
 #include <unistd.h>
 void WHPSEpollEventLoop::loopOne()
 {
         _poller.poll(_event_queue);         // 获取当前所有的事件
-
+        std::lock_guard<std::mutex> lock(_mutex);
         /* 当前是线程池所有线程，每个线程单独一个事件队列
          */
         for (event_chn* chn : _event_queue)     // 遍历事件队列

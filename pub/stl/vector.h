@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <mutex>
+#include <algorithm>
 
 /* 线程安全的vector */
 template <class __T>
@@ -12,6 +13,7 @@ class Vector : public std::vector<__T>
 public:
         using value_type = typename std::vector<__T>::value_type;
         using size_type  = typename std::vector<__T>::size_type;
+        using iterator = typename std::vector<__T>::iterator;
 public:
         explicit Vector()
                 : std::vector<__T>()
@@ -41,6 +43,21 @@ public:
         {
                 std::lock_guard<std::mutex> lock(__mutex);
                 return std::vector<__T>::capacity();
+        }
+
+        bool erase(const value_type& v)
+        {
+                std::lock_guard<std::mutex> lock(__mutex);
+                bool res = false;
+                iterator it = std::find(std::vector<__T>::begin(), std::vector<__T>::end(), v);
+
+                if (it != std::vector<__T>::end())
+                {
+                        std::vector<__T>::erase(it);
+                        res = true;
+                }
+
+                return res;
         }
 private:
         std::mutex __mutex;

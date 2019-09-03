@@ -16,6 +16,7 @@ WHPSTcpServer::WHPSTcpServer()
         , _loop()
         , _thread_pool(atoi(GetWebSourceConfig().get("Server", "ioThreads").c_str()), _loop)
         , _tcp_socket(SERVER_MODE)
+        , _event_chn(&_loop)
 {
         
 }

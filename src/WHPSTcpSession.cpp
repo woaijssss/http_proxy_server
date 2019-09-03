@@ -10,6 +10,7 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         , _c_addr(c_addr)
         , _loop(loop)
         , _conn_sock(fd)
+        , _event_chn(&_loop)
         , _base_events(EPOLLIN | EPOLLPRI)
         , _is_connect(true)
         , _is_wait(false)
@@ -31,9 +32,11 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         // 还需要注册发送数据和超时回调
 }
 
+extern std::mutex g_mutex;
 WHPSTcpSession::~WHPSTcpSession()
 {
         cout << "WHPSTcpSession::~WHPSTcpSession" << endl;
+        std::lock_guard<std::mutex> lock(_loop.getMutex());
         // this->release();
         // _conn_sock.close();
 }
@@ -42,14 +45,14 @@ void WHPSTcpSession::getEndpointInfo()
 {
         struct sockaddr_in sa;
         socklen_t len = sizeof(sa);
-        if (!getpeername(_conn_sock.get(), (struct sockaddr *) &sa, &len))
+        if (!getpeername(_conn_sock.get(), (struct sockaddr *)&sa, &len))
         {
                 _client_ip = string(inet_ntoa(sa.sin_addr));
                 _client_port = ntohs(sa.sin_port);
                 _net_info = _client_ip + ":" + to_string(_client_port);
         }
 
-	cout << "a client has been connected: " << _net_info << endl;
+        cout << "a client has been connected: " << _net_info << endl;
 }
 
 const std::string& WHPSTcpSession::getIp() const
@@ -310,7 +313,7 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
                 // int r_nbyte = recvfrom(_conn_sock.get(), buffer, 1024, 0, NULL, NULL);
                 int r_nbyte = recv(_conn_sock.get(), buffer, 1024, 0);
 
-                if (r_nbyte > 0)
+                if (r_nbyte > 0)    // 正常读取数据
                 {
                         _buffer_in.append(buffer, r_nbyte);     // 每次追加写入数据
                         bytes_transferred += r_nbyte;
@@ -318,6 +321,7 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
                 else if (r_nbyte == 0)    // 客户端关闭socket，FIN包
                 {
                         res = 0;
+
                         break;
                 }
                 else    // 读数据异常(-1)
@@ -334,7 +338,7 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
                         }
                         else if (errno == EINTR) // 中断，read()会返回-1，同时置errno为EINTR
                         {
-
+                                res = -1;
                         }
 
 #if 0   // send msg test(测试发送的异常情况)

@@ -47,6 +47,17 @@ public:
 public:         // 测试接口
         void stop();
 
+        std::mutex& getMutex()
+        {
+                return _mutex;
+        }
+
+        void deleteOneChannel(event_chn* chn)
+        {
+                std::lock_guard<std::mutex> lock(_mutex);
+                _event_queue.erase(chn);
+        }
+
 private:
         WHPSPoller _poller;                     // 事件轮询对象
 
@@ -58,6 +69,8 @@ private:
         bool _is_stop;
 
         Task<task_t> _task;     // 线程任务队列
+
+        std::mutex _mutex;
 };
 
 #endif  // __WHPS_EPOLL_EVENT_LOOP_H__

@@ -6,8 +6,10 @@
 
 #include "ImplEventHandler.h"
 #include "WHPSTcpSocket.h"
+// #include "WHPSEpollEventLoop.h"
 
 class WHPSEventHandler;
+class WHPSEpollEventLoop;
 
 typedef ImplEventHandler::__callback_t CbFunc;
 typedef ImplEventHandler::__epoll_events_t events_t;
@@ -26,7 +28,7 @@ enum EventType
 class WHPSEventHandler : public ImplEventHandler
 {
 public:
-        WHPSEventHandler();
+        WHPSEventHandler(WHPSEpollEventLoop* loop);
         virtual ~WHPSEventHandler();
 
 public:
@@ -75,6 +77,7 @@ private:
         void onCall(CbFunc cb);
 
 private:
+        WHPSEpollEventLoop* _loop;
         CbFunc _cb_read;      // 读回调
         CbFunc _cb_write;     // 写回调
         CbFunc _cb_error;     // 错误回调

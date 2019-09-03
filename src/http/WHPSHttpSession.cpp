@@ -34,7 +34,7 @@ WHPSHttpSession::WHPSHttpSession(const sp_TcpSession _tcp_session, WHPSWorkerThr
         _tcp_session->setHttpErrorCallback(std::bind(&WHPSHttpSession::onHttpClose, this));
 
         cout << "WHPSHttpSession::WHPSHttpSession start timer" << endl;
-        // _timer.start();
+        _timer.start();
         cout << "WHPSHttpSession::WHPSHttpSession start timer over" << endl;
 }
 
@@ -62,12 +62,13 @@ void WHPSHttpSession::onHttpMessage()
 {
         if (this->getConnStatus() > PROCESSING)
         {
-                cout << "connectStatus flag is bigger than CLOSING..." << endl;
+                cout << "connectStatus flag is bigger than CLOSING...: " << _tcp_session->getNetInfo() << endl;
+                this->closeAll();
                 return;
         }
 
+        std::lock_guard<std::mutex> lock(_mutex);
         this->setConnStatus(PROCESSING);
-
         cout << "WHPSHttpSession::onHttpMessage: " << _tcp_session->getNetInfo() << endl;
         HttpRequestContext request;
         HttpResponseContext response(_writer_func);
@@ -104,14 +105,12 @@ void WHPSHttpSession::closeAll()
 
         if (this->getConnStatus() > CLOSING)
         {
-                // cout << "WHPSHttpSession::onHttpError return" << endl;
                 return;
         }
 
+        _timer.stop();
         this->setConnStatus(DISCONNECTED);
         _tcp_session->closeSession();
-
-        // this->notifyToClose();
         _worker_thread_pool._task.addTask(std::bind(&WHPSHttpSession::notifyToClose, shared_from_this()));
 }
 
@@ -139,9 +138,9 @@ void WHPSHttpSession::TimerCallback(WHPSTimer& timer)
         else if (this->getConnStatus() == CLOSING)
         {
                 cout << "add to task queue and stop the timer..." << endl;
+                timer.stop();
                 this->setConnStatus(DISCONNECTED);
                 _tcp_session->closeSession();       // 马上关闭对外连接，并停止事件触发
-                timer.stop();
                 _worker_thread_pool._task.addTask(std::bind(&WHPSHttpSession::notifyToClose, shared_from_this())); // 执行清理回调函数
         }
         else
