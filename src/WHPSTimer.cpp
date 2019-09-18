@@ -8,7 +8,7 @@ using namespace std;
 std::shared_ptr<TimerManager> TimerManager::_timer_manager;
 
 WHPSTimer::WHPSTimer(TimerCallback_t cb, void* param, const int& interval)
-        : _isActive(false), _isStop(true), _id(this->getMilliseconds())
+        : _isActive(false), _isStop(true), _id(this->getMilliseconds() + long(this))
 {
         _interval = interval;
         _fireTime = _interval + this->getMilliseconds();
@@ -188,7 +188,7 @@ void TimerManager::loop()
                         sleep_time = 10;
                 }
 
-                // cout << "sleep_time: " << sleep_time << endl;
+                 cout << "sleep_time: " << sleep_time << endl;
                 if (sleep_time)
                 {
                         std::this_thread::sleep_for(chrono::milliseconds(sleep_time));

@@ -50,7 +50,6 @@ void WHPSEpollEventLoop::addTask(task_t func_cb)
 #include <thread>
 #include <mutex>
 using namespace std;
-std::mutex mutex__;
 void WHPSEpollEventLoop::loop()
 {
         while (!_is_stop)
@@ -74,16 +73,15 @@ void WHPSEpollEventLoop::loop()
         }
 }
 
-std::mutex g_mutex;
 #include <unistd.h>
 void WHPSEpollEventLoop::loopOne()
 {
         _poller.poll(_event_queue);         // 获取当前所有的事件
-        std::lock_guard<std::mutex> lock(_mutex);
         /* 当前是线程池所有线程，每个线程单独一个事件队列
          */
         for (event_chn* chn : _event_queue)     // 遍历事件队列
         {
+                std::lock_guard<std::mutex> lock(_mutex);
                 if (chn)
                 {
                         // sleep(10);      // 当A线程执行到此时，B线程执行了WHPSTcpSession的析构函数(客户端断开)，valgrind会报错(必现)

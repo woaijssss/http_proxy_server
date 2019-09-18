@@ -113,6 +113,7 @@ WHPSWorkerThreadPool::~WHPSWorkerThreadPool()
 {
         cout << "-------WHPSWorkerThreadPool::stop...." << endl;
         this->stop();
+        cout << "-------WHPSWorkerThreadPool::stop end...." << endl;
 }
 
 void WHPSWorkerThreadPool::start()

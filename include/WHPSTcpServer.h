@@ -84,7 +84,8 @@ private:
         WHPSEventHandler _event_chn;    // 服务器事件回调通道
 
         /* 保证在连接存在时，智能指针至少被引用一次，不至于销毁连接 */
-        Map<int, sp_TcpSession> _tcp_sess_list;   // tcp客户端连接表(断线要清理)
+//        Map<int, sp_TcpSession> _tcp_sess_list;   // tcp客户端连接表(断线要清理)
+        Map<std::string, sp_TcpSession> _tcp_sess_list;   // tcp客户端连接表(断线要清理)
 
 private:    // 应用层回调函数
         cbFunc _cb_connect;     // 新连接应用层回调

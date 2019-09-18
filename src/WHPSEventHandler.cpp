@@ -12,11 +12,10 @@ WHPSEventHandler::WHPSEventHandler(WHPSEpollEventLoop* loop)
 
 WHPSEventHandler::~WHPSEventHandler()
 {
-        _loop->deleteOneChannel(this);
-        _cb_read = nullptr;
-        _cb_write = nullptr;
-        _cb_error = nullptr;
-        _cb_close = nullptr;
+//        _cb_read = nullptr;
+//        _cb_write = nullptr;
+//        _cb_error = nullptr;
+//        _cb_close = nullptr;
 }
 
 void WHPSEventHandler::setFd(const int& fd)
@@ -27,6 +26,7 @@ void WHPSEventHandler::setFd(const int& fd)
 void WHPSEventHandler::stop()
 {
         _is_stop = true;
+//        _loop->deleteOneChannel(this);
 }
 
 const int& WHPSEventHandler::getFd()
@@ -46,22 +46,26 @@ const events_t& WHPSEventHandler::getEvents() const
 
 void WHPSEventHandler::setReadCallback(CbFunc cb)
 {
-        this->setCallback(_cb_read, cb);
+//        this->setCallback(_cb_read, cb);
+        _cb_read = cb;
 }
 
 void WHPSEventHandler::setWriteCallback(CbFunc cb)
 {
-        this->setCallback(_cb_write, cb);
+//        this->setCallback(_cb_write, cb);
+        _cb_write = cb;
 }
 
 void WHPSEventHandler::setErrorCallback(CbFunc cb)
 {
-        this->setCallback(_cb_error, cb);
+//        this->setCallback(_cb_error, cb);
+        _cb_error = cb;
 }
 
 void WHPSEventHandler::setCloseCallback(CbFunc cb)
 {
-        this->setCallback(_cb_close, cb);
+//        this->setCallback(_cb_close, cb);
+        _cb_close = cb;
 }
 
 void WHPSEventHandler::setCallback(CbFunc& cb_s, CbFunc cb_d)

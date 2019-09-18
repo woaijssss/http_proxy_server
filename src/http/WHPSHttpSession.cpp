@@ -32,10 +32,7 @@ WHPSHttpSession::WHPSHttpSession(const sp_TcpSession _tcp_session, WHPSWorkerThr
         _tcp_session->setHttpSendCallback(std::bind(&WHPSHttpSession::onHttpSend, this));
         _tcp_session->setHttpCloseCallback(std::bind(&WHPSHttpSession::onHttpClose, this));
         _tcp_session->setHttpErrorCallback(std::bind(&WHPSHttpSession::onHttpClose, this));
-
-        cout << "WHPSHttpSession::WHPSHttpSession start timer" << endl;
         _timer.start();
-        cout << "WHPSHttpSession::WHPSHttpSession start timer over" << endl;
 }
 
 WHPSHttpSession::~WHPSHttpSession()

@@ -32,11 +32,9 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         // 还需要注册发送数据和超时回调
 }
 
-extern std::mutex g_mutex;
 WHPSTcpSession::~WHPSTcpSession()
 {
         cout << "WHPSTcpSession::~WHPSTcpSession" << endl;
-        std::lock_guard<std::mutex> lock(_loop.getMutex());
         // this->release();
         // _conn_sock.close();
 }
@@ -152,6 +150,8 @@ void WHPSTcpSession::release()
 
         try
         {
+                std::lock_guard<std::mutex> lock(_loop.getMutex());
+
                 if (_cb_cleanup)
                 {
                         _cb_cleanup(shared_from_this());

@@ -45,7 +45,7 @@ CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -MMD \
 	-Wunused-function \
 	-Wno-unused-parameter  # 设置此项，不提示“未使用变量”，正式程序需要去掉 
 
-LDLIBS:=-pthread -lrt -ldl
+LDLIBS:=-lpthread -lrt -ldl
 
 ifeq ($(BUILD), release)
 CPPFLAGS+=-DNDEBUG
