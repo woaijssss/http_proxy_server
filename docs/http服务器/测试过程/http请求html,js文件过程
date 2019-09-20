@@ -1,0 +1,77 @@
+GET / HTTP/1.1
+Host: 192.168.12.250
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3
+Accept-Encoding: gzip, deflate
+Accept-Language: zh-CN,zh;q=0.9
+
+HTTP/1.1 200 OK
+Server: nginx/1.10.3
+Date: Wed, 26 Jun 2019 06:43:40 GMT
+Content-Type: text/html
+Content-Length: 487
+Last-Modified: Thu, 06 Jun 2019 14:50:01 GMT
+Connection: keep-alive
+ETag: "5cf92819-1e7"
+Accept-Ranges: bytes
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+<meta charset="utf-8" />	
+<html>
+<head>
+	<link rel="icon" href="data:;base64,=">
+</head>
+<body>
+	<script src="../js/1.js">
+	</script>
+	
+	<form>
+		.........<input type="text" name="user">
+		<br />
+		.........<input type="password" name="password">
+	</form>
+	<input type="button" value="test">
+	<p>
+		.........................................................................................................
+	</p>
+</body>
+
+</html>
+GET /js/1.js HTTP/1.1
+Host: 192.168.12.250
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36
+Accept: */*
+Referer: http://192.168.12.250/
+Accept-Encoding: gzip, deflate
+Accept-Language: zh-CN,zh;q=0.9
+
+HTTP/1.1 200 OK
+Server: nginx/1.10.3
+Date: Wed, 26 Jun 2019 06:43:40 GMT
+Content-Type: application/javascript
+Content-Length: 237
+Last-Modified: Wed, 26 Jun 2019 06:43:25 GMT
+Connection: keep-alive
+ETag: "5d13140d-ed"
+Accept-Ranges: bytes
+
+function changeImage()
+{
+    element=document.getElementById('myimage')
+    if (element.src.match("bulbon"))
+    {
+        element.src="/images/pic_bulboff.gif";
+    }
+    else
+    {
+        element.src="/images/pic_bulbon.gif";
+    }
+}

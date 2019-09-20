@@ -6,7 +6,8 @@
 #include "Poller.h"
 
 #include "map.h"
-#include "vector.h"
+//#include "vector.h"
+#include "list.h"
 
 #define MAX_EVENTS      1024            // 最大触发的事件数
 
@@ -29,7 +30,7 @@ public:
 
 public:         // 外部调用
         /* 启动epoll任务 */
-        int poll(Vector<event_chn*>& event_queue);
+        int poll(List<event_chn*>& event_queue);
 
         /* 添加到事件通知列表 */
         void addEvent(event_chn* p_event);
@@ -59,7 +60,7 @@ private:        // 内部调用
         int epollWait();
 
         /* 向队列中添加已触发的事件，提交给外部线程处理 */
-        void onEvent(Vector<event_chn*>& event_queue, const int& n_fds);
+        void onEvent(List<event_chn*>& event_queue, const int& n_fds);
 private:
         Map<int, event_chn*> _event_list;      // 事件列表 <fd, WHPSEventHandler*>
         SEplEvent _events[MAX_EVENTS];

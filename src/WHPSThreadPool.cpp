@@ -14,7 +14,7 @@ WHPSThreadPool::WHPSThreadPool(int size, WHPSEpollEventLoop& main_loop)
 
         if (_size > 100)
         {
-                cout << "too many threads, exit..." << endl;
+                perror("too many threads, exit...");
                 exit(-1);
         }
 }
@@ -29,14 +29,13 @@ WHPSThreadPool::WHPSThreadPool(int size, WHPSEpollEventLoop& main_loop, task_fun
 
         if (_size > 100)
         {
-                cout << "too many threads, exit..." << endl;
+                perror("too many threads, exit...");
                 exit(-1);
         }
 }
 
 WHPSThreadPool::~WHPSThreadPool()
 {
-        cout << "-------WHPSThreadPool::stop...." << endl;
         this->stop();
 }
 
@@ -46,10 +45,10 @@ WHPSEpollEventLoop& WHPSThreadPool::getOneLoop()
         {
                 WHPSEpollEventLoop& loop = _v_th[_index]->getLoop();
                 _index = (_index+1) % _size;
-                cout << "------index: " << _index << endl;
+//                cout << "------index: " << _index << endl;
                 return loop;
         }
-        else            // 单线程
+        else            // 单线程(只有主线程时调用)
         {
                 return _main_loop;
         }
@@ -90,7 +89,7 @@ WHPSWorkerThreadPool::WHPSWorkerThreadPool(int size)
 
         if (_size > 100)
         {
-                cout << "too many threads, exit..." << endl;
+                perror("too many threads, exit...");
                 exit(-1);
         }
 }
@@ -104,16 +103,14 @@ WHPSWorkerThreadPool::WHPSWorkerThreadPool(int size, task_func_t callback)
 
         if (_size > 100)
         {
-                cout << "too many threads, exit..." << endl;
+                perror("too many threads, exit...");
                 exit(-1);
         }
 }
 
 WHPSWorkerThreadPool::~WHPSWorkerThreadPool()
 {
-        cout << "-------WHPSWorkerThreadPool::stop...." << endl;
         this->stop();
-        cout << "-------WHPSWorkerThreadPool::stop end...." << endl;
 }
 
 void WHPSWorkerThreadPool::start()

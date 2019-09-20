@@ -5,7 +5,7 @@
 
 #include "util.h"
 #include "WHPSConfig.h"
-#include "WHPSTimer.h"
+#include "WHPSTimerManager.h"
 
 using namespace std;
 
@@ -36,7 +36,7 @@ void initConfig()
 {
         if (!GetWebSourceConfig().readConfig())
         {
-                cout << "Config file load failed..." << endl;
+                perror("Config file load failed...");
                 exit(-1);
         }
 
@@ -51,7 +51,7 @@ static void testPO()
 {
         void* handle = dlopen("./bin/libtest.so", RTLD_LAZY);
         if (!handle) {
-                cerr << "Cannot load library: " << dlerror() << '\n';
+                WHPSLogWarn("Cannot load library: %s", dlerror());
                 return; 
         }
 

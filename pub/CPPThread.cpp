@@ -6,7 +6,8 @@ using namespace std;
 #include "CPPThread.h"
 
 CPPThread::CPPThread(Task<task_t>& task)
-        : __is_stop(false)
+        : __tid(0)
+        , __is_stop(false)
         , _task(task)
 {
 
@@ -65,7 +66,6 @@ void CPPThread::excuteTask()
 
                 if (task)       // 有可能存在取空的情况，因此加上判断，防止执行空函数
                 {
-			cout << "CPPThread::excuteTask" << endl;
                         task();
                 }
         }

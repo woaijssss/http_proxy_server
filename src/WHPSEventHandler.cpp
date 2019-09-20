@@ -26,7 +26,7 @@ void WHPSEventHandler::setFd(const int& fd)
 void WHPSEventHandler::stop()
 {
         _is_stop = true;
-//        _loop->deleteOneChannel(this);
+        _loop->deleteOneChannel(this);
 }
 
 const int& WHPSEventHandler::getFd()

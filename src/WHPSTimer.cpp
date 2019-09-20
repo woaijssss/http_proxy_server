@@ -2,13 +2,18 @@
 #include <sys/time.h>
 
 #include "WHPSTimer.h"
+#include "WHPSTimerManager.h"
 
 using namespace std;
 
-std::shared_ptr<TimerManager> TimerManager::_timer_manager;
+#define INVALID_TIMERID -1
+#define MAX_FIRE_TIME   0xFFFFFFFF
 
 WHPSTimer::WHPSTimer(TimerCallback_t cb, void* param, const int& interval)
-        : _isActive(false), _isStop(true), _id(this->getMilliseconds() + long(this))
+        : _isActive(false)
+        , _isStop(true)
+        , _id(this->getMilliseconds() + long(this))
+        , _mutex(new std::mutex())
 {
         _interval = interval;
         _fireTime = _interval + this->getMilliseconds();
@@ -18,7 +23,11 @@ WHPSTimer::WHPSTimer(TimerCallback_t cb, void* param, const int& interval)
 
 WHPSTimer::~WHPSTimer()
 {
-
+        if (_mutex)
+        {
+//                delete _mutex;
+//                _mutex = nullptr;
+        }
 }
 
 long WHPSTimer::fireTime()
@@ -63,7 +72,6 @@ bool WHPSTimer::operator==(WHPSTimer& right)
 
 bool WHPSTimer::isValid()
 {
-//        return ((_id > 0) ? true : false);
         return (_isStop ? false : true);
 }
 
@@ -77,134 +85,29 @@ long WHPSTimer::getMilliseconds()
 
 void WHPSTimer::start()
 {
-        {
-//                std::lock_guard<std::mutex> lock(_mutex);
-                _isStop = false;
-                _isActive = true;
-                _fireTime = _interval + this->getMilliseconds();
-        }
+        std::lock_guard<std::mutex> lock(*_mutex);
+        _isStop = false;
+        _isActive = true;
+        _fireTime = _interval + this->getMilliseconds();
         GetTimerManager()->addTimer(*this);
 }
 
 void WHPSTimer::stop()
 {
+        std::lock_guard<std::mutex> lock(*_mutex);
+        if (_isStop)    // 已经停止
         {
-//                std::lock_guard<std::mutex> lock(_mutex);
-                _isStop = true;
-                _isActive = false;
-                _fireTime = 0xFFFFFFFF;    // 设置为永久
+                return;
         }
+
+        _isStop = true;
+        _isActive = false;
+        _fireTime = MAX_FIRE_TIME;    // 设置为永久
         GetTimerManager()->delTimer(*this);
-                _id = -1;
+        _id = INVALID_TIMERID;
 }
 
 const unsigned long& WHPSTimer::id()
 {
         return _id;
-}
-
-TimerManager::TimerManager()
-        : Heap(), _thrd(thread(&TimerManager::loop, this)), _is_stop(false)
-{
-        cout << "timer pool init..." << endl;
-}
-
-TimerManager::~TimerManager()
-{
-        this->stop();
-}
-
-TimerManager* TimerManager::GetInstance()
-{
-        // if (!_tcp_server.get())
-        if (!_timer_manager)
-        {
-                _timer_manager = std::shared_ptr<TimerManager>(new TimerManager());
-        }
-
-        return _timer_manager.get();
-}
-
-void TimerManager::addTimer(WHPSTimer t)
-{
-        this->push(t);
-}
-
-void TimerManager::delTimer(WHPSTimer& t)
-{
-        cout << "TimerManager::delTimer" << endl;
-//        std::lock_guard<std::mutex> lock(_mutex);
-        bool is_success = this->erase(t);
-
-        if (is_success)
-        {
-                cout << "删除定时器： " << t.id() << endl;
-                cout << "队列大小： " << this->size() << endl;
-        }
-//        else
-//        {
-//                cout << "未找到定时器: " << t.id() << endl;
-//        }
-}
-
-void TimerManager::print()
-{
-        for (auto& obj : getHeap())
-        {
-                cout << obj.interval() << endl;
-        }
-}
-
-void TimerManager::stop()
-{
-        _is_stop = true;
-        _thrd.join();
-}
-
-long TimerManager::waitTime(WHPSTimer& t)
-{
-        // WHPSTimer t = this->front();
-        long fire_time = t.fireTime();
-        long now = t.getMilliseconds();
-
-        /* 防止出现触发时间过期的情况，导致负数(long)或溢出(unsigned long) */
-        return (((fire_time >= now) && (fire_time != 0xFFFFFFFF)) ? (fire_time - now) : 0);
-}
-
-#include <unistd.h>
-void TimerManager::loop()
-{
-        int sleep_time = 10;    // ms
-        while (!_is_stop)
-        {
-                WHPSTimer t;
-                if (this->size())
-                {
-                        t = this->front();
-                        sleep_time = this->waitTime(t);
-                }
-                else
-                {
-                        sleep_time = 10;
-                }
-
-                 cout << "sleep_time: " << sleep_time << endl;
-                if (sleep_time)
-                {
-                        std::this_thread::sleep_for(chrono::milliseconds(sleep_time));
-                }
-                
-                t = this->pop();
-                std::lock_guard<std::mutex> lock(_mutex);
-
-                if (t.isValid())
-                {
-                        t.getTimerCallback()(t);        // 执行定时器回调
-
-                        if (t.isValid())
-                        {
-                                t.start();
-                        }
-                }
-        }
 }

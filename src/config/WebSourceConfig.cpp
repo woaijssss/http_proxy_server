@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 
 #include "String.h"
 #include "WebSourceConfig.h"
@@ -38,7 +39,10 @@ void WebSourceConfig::init()
         _whpsSaverWithSection["whps"]["whps-name"] = "WhpsDefault";             // 默认whps对象
         _whpsSaverWithSection["StaticResource"]["rootDir"] = "./webResource";   // 静态资源根目录
         _whpsSaverWithSection["Server"]["tcpPort"] = "1024";                    // 默认监听tcp端口
-        _whpsSaverWithSection["Server"]["ioThreads"] = "4";                      // 默认io线程数
+        _whpsSaverWithSection["Server"]["ioThreads"] = "4";                     // 默认io线程数
+        _whpsSaverWithSection["Server"]["workThreads"] = "4";                   // 默认worker线程数
+        _whpsSaverWithSection["Server"]["httpTimeOut"] = "100";                 // 默认http超时时间(ms)
+        _whpsSaverWithSection["Server"]["logPath"] = "./log/server.log";        // 默认日志输出目录
 }
 
 bool WebSourceConfig::readConfig()
@@ -46,7 +50,7 @@ bool WebSourceConfig::readConfig()
         ifstream in(_webConfigPath);
 
         if (!in) {
-                cout << _webConfigPath + " cannot read." << endl;
+                perror("Cannot read config path, exit program");
                 exit(-1);       // 没有找到配置文件即退出进程
         }
         
@@ -84,7 +88,7 @@ bool WebSourceConfig::readConfig()
                                 else    // 没有找到分割符 '=' ，格式错误
                                 {
                                         c = false;
-                                        cout << _webConfigPath + " [" + to_string(num) + "]:delimiter '=' not found." << endl;
+                                        WHPSLogWarn(_webConfigPath + " [" + to_string(num) + "]:delimiter '=' not found.");
                                         break;
                                 }
                         }
@@ -136,17 +140,26 @@ WebSourceConfig::ConfigType& WebSourceConfig::getAllConfig()
         return _whpsSaver;
 }
 
-void WebSourceConfig::print()
+static string getStartPrint(WebSourceConfig* config)
 {
-	cout << "*********************configuration*********************" << endl;
-	cout.setf(ios::left); 
-	cout << setw(15) << "<section>" << "\t\t" << setw(15) << "<key>" << "\t\t" << setw(15) << "<value>" << endl;
-        for (auto& mPari: _whpsSaverWithSection)
+        std::stringstream out;
+        out.setf(ios::left);
+        out << setw(15) << "<section>" << "\t\t" << setw(15) << "<key>" << "\t\t" << setw(15) << "<value>" << endl;
+        for (auto& mPari: config->get())
         {
                 for (auto& obj: mPari.second)
                 {
-                        cout << setw(15) << mPari.first << "\t\t" << setw(15) << obj.first << "\t\t" << setw(15) << obj.second << endl;
+                        out << setw(15) << mPari.first << "\t\t" << setw(15) << obj.first << "\t\t" << setw(15) << obj.second << endl;
                 }
         }
-	cout << "*******************************************************" << endl;
+
+        return out.str();
+}
+
+void WebSourceConfig::print()
+{
+        string s_out = "\n*********************configuration*********************\n"
+                                        + getStartPrint(this)
+                                        + "\n*******************************************************";
+        WHPSLogInfo(s_out);
 }

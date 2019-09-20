@@ -71,14 +71,14 @@ int WHPSPoller::epollWait()
         return this->__poll(_events);
 }
 
-int WHPSPoller::poll(Vector<event_chn*>& event_queue)
+int WHPSPoller::poll(List<event_chn*>& event_queue)
 {
 
         int n_fds = this->epollWait();
 
         if (n_fds < 0)
         {
-                cerr << "epoll wait error, err: " << strerror(errno) << endl;
+                WHPSLogError("epoll wait error, err: %s", strerror(errno));
                 return -1;
         }
 
@@ -102,7 +102,7 @@ int WHPSPoller::poll(Vector<event_chn*>& event_queue)
                 epoll_data_t data;    /* User data variable */
         } __EPOLL_PACKED;
 #endif
-void WHPSPoller::onEvent(Vector<event_chn*>& event_queue, const int& n_fds)
+void WHPSPoller::onEvent(List<event_chn*>& event_queue, const int& n_fds)
 {
         for (int i = 0; i < n_fds; i++)
         {
@@ -114,7 +114,8 @@ void WHPSPoller::onEvent(Vector<event_chn*>& event_queue, const int& n_fds)
                 if (it != _event_list.end())    // 在事件表中找到了对应的句柄
                 {
                         p_event->setEvents(events);     // 设置句柄本次触发的事件类型
-                        event_queue.push_back(p_event); // 向队列添加事件
+//                        event_queue.push_back(p_event); // 向队列添加事件
+                        event_queue.push_back(p_event);      // 向队列添加事件
                 }
         }
 }

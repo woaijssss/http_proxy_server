@@ -52,6 +52,12 @@ public:
                 std::lock_guard<std::mutex> lock(__mutex);
                 std::map<__K, __V>::swap(x);
         }
+
+        void clear()
+        {
+                std::lock_guard<std::mutex> lock(__mutex);
+                std::map<__K, __V>::clear();
+        }
 private:
         std::mutex __mutex;
 };

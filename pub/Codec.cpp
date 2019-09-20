@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "Codec.h"
+#include "WHPSLog.h"
 
 using namespace std;
 
@@ -47,7 +48,7 @@ string Codec::encode(const string& str, const string& type)
         }
         else
         {
-                cout << "String not support encode this type: [" + type + "]" << endl;
+                WHPSLogWarn("String not support encode this type: [" + type + "]");
         }
 
         return str_;
@@ -67,7 +68,7 @@ string Codec::decode(const string& str, const string& type)
         }
         else
         {
-                cout << "String not support decode this type: [" + type + "]" << endl;
+                WHPSLogWarn("String not support decode this type: [" + type + "]");
         }
 
         return str_;

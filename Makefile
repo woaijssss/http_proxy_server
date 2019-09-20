@@ -69,6 +69,7 @@ release:
 
 $(BIN_DIR)/$(BIN): $(OBJ)
 	@mkdir -p $(dir $@)
+	@mkdir -p log
 	@echo "(LD) $@"
 	@$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 

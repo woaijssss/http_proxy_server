@@ -22,7 +22,7 @@ bool HttpWhpsFactory::create(const std::string& type_name)
                 return false;
         }
 
-        cout << "HttpWhpsFactory::create: " << type_name << endl;
+        WHPSLogInfo("HttpWhpsFactory::create: " + type_name);
         _map_ptr[type_name] = obj;
 
         return true;
@@ -59,7 +59,7 @@ bool HttpWhpsFactory::regist(const char * name, CreateFunction func)
 {
         if (!func)
         {
-                cout << "HttpWhpsFactory::regist false" << endl;
+                WHPSLogError("HttpWhpsFactory::regist false");
 
                 return false;
         }

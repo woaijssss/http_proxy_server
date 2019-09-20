@@ -3,6 +3,7 @@
 #define __WHPSSOCKET_H__
 
 #include "Socket.h"
+#include "WHPSLog.h"
 
 #define SERVER_MODE             0       // 服务器主socket
 #define CLIENT_CONN_MODE        1       // 服务器接受连接的客户端的socket

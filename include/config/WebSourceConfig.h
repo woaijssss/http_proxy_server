@@ -7,6 +7,7 @@
 #include "ImplSingleton.h"
 #include "SingletonRegister.h"
 #include "ImplConfig.h"
+#include "WHPSLog.h"
 
 /* 配置文件保存器
  * 支持 section 配置模式
@@ -23,6 +24,12 @@ public:
         WebSourceConfig();
 
         virtual ~WebSourceConfig();
+
+public:
+        ConfigTypeWithSection& get()
+        {
+                return getSaver();
+        }
 
 public:
         /* 配置器初始化，初始化各项配置参数，防止使用出现空指针 */

@@ -6,6 +6,7 @@
 
 #include "WHPSImplMacroBase.h"
 #include "WHPSHttpParser.h"
+#include "WHPSLog.h"
 #include "util.h"
 
 using namespace std;
@@ -88,7 +89,6 @@ WHPSHttpParser::~WHPSHttpParser()
 
 }
 
-#include "WHPSLog.h"
 void WHPSHttpParser::parseHttpRequest(std::string& raw_msg, HttpRequestContext& context)
 {
 #if 0   // 用于调试http输出的原始字符
@@ -167,7 +167,7 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
                 && method != "PUT"
                 && method != "DELETE")
         {
-                cout << "not support " << method << endl;
+                WHPSLogWarn("not support " + method);
 
                 return false;
         }

@@ -10,9 +10,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include <iostream>
-using namespace std;
-
 #include "Socket.h"
 
 Socket::Socket()

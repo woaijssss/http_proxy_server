@@ -34,9 +34,7 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
 
 WHPSTcpSession::~WHPSTcpSession()
 {
-        cout << "WHPSTcpSession::~WHPSTcpSession" << endl;
-        // this->release();
-        // _conn_sock.close();
+
 }
 
 void WHPSTcpSession::getEndpointInfo()
@@ -50,7 +48,7 @@ void WHPSTcpSession::getEndpointInfo()
                 _net_info = _client_ip + ":" + to_string(_client_port);
         }
 
-        cout << "a client has been connected: " << _net_info << endl;
+        WHPSLogInfo("a client has been connected: " + _net_info);
 }
 
 const std::string& WHPSTcpSession::getIp() const
@@ -90,8 +88,6 @@ void WHPSTcpSession::closeSession()
          * （2）epoll事件循环；
          * 并设置标志位，防止多次进入造成资源二次释放
          */
-        // this->release();
-        cout << "WHPSTcpSession::closeSession" << endl;
         std::lock_guard<std::mutex> lock(_mutex);
         if (!_is_connect)
         {
@@ -145,11 +141,12 @@ void WHPSTcpSession::onCall(httpCB cb)
 
 void WHPSTcpSession::release()
 {
-        cout << "WHPSTcpSession::release" << endl;
         std::lock_guard<std::mutex> lock(_mutex);
+        _conn_sock.close();
 
         try
         {
+                // 防止 WHPSEventLoop 对象调用回调函数时，析构 WHPSEventHandler 对象
                 std::lock_guard<std::mutex> lock(_loop.getMutex());
 
                 if (_cb_cleanup)
@@ -160,11 +157,8 @@ void WHPSTcpSession::release()
         }
         catch (exception& e)
         {
-                // pass
-                cout << "WHPSTcpSession::release exception: " << e.what() << endl;
+                WHPSLogWarn("WHPSTcpSession::release exception: %s", e.what());
         }
-        cout << "WHPSTcpSession::release end" << endl;
-        _conn_sock.close();
 }
 
 void WHPSTcpSession::send(const std::string& msg)
@@ -262,7 +256,7 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
                         }
                         else
                         {
-                                cout << "unknow errno type..." << endl;
+//                                "unknow errno type..." << endl;
                         }
 
                         break;
@@ -341,9 +335,6 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
                                 res = -1;
                         }
 
-#if 0   // send msg test(测试发送的异常情况)
-                        TestSend(this);
-#endif
                         break;
                 }
         }
@@ -398,6 +389,7 @@ void WHPSTcpSession::onNewClose(error_code error)
         {
                 return;
         }
+
         /* 关闭数据需要做两件事情
          *      （1）处理剩余数据(接收_buffer_in/发送_buffer_out)————(暂不考虑，后续扩展)
          *      （2）关闭socket
@@ -426,7 +418,6 @@ void WHPSTcpSession::onNewClose(error_code error)
 
 void WHPSTcpSession::onNewError(error_code error)
 {
-        cout << "WHPSTcpSession::onNewError: " << this->getNetInfo() << endl;
         if (!_is_connect)
         {
                 return;

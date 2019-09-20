@@ -2,9 +2,6 @@
 #ifndef __IMPL_SINGLETON_H__
 #define __IMPL_SINGLETON_H__
 
-#include <iostream>
-using namespace std;
-
 /* 单例虚类
  * 将GC功能放在虚类中，子类无须考虑单例的释放问题，仅需继承该类即可。
  */
@@ -12,8 +9,9 @@ template<class C_T>
 class ImplSingleton
 {
 public:
-        virtual ~ImplSingleton() {
-                cout << "~ImplSingleton" << endl;
+        virtual ~ImplSingleton()
+        {
+
         }
 
 protected:
@@ -36,7 +34,6 @@ private:
                 {
                         if (C_T::Get())
                         {
-                                cout << "-----delete" << endl;
                                 delete C_T::Get();
                         }
                 }

@@ -22,7 +22,6 @@ Poller::~Poller()
 using namespace std;
 int Poller::__poll(SEplEvent* events)
 {
-        // cout << ">>>>>>>>>>>epoll_wait timeout: " << __timeout << endl;
         return epoll_wait(__poll_fd, events, __maxevents, __timeout);
 }
 

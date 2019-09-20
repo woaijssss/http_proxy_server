@@ -23,7 +23,7 @@ WHPSTcpServer::WHPSTcpServer()
 
 WHPSTcpServer::~WHPSTcpServer()
 {
-        cout << "WHPSTcpServer::~WHPSTcpServer" << endl;
+
 }
 
 WHPSTcpServer* WHPSTcpServer::GetInstance()
@@ -57,14 +57,14 @@ bool WHPSTcpServer::start()
 {
         if (_tcp_socket.init() < 0)     // 启动失败
         {
-                cout << "tcp socket init failed..." << endl;
+                WHPSLogError("tcp socket init failed...");
 
                 return false;
         }
 
         if (!this->isValid())
         {
-                cout << "socket is invalid..." << endl;
+                WHPSLogError("socket is invalid...");
 
                 return false;
         }
@@ -92,7 +92,7 @@ void WHPSTcpServer::onNewConnection(error_code error)
 {
         if (error)      // 客户端连接错误
         {
-                cout << "error_code: " << error << endl;
+                WHPSLogError("error_code: %d", error);
 
                 return;
         }
@@ -128,11 +128,11 @@ void WHPSTcpServer::onNewSession()
 void WHPSTcpServer::onCleanUpResource(const sp_TcpSession& sp_tcp_session)
 {
         _tcp_sess_list.erase(sp_tcp_session->getNetInfo());
-        cout << "WHPSTcpServer::onCleanUpResource-----size: " << _tcp_sess_list.size() << endl;
+        WHPSLogInfo("WHPSTcpServer::onCleanUpResource-----size: %ld", _tcp_sess_list.size());
 
         if (!_tcp_sess_list.size())     // 主要是释放map的内存，可能没用（后面换个方法）
         {
-                cout << "WHPSTcpServer::onCleanUpResource-----list empty: " << _tcp_sess_list.size() << endl;
+                WHPSLogInfo("WHPSTcpServer::onCleanUpResource-----list empty: %ld", _tcp_sess_list.size());
                 _tcp_sess_list.clear();
         }
 }

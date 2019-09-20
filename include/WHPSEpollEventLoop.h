@@ -7,7 +7,9 @@
  * 若有事件返回，回调到外部callback中。
  */
 #include "WHPSPoller.h"
-#include "vector.h"
+#include "WHPSLog.h"
+//#include "vector.h"
+#include "list.h"
 #include "Task.h"
 
 class WHPSEpollEventLoop
@@ -54,7 +56,6 @@ public:         // 测试接口
 
         void deleteOneChannel(event_chn* chn)
         {
-                std::lock_guard<std::mutex> lock(_mutex);
                 _event_queue.erase(chn);
         }
 
@@ -64,7 +65,9 @@ private:
         /* 事件队列 
          * 外部线程，通过事件队列，来向epoll获取任务
          */
-        Vector<event_chn*> _event_queue;
+//        Vector<event_chn*> _event_queue;
+        List<event_chn*> _event_queue_main;    // 仅由主线程使用
+        List<event_chn*> _event_queue;    // I/O线程池使用，用于接收tcp连接的epoll事件
 
         bool _is_stop;
 

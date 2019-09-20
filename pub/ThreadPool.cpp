@@ -13,7 +13,7 @@ ThreadPool::ThreadPool(int size)
 
         if (__size > 100)
         {
-                cout << "too many threads, exit..." << endl;
+                perror("too many threads, exit...");
                 exit(-1);
         }
 }
@@ -26,7 +26,7 @@ ThreadPool::ThreadPool(int size, task_func_t callback)
 
         if (__size > 100)
         {
-                cout << "too many threads, exit..." << endl;
+                perror("too many threads, exit...");
                 exit(-1);
         }
 }

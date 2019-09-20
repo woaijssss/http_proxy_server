@@ -89,6 +89,12 @@ protected:      // 以下为带有Section格式的配置文件接口
         virtual ConfigTypeWithSection& getAllConfigWithSection() = 0;
 
 protected:
+        ConfigTypeWithSection& getSaver()
+        {
+                return _whpsSaverWithSection;
+        }
+
+protected:
         ConfigType _whpsSaver;                          // 普通配置文件保存器
         ConfigTypeWithSection _whpsSaverWithSection;    // Section格式保存器
 };

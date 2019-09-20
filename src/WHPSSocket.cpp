@@ -42,31 +42,31 @@ int WHPSSocket::initServerMode()
 {
         if (this->socket() < 0)
         {
-                cout << "create socket failed..." << endl;
+                WHPSLogError("create socket failed...");
                 return -1;
         }
 
         if (this->setNonblock())
         {
-                cout << "setNonblock failed..." << endl;
+                WHPSLogError("setNonblock failed...");
                 return -1;
         }
 
         if (this->setReuseAddr())
         {
-                cout << "setReuseAddr failed..." << endl;
+                WHPSLogError("setReuseAddr failed...");
                 return -1;
         }
 
         if (this->bind(_tcp_port))
         {
-                cout << "bind failed..." << endl;
+                WHPSLogError("bind failed...");
                 return -1;
         }
 
         if (this->listen())
         {
-                cout << "listen failed..." << endl;
+                WHPSLogError("listen failed...");
                 return -1;
         }
 

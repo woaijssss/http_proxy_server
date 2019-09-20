@@ -106,9 +106,11 @@ protected:
                 std::lock_guard<std::mutex> lock(_mutex);
                 HeapIterator it = this->find(item);
 
-                if (it != this->getHeap().end())
+//                if (it != this->getHeap().end())
+                if (it != _heap.end())
                 {
                         _heap.erase(it);
+
                         return true;
                 }
 
