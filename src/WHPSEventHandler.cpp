@@ -6,16 +6,21 @@
 WHPSEventHandler::WHPSEventHandler(WHPSEpollEventLoop* loop)
         : _loop(loop)
         , _is_stop(false)
+		, _cb_read(nullptr)
+		, _cb_write(nullptr)
+		, _cb_close(nullptr)
+		, _cb_error(nullptr)
 {
 
 }
 
 WHPSEventHandler::~WHPSEventHandler()
 {
-//        _cb_read = nullptr;
-//        _cb_write = nullptr;
-//        _cb_error = nullptr;
-//        _cb_close = nullptr;
+    	std::lock_guard<std::mutex> lock(_mutex);
+        _cb_read = nullptr;
+        _cb_write = nullptr;
+        _cb_error = nullptr;
+        _cb_close = nullptr;
 }
 
 void WHPSEventHandler::setFd(const int& fd)
@@ -88,7 +93,7 @@ void __stdcall WHPSEventHandler::__setCallback(__callback_t& __cb_s, __callback_
         __cb_s = __cb_d;
 }
 
-void WHPSEventHandler::onCall(CbFunc cb)
+void WHPSEventHandler::onCall(CbFunc& cb)
 {
         std::lock_guard<std::mutex> lock(_mutex);
         if (cb)
@@ -106,18 +111,22 @@ void __stdcall WHPSEventHandler::__exCallback()
          */
         if (events & EPOLLRDHUP)         // 对端异常关闭事件
         {
-                _cb_close();
+//                _cb_close();
+        		this->onCall(_cb_close);
         }
         else if (events & (EPOLLIN | EPOLLPRI))  //读事件，对端有数据或者正常关闭
         {
-                _cb_read();
+//                _cb_read();
+        		this->onCall(_cb_read);
         }
         else if (events & EPOLLOUT)  //写事件
         {
-                _cb_write();
+//                _cb_write();
+        		this->onCall(_cb_write);
         }
         else    // 目前连接错误还没有测试过(未出现)
         {
-                _cb_error();  //连接错误
+//                _cb_error();  //连接错误
+        		this->onCall(_cb_error);
         }
 }

@@ -74,16 +74,16 @@ private:
         /* 执行回调函数接口 */
         virtual void __stdcall __exCallback();
 
-        void onCall(CbFunc cb);
+        void onCall(CbFunc& cb);
 
 private:
         WHPSEpollEventLoop* _loop;
+        bool _is_stop /*= false*/;
         CbFunc _cb_read;      // 读回调
         CbFunc _cb_write;     // 写回调
-        CbFunc _cb_error;     // 错误回调
         CbFunc _cb_close;     // 关闭回调
+        CbFunc _cb_error;     // 错误回调
 
-        bool _is_stop /*= false*/;
         std::mutex _mutex;
 };
 

@@ -83,23 +83,29 @@ void WHPSEpollEventLoop::loopOne()
          * 这样的做法，不会导致调用和删除冲突，保证资源的安全。
          */
 //        for (event_chn* chn : _event_queue)     // 遍历事件队列
-        while (0 != _event_queue.size())
+//        while (!_event_queue.empty())
+        while (true)
         {
-                std::lock_guard<std::mutex> lock(_mutex);
+            	std::lock_guard<std::mutex> lock(_mutex);
+
+        		if (_event_queue.empty())
+        		{
+        				break;
+        		}
 
                 event_chn* chn = _event_queue.front();
 
-                if (chn)
+                /* 防止处理过程中被清除，造成取空导致崩溃的情况 */
+                if (!chn)
                 {
-                        // sleep(10);      // 当A线程执行到此时，B线程执行了WHPSTcpSession的析构函数(客户端断开)，valgrind会报错(必现)
-                        chn->exCallback();
+                		continue;
                 }
 
-                /* 防止处理过程中被清除，造成取空导致崩溃的情况 */
-                if (_event_queue.size())
-                {
-                        _event_queue.pop_front();
-                }
+                cout << "===========WHPSEpollEventLoop::loopOne chn: " << chn << endl;
+                chn->exCallback();
+                cout << "===========WHPSEpollEventLoop::loopOne size: " << _event_queue.size() << endl;
+                _event_queue.pop_front();
+                cout << "===========WHPSEpollEventLoop::loopOne size after: " << _event_queue.size() << endl;
         }
 
         _event_queue.clear();   // 执行结束后清空队列

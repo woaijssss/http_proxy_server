@@ -60,15 +60,15 @@ void CPPThread::excuteTask()
 {
         /* 执行所有任务 */
 
-        for (size_t i = 0; i < _task.size(); i++)
-        {
+//        for (size_t i = 0; i < _task.size(); i++)
+//        {
                 task_t task = _task.get();
 
                 if (task)       // 有可能存在取空的情况，因此加上判断，防止执行空函数
                 {
                         task();
                 }
-        }
+//        }
 }
 
 #if 1

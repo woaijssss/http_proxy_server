@@ -40,10 +40,18 @@ public:
         /* 一般 front() 函数后，紧接着就是 pop_front() 函数，
          * 因此，外部使用时，返回值必须复制一份，否则可能会导致取空
          */
-        const __T& front()
+//        const __T& front()
+        __T front()
         {
                 std::lock_guard<std::mutex> lock(__mutex);
-                return std::list<__T>::front();
+                __T res = nullptr;
+
+                if (!std::list<__T>::empty())
+                {
+                		res = std::list<__T>::front();
+                }
+
+                return res;
         }
 
         size_type size()
@@ -52,23 +60,42 @@ public:
                 return std::list<__T>::size();
         }
 
+        bool empty()
+        {
+            	std::lock_guard<std::mutex> lock(__mutex);
+            	return std::list<__T>::empty();
+        }
+
         void pop_front()
         {
                 std::lock_guard<std::mutex> lock(__mutex);
-                std::list<__T>::pop_front();
+                if (!std::list<__T>::empty())
+                {
+                    	std::list<__T>::pop_front();
+                }
         }
 
         bool erase(const value_type& v)
         {
                 std::lock_guard<std::mutex> lock(__mutex);
                 bool res = false;
-                iterator it = std::find(std::list<__T>::begin(), std::list<__T>::end(), v);
+//                iterator it = std::find(std::list<__T>::begin(), std::list<__T>::end(), v);
 
-                if (it != std::list<__T>::end())
+                for (iterator it = std::list<__T>::begin(); it != std::list<__T>::end(); it++)
                 {
-                        std::list<__T>::erase(it);
-                        res = true;
+                		if (*it == v)
+                		{
+                				std::list<__T>::erase(it);
+                				res = true;
+                				break;
+                		}
                 }
+
+//                if (it != std::list<__T>::end())
+//                {
+//                        std::list<__T>::erase(it);
+//                        res = true;
+//                }
 
                 return res;
         }

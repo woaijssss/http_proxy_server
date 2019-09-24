@@ -54,7 +54,7 @@ CXXFLAGS+=-O2
 LDFLAGS+=-O2 -s
 else
 CPPFLAGS+=-D__DEBUG__
-CFLAGS+=-O3 -g
+CFLAGS+= -O3 -g
 CXXFLAGS+=-O3 -g
 LDFLAGS+=-O3 -g
 endif

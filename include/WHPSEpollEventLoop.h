@@ -56,7 +56,8 @@ public:         // 测试接口
 
         void deleteOneChannel(event_chn* chn)
         {
-                _event_queue.erase(chn);
+                bool res = _event_queue.erase(chn);
+                WHPSLogInfo("WHPSEpollEventLoop::deleteOneChannel res[%d]", res);
         }
 
 private:

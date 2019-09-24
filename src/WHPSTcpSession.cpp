@@ -12,8 +12,13 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         , _conn_sock(fd)
         , _event_chn(&_loop)
         , _base_events(EPOLLIN | EPOLLPRI)
+        , _cb_cleanup(nullptr)
         , _is_connect(true)
         , _is_wait(false)
+        , _http_onMessage(nullptr)
+        , _http_onSend(nullptr)
+        , _http_onClose(nullptr)
+        , _http_onError(nullptr)
 {
         _conn_sock.setOption();
         this->getEndpointInfo();
@@ -95,12 +100,23 @@ void WHPSTcpSession::closeSession()
         }
 
         this->delFromEventLoop();
-        _event_chn.stop();     // 直接停止调用回调
+//        _event_chn.stop();     // 直接停止调用回调
+
+        {
+        		// 防止 WHPSEventLoop 对象调用回调函数时，析构 WHPSEventHandler 对象
+//        		std::lock_guard<std::mutex> lock(_loop.getMutex());
+        		_event_chn.stop();     // 直接停止调用回调
+        }
+
         _is_connect = false;
         _is_wait = true;
           // _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
         _buffer_in.clear();
         _buffer_out.clear();
+        _http_onMessage = nullptr;
+        _http_onSend = nullptr;
+        _http_onClose = nullptr;
+        _http_onError = nullptr;
 }
 
 void WHPSTcpSession::addToEventLoop()
@@ -146,9 +162,6 @@ void WHPSTcpSession::release()
 
         try
         {
-                // 防止 WHPSEventLoop 对象调用回调函数时，析构 WHPSEventHandler 对象
-                std::lock_guard<std::mutex> lock(_loop.getMutex());
-
                 if (_cb_cleanup)
                 {
                         _cb_cleanup(shared_from_this());

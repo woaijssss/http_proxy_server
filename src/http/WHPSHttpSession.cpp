@@ -64,7 +64,7 @@ void WHPSHttpSession::onHttpMessage()
                 return;
         }
 
-        std::lock_guard<std::mutex> lock(_mutex);
+//        std::lock_guard<std::mutex> lock(_mutex);
         this->setConnStatus(PROCESSING);
         HttpRequestContext request;
         HttpResponseContext response(_writer_func);
@@ -114,6 +114,16 @@ void WHPSHttpSession::notifyToClose()
 //        std::lock_guard<std::mutex> lock(_mutex);
         /* 当响应头中包含 Connection: close 的时候，需要服务端主动关闭连接
          */
+		{
+				std::lock_guard<std::mutex> lock(_mutex);
+				if (this->getConnStatus() == STOPPED)
+				{
+						return;
+				}
+
+				this->setConnStatus(STOPPED);
+		}
+
         _timer.stop();
         _tcp_session->release();        // 释放tcp层资源
 
@@ -140,7 +150,15 @@ void WHPSHttpSession::TimerCallback(WHPSTimer& timer)
                 timer.stop();
                 this->setConnStatus(DISCONNECTED);
                 _tcp_session->closeSession();       // 马上关闭对外连接，并停止事件触发
-                _worker_thread_pool._task.addTask(std::bind(&WHPSHttpSession::notifyToClose, shared_from_this())); // 执行清理回调函数
+
+                try
+                {
+                		_worker_thread_pool._task.addTask(std::bind(&WHPSHttpSession::notifyToClose, shared_from_this()));
+                }
+                catch (exception& e)
+                {
+                		WHPSLogWarn("WHPSHttpSession::TimerCallback exception: %s", e.what());
+                }
         }
         else
         {
