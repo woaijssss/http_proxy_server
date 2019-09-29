@@ -5,6 +5,8 @@ using namespace std;
 #include "WHPSTcpSession.h"
 #include "util.h"
 
+#define C_INVALID_PORT	-1
+
 WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr)
         : std::enable_shared_from_this<WHPSTcpSession>()
         , _c_addr(c_addr)
@@ -13,15 +15,26 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         , _event_chn(&_loop)
         , _base_events(EPOLLIN | EPOLLPRI)
         , _cb_cleanup(nullptr)
+        , _client_port(C_INVALID_PORT)
         , _is_connect(true)
+        , _is_stop(false)
         , _is_wait(false)
         , _http_onMessage(nullptr)
         , _http_onSend(nullptr)
         , _http_onClose(nullptr)
         , _http_onError(nullptr)
 {
-        _conn_sock.setOption();
         this->getEndpointInfo();
+}
+
+WHPSTcpSession::~WHPSTcpSession()
+{
+
+}
+
+void WHPSTcpSession::init()
+{
+        _conn_sock.setOption();
         /* 每个客户端的socket要设置成非阻塞，否则在read或write会使线程阻塞，无法实现异步和线程复用 */
         _conn_sock.setNonblock();
 
@@ -34,12 +47,8 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
         _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0)); // 注册连接关闭回调函数
         _event_chn.setErrorCallback(std::bind(&WHPSTcpSession::onNewError, this, 0)); // 注册异常错误回调函数
 
+	this->addToEventLoop();
         // 还需要注册发送数据和超时回调
-}
-
-WHPSTcpSession::~WHPSTcpSession()
-{
-
 }
 
 void WHPSTcpSession::getEndpointInfo()
@@ -93,12 +102,12 @@ void WHPSTcpSession::closeSession()
          * （2）epoll事件循环；
          * 并设置标志位，防止多次进入造成资源二次释放
          */
-        std::lock_guard<std::mutex> lock(_mutex);
-        if (!_is_connect)
+        if (!this->getConnectFlag())
         {
                 return;
         }
 
+        this->setConnectFlag();
         this->delFromEventLoop();
 //        _event_chn.stop();     // 直接停止调用回调
 
@@ -108,11 +117,10 @@ void WHPSTcpSession::closeSession()
         		_event_chn.stop();     // 直接停止调用回调
         }
 
-        _is_connect = false;
         _is_wait = true;
           // _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
-        _buffer_in.clear();
-        _buffer_out.clear();
+        //_buffer_in.clear();
+        //_buffer_out.clear();
         _http_onMessage = nullptr;
         _http_onSend = nullptr;
         _http_onClose = nullptr;
@@ -147,6 +155,7 @@ void WHPSTcpSession::onCall(httpCB cb)
         }
 #endif
 
+        std::lock_guard<std::mutex> lock(_mutex);
         if (!cb)
         {
                 return;
@@ -158,6 +167,12 @@ void WHPSTcpSession::onCall(httpCB cb)
 void WHPSTcpSession::release()
 {
         std::lock_guard<std::mutex> lock(_mutex);
+        if (_is_stop)
+        {
+        		return;
+        }
+
+        _is_stop = true;
         _conn_sock.close();
 
         try
@@ -191,7 +206,7 @@ void WHPSTcpSession::send(const std::string& msg)
                 {
                         events = _base_events;      // 数据发送完毕，无需继续监听写操作
 //                        _http_onSend(shared_from_this());
-                        this->onCall(_http_onSend);
+//                        this->onCall(_http_onSend);
 
                         if (_is_wait)
                         {
@@ -398,7 +413,7 @@ void WHPSTcpSession::onNewClose(error_code error)
          * 而因为addTask传递_cb_cleanup,所携带shared_from_this(),会使指向当前对象的shared_ptr引用计数加1,
          * 因此,再次引用时,无需执行此函数,直接返回,使引用计数降为0即可.
          */
-        if (!_is_connect)
+        if (!this->getConnectFlag())
         {
                 return;
         }
@@ -431,7 +446,7 @@ void WHPSTcpSession::onNewClose(error_code error)
 
 void WHPSTcpSession::onNewError(error_code error)
 {
-        if (!_is_connect)
+        if (!this->getConnectFlag())
         {
                 return;
         }

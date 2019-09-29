@@ -51,26 +51,26 @@ const events_t& WHPSEventHandler::getEvents() const
 
 void WHPSEventHandler::setReadCallback(CbFunc cb)
 {
-//        this->setCallback(_cb_read, cb);
-        _cb_read = cb;
+        this->setCallback(_cb_read, cb);
+//        _cb_read = cb;
 }
 
 void WHPSEventHandler::setWriteCallback(CbFunc cb)
 {
-//        this->setCallback(_cb_write, cb);
-        _cb_write = cb;
+        this->setCallback(_cb_write, cb);
+//        _cb_write = cb;
 }
 
 void WHPSEventHandler::setErrorCallback(CbFunc cb)
 {
-//        this->setCallback(_cb_error, cb);
-        _cb_error = cb;
+        this->setCallback(_cb_error, cb);
+//        _cb_error = cb;
 }
 
 void WHPSEventHandler::setCloseCallback(CbFunc cb)
 {
-//        this->setCallback(_cb_close, cb);
-        _cb_close = cb;
+        this->setCallback(_cb_close, cb);
+//        _cb_close = cb;
 }
 
 void WHPSEventHandler::setCallback(CbFunc& cb_s, CbFunc cb_d)
@@ -90,6 +90,7 @@ void WHPSEventHandler::exCallback()
 
 void __stdcall WHPSEventHandler::__setCallback(__callback_t& __cb_s, __callback_t __cb_d)
 {
+    	std::lock_guard<std::mutex> lock(_mutex);
         __cb_s = __cb_d;
 }
 

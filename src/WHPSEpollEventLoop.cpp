@@ -88,24 +88,24 @@ void WHPSEpollEventLoop::loopOne()
         {
             	std::lock_guard<std::mutex> lock(_mutex);
 
-        		if (_event_queue.empty())
-        		{
-        				break;
-        		}
+        	if (_event_queue.empty())
+        	{
+        		break;
+        	}
 
                 event_chn* chn = _event_queue.front();
 
                 /* 防止处理过程中被清除，造成取空导致崩溃的情况 */
                 if (!chn)
                 {
-                		continue;
+                	continue;
                 }
 
-                cout << "===========WHPSEpollEventLoop::loopOne chn: " << chn << endl;
+                //cout << "===========WHPSEpollEventLoop::loopOne chn: " << chn << endl;
                 chn->exCallback();
-                cout << "===========WHPSEpollEventLoop::loopOne size: " << _event_queue.size() << endl;
+                //cout << "===========WHPSEpollEventLoop::loopOne size: " << _event_queue.size() << endl;
                 _event_queue.pop_front();
-                cout << "===========WHPSEpollEventLoop::loopOne size after: " << _event_queue.size() << endl;
+                //cout << "===========WHPSEpollEventLoop::loopOne size after: " << _event_queue.size() << endl;
         }
 
         _event_queue.clear();   // 执行结束后清空队列

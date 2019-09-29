@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 
-#include "WHPSTcpServer.h"
+#include "WHPSTcpServer.h" 
 #include "WHPSConnSocket.h"
 #include "WHPSConfig.h"
 
@@ -121,7 +121,8 @@ void WHPSTcpServer::onNewSession()
                 _cb_connect(sp_tcp_session);
 
                 // 将客户端回调任务加入到WHPSEventLoop中
-                sp_tcp_session->addToEventLoop();
+//                sp_tcp_session->addToEventLoop();
+		sp_tcp_session->init();
         }
 }
 

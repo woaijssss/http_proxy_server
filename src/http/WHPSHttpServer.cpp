@@ -55,6 +55,7 @@ void WHPSHttpServer::onNewSession(sp_TcpSession tcp_session)
         _http_sess_list[tcp_session->getNetInfo()] = http_session;
 #endif
         http_session->setHttpCloseCallback(std::bind(&WHPSHttpServer::onNewClose, this, std::placeholders::_1));
+	http_session->init();
 }
 
 void WHPSHttpServer::onNewClose(sp_TcpSession tcp_session)

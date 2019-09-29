@@ -4,6 +4,7 @@
 using namespace std;
 
 #include "CPPThread.h"
+#include "WHPSLog.h"
 
 CPPThread::CPPThread(Task<task_t>& task)
         : __tid(0)
@@ -62,12 +63,19 @@ void CPPThread::excuteTask()
 
 //        for (size_t i = 0; i < _task.size(); i++)
 //        {
+        try
+        {
                 task_t task = _task.get();
 
                 if (task)       // 有可能存在取空的情况，因此加上判断，防止执行空函数
                 {
                         task();
                 }
+        }
+        catch (exception& e)
+        {
+                WHPSLogInfo("CPPThread::excuteTask %s", e.what());
+        }
 //        }
 }
 

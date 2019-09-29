@@ -56,6 +56,9 @@ public:
         WHPSHttpSession(const sp_TcpSession _tcp_session, WHPSWorkerThreadPool& worker_thread_pool);
 
         ~WHPSHttpSession();
+	
+		/* 初始化各项参数，不与构造函数一起，防止乱序 */
+		void init();
 
         /* 定时器回调函数 */
         void __stdcall TimerCallback(WHPSTimer& timer);

@@ -16,6 +16,7 @@ using namespace std;
 
 WHPSHttpSession::WHPSHttpSession(const sp_TcpSession _tcp_session, WHPSWorkerThreadPool& worker_thread_pool)
         : _tcp_session(_tcp_session)
+	, _http_closeCB(nullptr)
         , _obj_name(GetWebSourceConfig().get("whps", "whps-name"))
         , _whps_static_processor(GetWebSourceConfig().get("StaticResource", "rootDir"))    // 静态资源处理器
         , _http_whps_factory(GetHttpWhpsFactory())          // 获取单例工厂句柄
@@ -25,14 +26,13 @@ WHPSHttpSession::WHPSHttpSession(const sp_TcpSession _tcp_session, WHPSWorkerThr
         , _conn_status(INIT)
         , _worker_thread_pool(worker_thread_pool)
 {
-        _writer_func = std::bind(&WHPSHttpSession::sendHttpMessage, this, std::placeholders::_1);
+         _writer_func = std::bind(&WHPSHttpSession::sendHttpMessage, this, std::placeholders::_1);
         // 注册http响应消息回调
         _writer.registObj(std::bind(&WHPSHttpSession::sendHttpMessage, this, std::placeholders::_1));
         _tcp_session->setHttpMessageCallback(std::bind(&WHPSHttpSession::onHttpMessage, this));
         _tcp_session->setHttpSendCallback(std::bind(&WHPSHttpSession::onHttpSend, this));
         _tcp_session->setHttpCloseCallback(std::bind(&WHPSHttpSession::onHttpClose, this));
         _tcp_session->setHttpErrorCallback(std::bind(&WHPSHttpSession::onHttpClose, this));
-        _timer.start();
 }
 
 WHPSHttpSession::~WHPSHttpSession()
@@ -45,6 +45,12 @@ WHPSHttpSession::~WHPSHttpSession()
         _timer.stop();
 }
 
+void WHPSHttpSession::init()
+{
+        _timer.start();
+
+}
+
 const WHPSHttpSession::sp_TcpSession& WHPSHttpSession::getTcpSession() const
 {
         return _tcp_session;
@@ -52,6 +58,7 @@ const WHPSHttpSession::sp_TcpSession& WHPSHttpSession::getTcpSession() const
 
 void WHPSHttpSession::setHttpCloseCallback(HttpSessionCB_ cb)
 {
+	std::lock_guard<std::mutex> lock(_mutex);	
         _http_closeCB = cb;
 }
 
@@ -132,7 +139,10 @@ void WHPSHttpSession::notifyToClose()
                  * 造成两个线程池相互死锁
                  */
                 std::lock_guard<std::mutex> lock(_mutex);
-                _http_closeCB(_tcp_session);
+		if (_http_closeCB)
+		{
+                	_http_closeCB(_tcp_session);
+		}
         }
 }
 

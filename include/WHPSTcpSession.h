@@ -26,6 +26,9 @@ public:
         WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr);
         ~WHPSTcpSession();
 
+        /* 初始化各项参数，不与构造函数一起，防止乱序 */
+        void init();
+
         std::string& getBufferIn()
         {
                 return _buffer_in;
@@ -39,6 +42,18 @@ public:
         WHPSEpollEventLoop& getLoop()
         {
                 return _loop;
+        }
+
+        const bool& getConnectFlag()
+        {
+            	std::lock_guard<std::mutex> lock(_conn_flag_mutex);
+        		return _is_connect;
+        }
+
+        void setConnectFlag()
+        {
+        		std::lock_guard<std::mutex> lock(_conn_flag_mutex);
+        		_is_connect = false;
         }
 
 public:
@@ -165,6 +180,7 @@ private:    // 对应用服务层提供的可用数据
         std::string _buffer_out;        // 发送消息缓冲(tcp响应)
 
         bool _is_connect /*= true*/;    // 连接标志(默认为true)
+        bool _is_stop /*= false*/;			//
 
         bool _is_wait;
 
@@ -175,6 +191,7 @@ private:        // 应用层回调函数定义
         httpCB _http_onError;           // http异常错误回调函数
 
         std::mutex _mutex;
+        std::mutex _conn_flag_mutex;
 };
 
 typedef WHPSTcpSession::TcpSessionCB    TcpSessionCB;
