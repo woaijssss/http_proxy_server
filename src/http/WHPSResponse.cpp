@@ -34,6 +34,11 @@ void HttpResponseContext::setContentType(const string& type)
         this->getResponse()._setContentType(type);
 }
 
+void HttpResponseContext::setError(const int& sc, const std::string& msg)
+{
+        this->getResponse()._setError(sc, msg);
+}
+
 void HttpResponseContext::addHeader(const string& h_key, const string& h_value)
 {
         this->getResponse()._addHeader(h_key, h_value);

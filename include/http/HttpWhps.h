@@ -26,10 +26,10 @@ public:
 
 public:
         /* GET/DELETE 方法的请求处理 */
-        virtual void doGet(HttpWhpsRequest request, HttpWhpsResponse response) = 0;
+        virtual void doGet(HttpWhpsRequest& request, HttpWhpsResponse& response) = 0;
 
         /* POST/PUT 方法的请求处理 */
-        virtual void doPost(HttpWhpsRequest request, HttpWhpsResponse response) = 0;
+        virtual void doPost(HttpWhpsRequest& request, HttpWhpsResponse& response) = 0;
         // void doPut(HttpWhpsRequest request, HttpWhpsResponse response);
         // void doDelete(HttpWhpsRequest request, HttpWhpsResponse response);
 private:

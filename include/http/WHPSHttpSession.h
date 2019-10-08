@@ -14,7 +14,7 @@
 
 /* 系统静态资源处理器（不应对外可见，后面放到源文件里）
  */
-class WhpsSysResource: public HttpWhps
+class WhpsSysResource final: public HttpWhps
 {
 public:
         WhpsSysResource(const std::string& rootPath);
@@ -22,13 +22,13 @@ public:
         virtual ~WhpsSysResource();
 
 public:
-        virtual void doGet(HttpWhpsRequest request, HttpWhpsResponse response);
+        virtual void doGet(HttpWhpsRequest& request, HttpWhpsResponse& response);
 
-        virtual void doPost(HttpWhpsRequest request, HttpWhpsResponse response) {}
+        virtual void doPost(HttpWhpsRequest& request, HttpWhpsResponse& response) {}
 
 private:
         /* 处理静态资源请求 */
-        void getResouceFile(const std::string& path, std::string& msg);
+        void getResouceFile(const std::string& path, HttpWhpsResponse& response, std::string& msg);
 
 private:
         const std::string& _rootPath;   // 静态资源根目录

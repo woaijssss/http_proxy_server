@@ -34,6 +34,10 @@ protected:      /* 标准响应头函数*/
          */
         void _setContentType(const std::string& type);
 
+protected:
+        /* 设置错误的状态码 */
+        void _setError(const int& sc, const std::string& msg);
+
 //-----------------------------------------------------------------------------------
 protected:      /* 以下是添加自定义响应头和时间的函数 */
         /* 该方法是设置有多个值的响应头,参数name表示响应头名称,参数value表示响应头的值 
@@ -68,14 +72,16 @@ protected:
 
         /* 获取http响应发送器 */
         WhpsWriter& _getWriter();
+        friend WhpsWriter;
 private:
         /* 初始化响应头的默认参数 */
         void initParams();
 
-        HttpResponseHeader      _header;                    // 响应头(K-V格式)
-        std::string             _version/* = "HTTP/1.1"*/;  // 协议版本(应与请求头版本一致)
-        std::string             _st_code/* = "200"*/;       // http状态码
-        std::string             _status/* = "OK"*/;         // http状态信息
+        std::string _version/* = "HTTP/1.1"*/;  // 协议版本(应与请求头版本一致)
+        HttpResponseHeader _header;             // 响应头(K-V格式)
+        std::string _st_code/* = "200"*/;       // http状态码
+        std::string _status/* = "OK"*/;         // http状态信息
+
         HttpResponseBody        _body;                      // 响应体
 
         WhpsWriter              _writer;                    // 发送器

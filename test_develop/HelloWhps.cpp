@@ -14,12 +14,12 @@ HelloWhps::~HelloWhps()
 
 }
 
-void HelloWhps::doGet(HttpWhpsRequest request, HttpWhpsResponse response)
+void HelloWhps::doGet(HttpWhpsRequest& request, HttpWhpsResponse& response)
 {
         cout << "HelloWhps::doGet" << endl;
 }
 
-void HelloWhps::doPost(HttpWhpsRequest request, HttpWhpsResponse response)
+void HelloWhps::doPost(HttpWhpsRequest& request, HttpWhpsResponse& response)
 {
 
 }

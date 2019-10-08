@@ -10,7 +10,7 @@
 
 using namespace std;
 
-WHPSHttpServer* p_server = NULL;
+static WHPSHttpServer* p_server = NULL;
 
 void sigHandler(int sig)
 {
@@ -30,13 +30,8 @@ int main(int argc, char const *argv[])
         signal(SIGINT, sigHandler); 
 
         initConfig();   // 初始化加载配置文件
-
-#if 1
-        WHPSHttpServer& server_ptr = GetWHPSHttpServer();
-        p_server = &server_ptr;
-
-        server_ptr.start();
-#endif
+        p_server = &GetWHPSHttpServer();
+        p_server->start();
 
         return 0;
 }

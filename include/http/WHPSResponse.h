@@ -28,6 +28,9 @@ public:         /* 标准响应头函数*/
         /* 设置http响应内容类型 */
         void setContentType(const std::string& type);
 
+public:
+        void setError(const int& sc, const std::string& msg);
+
 //-----------------------------------------------------------------------------------
 public:         /* 以下是添加自定义响应头和时间的函数 */
         /* 该方法是设置有多个值的响应头,参数name表示响应头名称,参数value表示响应头的值 

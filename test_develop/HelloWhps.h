@@ -18,9 +18,9 @@ public:
         virtual ~HelloWhps();
 
 public:
-        virtual void doGet(HttpWhpsRequest request, HttpWhpsResponse response);
+        virtual void doGet(HttpWhpsRequest& request, HttpWhpsResponse& response);
 
-        virtual void doPost(HttpWhpsRequest request, HttpWhpsResponse response);
+        virtual void doPost(HttpWhpsRequest& request, HttpWhpsResponse& response);
 
 private:
 };

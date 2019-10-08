@@ -6,6 +6,10 @@
 #include "ImplThreadPool.h"
 #include "WHPSThread.h"
 
+/* I/O线程池，主要负责：
+ * （1）收发tcp数据；
+ * （2）处理业务功能
+ */
 class WHPSThreadPool : public ImplThreadPool
 {
 public:
@@ -38,6 +42,9 @@ private:
         Task<task_func_t> _task;          // 线程任务(当前是所有线程共享一个任务队列)
 };
 
+/* worker线程池，主要负责：
+ * （1）连接 session 资源的释放
+ */
 class WHPSWorkerThreadPool : public ImplThreadPool
 {
 public:

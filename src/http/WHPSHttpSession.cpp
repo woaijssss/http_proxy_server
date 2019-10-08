@@ -121,15 +121,15 @@ void WHPSHttpSession::notifyToClose()
 //        std::lock_guard<std::mutex> lock(_mutex);
         /* 当响应头中包含 Connection: close 的时候，需要服务端主动关闭连接
          */
-		{
-				std::lock_guard<std::mutex> lock(_mutex);
-				if (this->getConnStatus() == STOPPED)
-				{
-						return;
-				}
+        {
+                std::lock_guard<std::mutex> lock(_mutex);
+                if (this->getConnStatus() == STOPPED)
+                {
+                        return;
+                }
 
-				this->setConnStatus(STOPPED);
-		}
+                this->setConnStatus(STOPPED);
+        }
 
         _timer.stop();
         _tcp_session->release();        // 释放tcp层资源
@@ -139,10 +139,10 @@ void WHPSHttpSession::notifyToClose()
                  * 造成两个线程池相互死锁
                  */
                 std::lock_guard<std::mutex> lock(_mutex);
-		if (_http_closeCB)
-		{
-                	_http_closeCB(_tcp_session);
-		}
+                if (_http_closeCB)
+                {
+                        _http_closeCB(_tcp_session);
+                }
         }
 }
 
@@ -163,11 +163,11 @@ void WHPSHttpSession::TimerCallback(WHPSTimer& timer)
 
                 try
                 {
-                		_worker_thread_pool._task.addTask(std::bind(&WHPSHttpSession::notifyToClose, shared_from_this()));
+                        _worker_thread_pool._task.addTask(std::bind(&WHPSHttpSession::notifyToClose, shared_from_this()));
                 }
                 catch (exception& e)
                 {
-                		WHPSLogWarn("WHPSHttpSession::TimerCallback exception: %s", e.what());
+                        WHPSLogWarn("WHPSHttpSession::TimerCallback exception: %s", e.what());
                 }
         }
         else
@@ -202,6 +202,10 @@ void WHPSHttpSession::onStaticRequest(HttpRequestContext& request, HttpResponseC
         if (request.getMethod() == "GET")
         {
                 _whps_static_processor.doGet(request, response);    // 通过静态资源处理器直接返回
+        }
+        else if (request.getMethod() == "PUT")
+        {
+                WHPSLogInfo("WHPSHttpSession::onStaticRequest method-[%s] 用于上传静态资源", request.getMethod());
         }
         else
         {
@@ -254,29 +258,26 @@ WhpsSysResource::~WhpsSysResource()
 
 }
 
-void WhpsSysResource::doGet(HttpWhpsRequest request, HttpWhpsResponse response)
+void WhpsSysResource::doGet(HttpWhpsRequest& request, HttpWhpsResponse& response)
 {
         /* 静态资源自动加载功能（通过配置，获取静态资源路径，并写回给前端）
          */
         string path = _rootPath + request.getUrl();
         string msg;
-        this->getResouceFile(path, msg);
+        this->getResouceFile(path, response, msg);
 
         response.getWriter().write(msg);
 }
 
-void WhpsSysResource::getResouceFile(const string& path, string& msg)
+void WhpsSysResource::getResouceFile(const string& path, HttpWhpsResponse& response, string& msg)
 {
         WHPSLogInfo("WhpsSysResource::getResouceFile path: %s", path.c_str());
         int res = load(path, msg);
 
         if (res < 0)
         {
-                string tmp = "404 not found!";
-                msg = "HTTP/1.1 404 not found \r\n"
-                      "Content-Length: " + to_string(tmp.size()) + "\r\n"
-                      "\r\n"
-                      + tmp;
+                msg = "404 not found!";
+                response.setError(404, "Not Found");
         }
 }
 
@@ -341,7 +342,7 @@ int load(const string& filename, string& f_buff)
         in.read(buffer, length);       // read the whole file into the buffer  
         in.close();
 
-#if 1
+#if 0
         f_buff = "HTTP/1.1 200 OK \r\n"
 //                 "Connection:close \r\n"
                 // "Content-Type:application/x-gzip\r\n"

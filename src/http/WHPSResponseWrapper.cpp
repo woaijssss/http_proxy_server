@@ -7,7 +7,7 @@ WHPSResponseWrapper::WHPSResponseWrapper(cbFunc cb)
         : _version("HTTP/1.1")
         , _st_code("200")
         , _status("OK")
-        , _writer(cb)
+        , _writer(this, cb)
 {
         this->initParams();
 }
@@ -19,7 +19,7 @@ WHPSResponseWrapper::~WHPSResponseWrapper()
 
 void WHPSResponseWrapper::initParams()
 {
-        _header["Content-Type"] = "text/html;charset=UTF-8";
+//        _header["Content-Type"] = "text/html;charset=UTF-8";
 }
 
 WHPSResponseWrapper* WHPSResponseWrapper::_getResponse()
@@ -35,6 +35,12 @@ void WHPSResponseWrapper::_setContentLength(const std::string& length)
 void WHPSResponseWrapper::_setContentType(const std::string& type)
 {
         _header["Content-Type"] = type;
+}
+
+void WHPSResponseWrapper::_setError(const int& sc, const std::string& msg)
+{
+        _st_code = to_string(sc);
+        _status = msg;
 }
 
 void WHPSResponseWrapper::_addHeader(const std::string& h_key, const std::string& h_value)
@@ -69,11 +75,14 @@ void WHPSResponseWrapper::_setDateHeader(const std::string& h_key, const long& h
 
 string WHPSResponseWrapper::_getHeader()
 {
-        string header;
+        string header = "HTTP/1.1 " + _st_code + " " + _status + "\r\n";        // 默认先使用 Http 1.1 版本
+
         for (auto& kv: _header)
         {
                 header += kv.first + ": " + kv.second + "\r\n";
         }
+
+        header += "\r\n";
 
         return header;
 }

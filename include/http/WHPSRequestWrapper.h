@@ -34,7 +34,8 @@ protected:
         /* 获取当前请求的是否为静态资源标识 */
         const bool&              _getFlag();
 
-protected:void _setMethod(const std::string& method);
+protected:
+        void _setMethod(const std::string& method);
         void _seturl(const std::string& url);
         void _setVersion(const std::string& version);
         void _setHeader(const std::string& k, const std::string& v);

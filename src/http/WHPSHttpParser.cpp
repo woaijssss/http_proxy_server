@@ -187,6 +187,12 @@ bool WHPSHttpParser::checkResourceType(const std::string& url)
          */
         String sUrl(url);
 
+        /* 按照http协议
+         *  带参数分隔
+         *  带参数列表
+         *  带参数赋值判断
+         * 均不是静态资源。
+         */
         if (sUrl.matchCase("?") || sUrl.matchCase("&") || sUrl.matchCase("="))
         {
                 return false;
