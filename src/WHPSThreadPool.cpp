@@ -9,6 +9,7 @@ WHPSThreadPool::WHPSThreadPool(int size, WHPSEpollEventLoop& main_loop)
         : _main_loop(main_loop)
         , _index(0)
         , _size(size)
+        , _task(_size)
 {
         this->createThreads();
 
@@ -24,6 +25,7 @@ WHPSThreadPool::WHPSThreadPool(int size, WHPSEpollEventLoop& main_loop, task_fun
         , _index(0)
         , _size(size)
         , _callback(callback)
+        , _task(_size)
 {
         this->createThreads();
 
@@ -36,6 +38,7 @@ WHPSThreadPool::WHPSThreadPool(int size, WHPSEpollEventLoop& main_loop, task_fun
 
 WHPSThreadPool::~WHPSThreadPool()
 {
+        _task.stop();
         this->stop();
 }
 
@@ -82,7 +85,8 @@ void WHPSThreadPool::stop()
 
 
 WHPSWorkerThreadPool::WHPSWorkerThreadPool(int size)
-        : _index(0)
+        : _task(size)
+        , _index(0)
         , _size(size)
 {
         this->createThreads();
@@ -95,7 +99,8 @@ WHPSWorkerThreadPool::WHPSWorkerThreadPool(int size)
 }
 
 WHPSWorkerThreadPool::WHPSWorkerThreadPool(int size, task_func_t callback)
-        : _index(0)
+        : _task(size)
+        , _index(0)
         , _size(size)
         , _callback(callback)
 {
@@ -110,6 +115,7 @@ WHPSWorkerThreadPool::WHPSWorkerThreadPool(int size, task_func_t callback)
 
 WHPSWorkerThreadPool::~WHPSWorkerThreadPool()
 {
+        _task.stop();
         this->stop();
 }
 

@@ -8,6 +8,7 @@ using namespace std;
 
 ThreadPool::ThreadPool(int size)
         : __size(size)
+        , __task(__size)
 {
         this->createThreads();
 
@@ -21,6 +22,7 @@ ThreadPool::ThreadPool(int size)
 ThreadPool::ThreadPool(int size, task_func_t callback)
         : __size(size)
         , __callback(callback)
+        , __task(__size)
 {
         this->createThreads();
 

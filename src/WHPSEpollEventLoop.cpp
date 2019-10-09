@@ -6,6 +6,7 @@ WHPSEpollEventLoop::WHPSEpollEventLoop(int maxevents /*= 1024*/, int timeout /*=
         , _event_queue_main()
         , _event_queue()
         , _is_stop(false)
+        , _task(0)
 {
 
 }

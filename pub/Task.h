@@ -19,9 +19,10 @@ template <class T>
 class Task
 {
 public:
-        Task()
-                : __tq_size(0)
-                , __q_mutex(PTHREAD_MUTEX_INITIALIZER)
+        Task(const int& users)
+                : _users(users)
+                ,__tq_size(0)
+                ,__q_mutex(PTHREAD_MUTEX_INITIALIZER)
                 , _condition(PTHREAD_COND_INITIALIZER)
         {
 
@@ -89,20 +90,22 @@ public:
         {
                 __tq_size = -1;
 
-                cout << "---------------" << endl;
-                while (pthread_mutex_trylock(&__q_mutex))
+                while (_users > 0)
                 {
-                        cout << "================" << endl;
-                        pthread_cond_signal(&_condition);       // 通知消费线程可以取任务
+                        if (!pthread_mutex_trylock(&__q_mutex))
+                        {
+                                pthread_cond_signal(&_condition);       // 通知消费线程可以取任务
+                                _users--;
+                                pthread_mutex_unlock(&__q_mutex);
+                        }
                 }
-                cout << "---------------" << endl;
 
-                pthread_mutex_unlock(&__q_mutex);
         }
 
 private:
         std::queue<T> __tq;     // 任务队列
 //        std::mutex __q_mutex;   // 任务锁
+        int _users;             // 使用者数量
         std::atomic<int>     __tq_size;   // 任务量
         pthread_mutex_t __q_mutex;   // 任务锁
         pthread_cond_t _condition;
