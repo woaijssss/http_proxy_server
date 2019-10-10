@@ -70,7 +70,6 @@ public:
                         task = __tq.front();
                         __tq.pop();          // 是否要保证任务成功执行再删除(待定)
                         __tq_size--;    // 任务数减1
-                        cout << "----------------------" << __tq_size << endl;
                 }
 
                 pthread_mutex_unlock(&__q_mutex);

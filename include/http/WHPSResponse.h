@@ -28,7 +28,11 @@ public:         /* 标准响应头函数*/
         /* 设置http响应内容类型 */
         void setContentType(const std::string& type);
 
+        /* 为该响应设置状态码 */
+        void setStatus(const int& sc);
+
 public:
+        /* 使用指定的状态发送错误响应到客户端 */
         void setError(const int& sc, const std::string& msg);
 
 //-----------------------------------------------------------------------------------

@@ -37,6 +37,12 @@ void WHPSResponseWrapper::_setContentType(const std::string& type)
         _header["Content-Type"] = type;
 }
 
+void WHPSResponseWrapper::_setStatus(const int& sc)
+{
+        _st_code = to_string(sc);
+        _status = _m_status.getStatus(sc);
+}
+
 void WHPSResponseWrapper::_setError(const int& sc, const std::string& msg)
 {
         _st_code = to_string(sc);

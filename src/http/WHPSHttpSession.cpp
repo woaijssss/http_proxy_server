@@ -77,6 +77,7 @@ void WHPSHttpSession::onHttpMessage()
         HttpResponseContext response(_writer_func);
         _http_parser.parseHttpRequest(_tcp_session->getBufferIn(), request);     // 解析获取http请求内容
 
+        /***************/
         /* 增加判断http粘包问题后，从原始包中删除一个http整包，保留剩下的bufferin */
         _tcp_session->getBufferIn().clear();     // 假设已经处理完毕
         /***************/
@@ -201,6 +202,7 @@ void WHPSHttpSession::onStaticRequest(HttpRequestContext& request, HttpResponseC
          */
         if (request.getMethod() == "GET")
         {
+                response.setStatus(200);
                 _whps_static_processor.doGet(request, response);    // 通过静态资源处理器直接返回
         }
         else if (request.getMethod() == "PUT")

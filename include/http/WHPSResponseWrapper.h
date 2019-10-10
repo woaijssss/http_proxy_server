@@ -7,6 +7,7 @@
 
 #include "WhpsWriter.h"
 #include "HttpWriterRegistser.h"
+#include "WHPSHttpStatusCode.h"
 
 typedef std::map<std::string, std::string>  HttpHeader__;
 typedef std::string                         HttpBody__;
@@ -34,8 +35,11 @@ protected:      /* 标准响应头函数*/
          */
         void _setContentType(const std::string& type);
 
+        /* 为该响应设置状态码 */
+        void _setStatus(const int& sc);
+
 protected:
-        /* 设置错误的状态码 */
+        /* 使用指定的状态发送错误响应到客户端 */
         void _setError(const int& sc, const std::string& msg);
 
 //-----------------------------------------------------------------------------------
@@ -84,6 +88,7 @@ private:
 
         HttpResponseBody        _body;                      // 响应体
 
+        WHPSHttpStatusCode      _m_status;              // 状态器
         WhpsWriter              _writer;                    // 发送器
 };
 

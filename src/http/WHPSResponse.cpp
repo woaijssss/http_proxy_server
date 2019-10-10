@@ -34,6 +34,11 @@ void HttpResponseContext::setContentType(const string& type)
         this->getResponse()._setContentType(type);
 }
 
+void HttpResponseContext::setStatus(const int& sc)
+{
+        this->getResponse()._setStatus(sc);
+}
+
 void HttpResponseContext::setError(const int& sc, const std::string& msg)
 {
         this->getResponse()._setError(sc, msg);
