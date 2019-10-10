@@ -152,7 +152,7 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
         context.setMethod(method);
         context.setUrl(String(req_line[1]).decode("UrlCode"));	// 防止中文
         context.setVersion(req_line[2]);
-        context.setFlag(this->checkResourceType(context.getUrl()));  // 判断资源类型
+        context.setFlag(this->checkResourceType(context));  // 判断资源类型
         vrow_seq.erase(vrow_seq.begin());       // 处理之后，需要将第一行删除
 
         /* 当前仅可支持
@@ -175,7 +175,7 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
         return true;
 }
 
-bool WHPSHttpParser::checkResourceType(const std::string& url)
+bool WHPSHttpParser::checkResourceType(HttpRequestContext& request)
 {
         /* （1）检测的关键是 url 中是否带有相应的关键字符（比如"?"、"&"、"="等字符）
          * （2）静态资源格式必须符合：
@@ -185,20 +185,22 @@ bool WHPSHttpParser::checkResourceType(const std::string& url)
          *      <注意>：url不能包含"?"、"&"、"="等任何与参数相关的字符
          * （3）若上述格式全部满足，仍然找不到文件，则报错并返回404
          */
-        String sUrl(url);
+        String sUrl(request.getUrl());
 
         /* 按照http协议
+         *  仅 GET 方法
          *  带参数分隔
          *  带参数列表
          *  带参数赋值判断
          * 均不是静态资源。
          */
-        if (sUrl.matchCase("?") || sUrl.matchCase("&") || sUrl.matchCase("="))
+        cout << "---" << sUrl.str() << endl;
+        if (request.getMethod() == "GET" && (!sUrl.matchCase("?") && !sUrl.matchCase("&") && !sUrl.matchCase("=")))
         {
-                return false;
+                return true;
         }
 
-        return true;
+        return false;
 }
 
 void WHPSHttpParser::getHeaderInfo(SpVector& vrow_seq, HttpRequestContext& context)

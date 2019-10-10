@@ -198,17 +198,17 @@ void WHPSHttpSession::onCallback(HttpRequestContext& request, HttpResponseContex
 void WHPSHttpSession::onStaticRequest(HttpRequestContext& request, HttpResponseContext& response)
 {
         /* 框架请求静态资源，仅支持 GET 方法获取
-         * 不支持也没必要支持 POST、DELETE
+         * 除 GET 请求外，其他的 POST、PUT、DELETE 等，全部交由应用逻辑处理，框架内部仅处理 GET 请求的静态资源！
          */
         if (request.getMethod() == "GET")
         {
                 response.setStatus(200);
                 _whps_static_processor.doGet(request, response);    // 通过静态资源处理器直接返回
         }
-        else if (request.getMethod() == "PUT")
-        {
-                WHPSLogInfo("WHPSHttpSession::onStaticRequest method-[%s] 用于上传静态资源", request.getMethod());
-        }
+//        else if (request.getMethod() == "PUT")
+//        {
+//                WHPSLogInfo("WHPSHttpSession::onStaticRequest method-[%s] 用于上传静态资源", request.getMethod());
+//        }
         else
         {
                 WHPSLogWarn("WHPSHttpSession::onStaticRequest not support method: [" + request.getMethod() + "]");
