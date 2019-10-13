@@ -15,6 +15,10 @@ void delayMs(const unsigned int& ms);
  */
 std::string getHexString(unsigned char* s, const int& len);
 
+/* 获取服务器当前时间(日期格式)
+ */
+std::string getServerTime();
+
 /* 初始化所有配置文件
  */
 void initConfig();

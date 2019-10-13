@@ -194,7 +194,6 @@ bool WHPSHttpParser::checkResourceType(HttpRequestContext& request)
          *  带参数赋值判断
          * 均不是静态资源。
          */
-        cout << "---" << sUrl.str() << endl;
         if (request.getMethod() == "GET" && (!sUrl.matchCase("?") && !sUrl.matchCase("&") && !sUrl.matchCase("=")))
         {
                 return true;

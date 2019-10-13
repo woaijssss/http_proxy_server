@@ -32,6 +32,17 @@ string getHexString(unsigned char* s, const int& len)
         return out.str();
 }
 
+string getServerTime()
+{
+        char time_str[64] = {0};
+        time_t t;
+        time(&t);
+        const char* format = "%Y-%m-%dT%H:%M:%S.000+08:00";
+        strftime(time_str, sizeof(time_str), format, localtime(&t));
+
+        return string(time_str);
+}
+
 void initConfig()
 {
         if (!GetWebSourceConfig().readConfig())
