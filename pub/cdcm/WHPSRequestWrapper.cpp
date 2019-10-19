@@ -28,7 +28,7 @@ const string& WHPSRequestWrapper::_getUrl()
 
 const string& WHPSRequestWrapper::_getUrlParams(const string& key)
 {
-        return _url_params[key];
+        return _url_params.get(key);
 }
 
 const string& WHPSRequestWrapper::_getVersion()

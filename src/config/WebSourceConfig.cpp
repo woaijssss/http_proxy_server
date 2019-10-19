@@ -43,6 +43,10 @@ void WebSourceConfig::init()
         _whpsSaverWithSection["Server"]["workThreads"] = "4";                   // 默认worker线程数
         _whpsSaverWithSection["Server"]["httpTimeOut"] = "100";                 // 默认http超时时间(ms)
         _whpsSaverWithSection["Server"]["logPath"] = "./log/server.log";        // 默认日志输出目录
+        _whpsSaverWithSection["Mysql"]["ip"] = "127.0.0.1";
+        _whpsSaverWithSection["Mysql"]["DBName"] = "test";
+        _whpsSaverWithSection["Mysql"]["username"] = "root";
+        _whpsSaverWithSection["Mysql"]["password"] = "123456";
 }
 
 bool WebSourceConfig::readConfig()
