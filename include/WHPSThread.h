@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_THREAD_H__
 #define __WHPS_THREAD_H__
 
@@ -26,32 +25,9 @@ private:
 
         void excuteTask();
 private:
-        CPPThread _thrd;
-        bool _is_stop;
-        WHPSEpollEventLoop _loop;
-};
-
-class WHPSWorkerThread
-{
-public:
-        using task_func_t = CPPThread::impl_task_func_t;
-        using task_t = CPPThread::task_t;
-public:
-        WHPSWorkerThread(Task<task_t>& task);
-        ~WHPSWorkerThread();
-
-public:
-        void start();
-
-        void stop();
-
-private:
-        void workFunc();
-
-        void excuteTask();
-private:
-        CPPThread _thrd;
-        bool _is_stop;
+        CPPThread m_thrd;
+        bool m_isStop;
+        WHPSEpollEventLoop m_loop;
 };
 
 #endif  // __WHPS_THREAD_H__

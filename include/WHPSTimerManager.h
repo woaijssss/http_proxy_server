@@ -52,12 +52,11 @@ private:
         void onCallTask(WHPSTimer);
 
 private:
-        static std::shared_ptr<TimerManager> _timer_manager;
-        std::thread _thrd;
-        bool _is_stop /*= false*/;
-        std::mutex _mutex;
+        static std::shared_ptr<TimerManager> m_timerManager;
+        std::thread m_thrd;
+        bool m_isStop /*= false*/;
+        std::mutex m_mutex;
 };
 GET_SINGLETON_OBJECT_PTR(TimerManager)
-
 
 #endif /* __TIMERMANAGER_H__ */

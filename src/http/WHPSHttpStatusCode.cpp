@@ -5,7 +5,6 @@
  *      Author: wenhan
  */
 
-
 #include "WHPSHttpStatusCode.h"
 
 WHPSHttpStatusCode::WHPSHttpStatusCode()
@@ -20,19 +19,19 @@ WHPSHttpStatusCode::~WHPSHttpStatusCode()
 
 void WHPSHttpStatusCode::init()
 {
-        _m_sc_status[200] = "OK";
-        _m_sc_status[201] = "Created";
-        _m_sc_status[202] = "Accepted";
-        _m_sc_status[204] = "No Content";
-        _m_sc_status[401] = "Unauthorized";
-        _m_sc_status[403] = "Forbbiden";
-        _m_sc_status[404] = "Not Found";
-        _m_sc_status[405] = "Method Not Allowed";
-        _m_sc_status[500] = "Server Error";
-        _m_sc_status[502] = "Bad Gateway";
+        m_scStatus[200] = "OK";
+        m_scStatus[201] = "Created";
+        m_scStatus[202] = "Accepted";
+        m_scStatus[204] = "No Content";
+        m_scStatus[401] = "Unauthorized";
+        m_scStatus[403] = "Forbbiden";
+        m_scStatus[404] = "Not Found";
+        m_scStatus[405] = "Method Not Allowed";
+        m_scStatus[500] = "Server Error";
+        m_scStatus[502] = "Bad Gateway";
 }
 
 const WHPSHttpStatusCode::StrStatus& WHPSHttpStatusCode::getStatus(const int& st)
 {
-        return _m_sc_status[st];
+        return m_scStatus[st];
 }

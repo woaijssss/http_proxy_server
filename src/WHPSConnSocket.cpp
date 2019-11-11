@@ -1,4 +1,3 @@
-
 #include "WHPSConnSocket.h"
 
 #include <iostream>
@@ -23,7 +22,7 @@ WHPSConnSocket::~WHPSConnSocket()
 
 bool WHPSConnSocket::isValid()
 {
-       return this->__isValid(); 
+        return this->__isValid();
 }
 
 const int& WHPSConnSocket::get() const

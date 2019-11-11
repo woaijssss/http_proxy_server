@@ -1,4 +1,3 @@
-
 #include "WHPSRequest.h"
 
 using namespace std;

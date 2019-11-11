@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include "WHPSSocket.h"
 #include "WHPSConfig.h"
@@ -8,10 +7,10 @@ using namespace std;
 // int g_port = 3000;              // 可做成配置项
 
 WHPSSocket::WHPSSocket(int mode)
-        : _mode(mode)
-        , _tcp_port(atoi(GetWebSourceConfig().get("Server", "tcpPort").c_str()))
+        : m_mode(mode),
+          m_tcpPort(atoi(GetWebSourceConfig().get("Server", "tcpPort").c_str()))
 {
-        
+
 }
 
 WHPSSocket::~WHPSSocket()
@@ -26,11 +25,10 @@ const int& WHPSSocket::get() const
 
 int WHPSSocket::init()
 {
-        if (_mode == SERVER_MODE)
+        if (m_mode == SERVER_MODE)
         {
                 return this->initServerMode();
-        }
-        else if(_mode == CLIENT_CONN_MODE)
+        } else if (m_mode == CLIENT_CONN_MODE)
         {
                 return this->initClientConnMode();
         }
@@ -58,7 +56,7 @@ int WHPSSocket::initServerMode()
                 return -1;
         }
 
-        if (this->bind(_tcp_port))
+        if (this->bind(m_tcpPort))
         {
                 WHPSLogError("bind failed...");
                 return -1;

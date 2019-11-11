@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_POLLER_H__
 #define __WHPS_POLLER_H__
 
@@ -10,11 +9,10 @@
 #include "list.h"
 
 #define MAX_EVENTS      1024            // 最大触发的事件数
-
 /* WHPS事件循环基础类，用于启动事件和对事件的增、删、改、查。
  * WHPSPoller中，维护事件列表、事件队列等。
  */
-class WHPSPoller : public Poller
+class WHPSPoller: public Poller
 {
 public:
         using OpsType = unsigned int;
@@ -28,7 +26,8 @@ public:
         WHPSPoller(int maxevents, int timeout);
         ~WHPSPoller();
 
-public:         // 外部调用
+public:
+        // 外部调用
         /* 启动epoll任务 */
         int poll(List<event_chn*>& event_queue);
 
@@ -44,7 +43,8 @@ public:         // 外部调用
         /* 设置事件等待超时时间 */
         void setTimeout(int timeout);
 
-private:        // 内部调用
+private:
+        // 内部调用
 
         void eventOperation(OpsType type, event_chn* p_event);
         /* 新增一个事件到事件列表 */
@@ -55,15 +55,14 @@ private:        // 内部调用
 
         /* 更新事件列表中已存在的一个事件 */
         // void updateEventList(int fd);
-
         /* 等待事件触发 */
         int epollWait();
 
         /* 向队列中添加已触发的事件，提交给外部线程处理 */
         void onEvent(List<event_chn*>& event_queue, const int& n_fds);
 private:
-        Map<int, event_chn*> _event_list;      // 事件列表 <fd, WHPSEventHandler*>
-        SEplEvent _events[MAX_EVENTS];
+        Map<int, event_chn*> m_eventList;      // 事件列表 <fd, WHPSEventHandler*>
+        SEplEvent m_events[MAX_EVENTS];
 };
 
 #endif  // __WHPS_POLLER_H__

@@ -1,6 +1,4 @@
-
 #include <stdio.h>      // for NULL
-
 // for fcntl
 #include <unistd.h>
 #include <fcntl.h>
@@ -13,44 +11,44 @@
 #include "Socket.h"
 
 Socket::Socket()
-        : __socket_fd(INVALID_SOCK)
+        : m_socketFd(INVALID_SOCK)
 {
-        
+
 }
 
 Socket::~Socket()
 {
-        if (__socket_fd != INVALID_SOCK)
+        if (m_socketFd != INVALID_SOCK)
         {
                 this->__close();
-                __socket_fd = INVALID_SOCK;
+                m_socketFd = INVALID_SOCK;
         }
 }
 
 void Socket::__set(int fd)
 {
-        __socket_fd = fd;
+        m_socketFd = fd;
 }
 
 #include <netinet/tcp.h> // for TCP_NODELAY
 int Socket::__setSocketOpt()
 {
         int on = 1;
-        setsockopt(__socket_fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&on, sizeof(on));
-        setsockopt(__socket_fd, IPPROTO_TCP, TCP_NODELAY, (void*)&on, sizeof(on));
-        setsockopt(__socket_fd, SOL_TCP, TCP_NODELAY, (void*)&on, sizeof(on));
+        setsockopt(m_socketFd, SOL_SOCKET, SO_KEEPALIVE, (void*) &on, sizeof(on));
+        setsockopt(m_socketFd, IPPROTO_TCP, TCP_NODELAY, (void*) &on, sizeof(on));
+        setsockopt(m_socketFd, SOL_TCP, TCP_NODELAY, (void*) &on, sizeof(on));
 
         return 0;
 }
 
 const int &Socket::__get() const
 {
-        return __socket_fd;
+        return m_socketFd;
 }
 
 bool Socket::__isValid()
 {
-        if (__socket_fd == INVALID_SOCK)         // 无效的s
+        if (m_socketFd == INVALID_SOCK)         // 无效的s
         {
                 return false;
         }
@@ -60,11 +58,11 @@ bool Socket::__isValid()
 
 int Socket::__setNonblock()
 {
-        int flag = fcntl(__socket_fd, F_GETFL, 0);
+        int flag = fcntl(m_socketFd, F_GETFL, 0);
 
         if (flag >= 0)
         {
-                if (fcntl(__socket_fd, F_SETFL, flag | O_NONBLOCK) >= 0)
+                if (fcntl(m_socketFd, F_SETFL, flag | O_NONBLOCK) >= 0)
                 {
                         return 0;
                 }
@@ -75,8 +73,8 @@ int Socket::__setNonblock()
 
 int Socket::__socket()
 {
-        __socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-        return __socket_fd;
+        m_socketFd = socket(AF_INET, SOCK_STREAM, 0);
+        return m_socketFd;
 }
 
 int Socket::__bind(const int &port, const char *ip)
@@ -89,20 +87,19 @@ int Socket::__bind(const int &port, const char *ip)
         if (ip)        // 客户端绑定地址
         {
                 so_addr.sin_addr.s_addr = inet_addr(ip);
-        }
-        else            // 服务器绑定地址
+        } else            // 服务器绑定地址
         {
-                so_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+                so_addr.sin_addr.s_addr = htonl(INADDR_ANY );
         }
 
-        int res = bind(__socket_fd, (struct sockaddr*)&so_addr, sizeof(so_addr));
+        int res = bind(m_socketFd, (struct sockaddr*) &so_addr, sizeof(so_addr));
 
         return res;
 }
 
 int Socket::__listen()
 {
-        return listen(__socket_fd, LISTEN_SIZE);
+        return listen(m_socketFd, LISTEN_SIZE);
 }
 
 /* 暂时不用 */
@@ -114,7 +111,7 @@ int Socket::__accept()
 int Socket::__accept(struct sockaddr_in &c_addr)
 {
         socklen_t addr_len = sizeof(c_addr);
-        return accept(__socket_fd, (struct sockaddr*)&c_addr, &addr_len);
+        return accept(m_socketFd, (struct sockaddr*) &c_addr, &addr_len);
 }
 
 /* 暂时不用 */
@@ -127,14 +124,14 @@ struct sockaddr_in Socket::__accpet()
 int Socket::__setReuseAddr()
 {
         int v = 1;
-        return setsockopt(__socket_fd, SOL_SOCKET, SO_REUSEADDR, &v, sizeof(v));
+        return setsockopt(m_socketFd, SOL_SOCKET, SO_REUSEADDR, &v, sizeof(v));
 }
 
 int Socket::__close()
 {
-        if (!close(__socket_fd))         // 关闭成功
+        if (!close(m_socketFd))         // 关闭成功
         {
-                __socket_fd = INVALID_SOCK;
+                m_socketFd = INVALID_SOCK;
                 return 0;
         }
 

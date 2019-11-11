@@ -1,4 +1,3 @@
-
 #ifndef __IMPL_CONFIG_H__
 #define __IMPL_CONFIG_H__
 
@@ -30,7 +29,7 @@ public:
         /* 支持带有Section和K-V行类型的配置文件
          * 配置文件格式形如：
          *      [whps]
- *       *      rootDir=/var/file/html
+         *      rootDir=/var/file/html
          */
         using ConfigTypeWithSection = Map<std::string, Map<std::string, std::string>>;
 
@@ -49,7 +48,8 @@ protected:
          */
         virtual bool readConfig() = 0;
 
-protected:      // 以下为普通类型配置文件接口
+protected:
+        // 以下为普通类型配置文件接口
         /* 设置配置 K-V 对
          */
         virtual void set(const std::string& key, const std::string& val) = 0;
@@ -62,27 +62,25 @@ protected:      // 以下为普通类型配置文件接口
          */
         virtual ConfigType& getAllConfig() = 0;
 
-protected:      // 以下为带有Section格式的配置文件接口
+protected:
+        // 以下为带有Section格式的配置文件接口
         std::string findSection(const std::string& line)
         {
                 std::string section;
 
-                if ((line[0] == '[') && (line[line.size()-2]==']'))             // 当前行是section
+                if ((line[0] == '[') && (line[line.size() - 2] == ']'))             // 当前行是section
                 {
-                        section = line.substr(1, line.size()-3);
+                        section = line.substr(1, line.size() - 3);
                 }
 
                 return section;
         }
 
-        virtual void set(const std::string& section, 
-                         const std::string& key, 
-                         const std::string& val) = 0;
+        virtual void set(const std::string& section, const std::string& key, const std::string& val) = 0;
 
         /* 读取指定配置
          */
-        virtual const std::string& get(const std::string& section, 
-                                       const std::string& key) = 0;
+        virtual const std::string& get(const std::string& section, const std::string& key) = 0;
 
         /* 读取所有配置
          */
@@ -91,12 +89,12 @@ protected:      // 以下为带有Section格式的配置文件接口
 protected:
         ConfigTypeWithSection& getSaver()
         {
-                return _whpsSaverWithSection;
+                return m_whpsSaverWithSection;
         }
 
 protected:
-        ConfigType _whpsSaver;                          // 普通配置文件保存器
-        ConfigTypeWithSection _whpsSaverWithSection;    // Section格式保存器
+        ConfigType m_whpsSaver;                          // 普通配置文件保存器
+        ConfigTypeWithSection m_whpsSaverWithSection;    // Section格式保存器
 };
 
 #endif  // __IMPL_CONFIG_H__

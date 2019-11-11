@@ -29,7 +29,7 @@ public:
         virtual const StrStatus& getStatus(const int& st);
 
 private:
-        std::map<int, std::string> _m_sc_status;        // 保存常用状态码与状态信息的对应关系(后面加到配置文件中)
+        std::map<int, std::string> m_scStatus;        // 保存常用状态码与状态信息的对应关系(后面加到配置文件中)
 };
 
 #endif /* __WHPSHTTPSTATUSCODE_H__ */

@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_LOG_H__
 #define __WHPS_LOG_H__
 
@@ -30,7 +29,6 @@ void WHPSLogEventEx(int log_level, const char* fmt, va_list& va);
         }
 
 #define WHPSLogEvent(log_level) IMPL_WHPSLogEvent_(log_level)
-
 
 /* 日志记录函数的入口方法集 */
 void WHPSLogDebug(const std::string& fmt, ...);

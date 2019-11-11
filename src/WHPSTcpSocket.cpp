@@ -8,7 +8,7 @@ WHPSTcpSocket::WHPSTcpSocket(int mode)
 
 WHPSTcpSocket::~WHPSTcpSocket()
 {
-        
+
 }
 
 bool WHPSTcpSocket::isValid()

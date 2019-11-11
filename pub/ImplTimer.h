@@ -1,15 +1,16 @@
-
 #ifndef __IMPL_TIMER_H__
 #define __IMPL_TIMER_H__
 
 #include <functional>
 
-template <class T>
+template<class T>
 class ImplTimer
 {
 public:
         using TimerCallback_t = std::function<void(T&)>;
-        virtual ~ImplTimer() {}
+        virtual ~ImplTimer()
+        {
+        }
 protected:
         /* 获取触发剩余时间的毫秒数 */
         virtual long fireTime() = 0;
@@ -31,9 +32,9 @@ protected:
         virtual void stop() = 0;
 
 protected:
-        int _interval;          // 定时器间隔时间
-        long _fireTime;         // 触发时间毫秒数（绝对时间）
-        TimerCallback_t _timeCB;  // 定时器触发回调函数
+        int m_interval;          // 定时器间隔时间
+        long m_fireTime;         // 触发时间毫秒数（绝对时间）
+        TimerCallback_t m_timeCb;  // 定时器触发回调函数
 };
 
 #endif  // __IMPL_TIMER_H__

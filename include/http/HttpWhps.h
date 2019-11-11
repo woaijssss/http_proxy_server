@@ -1,11 +1,10 @@
-
 #ifndef __HTTP_WHPS_H__
 #define __HTTP_WHPS_H__
 
 #include "WHPSHttpParser.h"
 
-typedef struct HttpRequestContext       HttpWhpsRequest;        // http请求信息
-typedef struct HttpResponseContext      HttpWhpsResponse;       // http响应信息
+typedef struct HttpRequestContext HttpWhpsRequest;        // http请求信息
+typedef struct HttpResponseContext HttpWhpsResponse;       // http响应信息
 
 /* WHPS http服务最上层（业务层）虚类
  * 所有实现http应用开发，都要继承于此，通过配置文件来配置以下信息：
@@ -13,7 +12,7 @@ typedef struct HttpResponseContext      HttpWhpsResponse;       // http响应信
  */
 class HttpWhps
 {
-public:        
+public:
         HttpWhps()
         {
 

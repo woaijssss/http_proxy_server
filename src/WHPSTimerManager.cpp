@@ -7,12 +7,14 @@
 
 #include "WHPSTimerManager.h"
 
-std::shared_ptr<TimerManager> TimerManager::_timer_manager;
+std::shared_ptr<TimerManager> TimerManager::m_timerManager;
 
 using namespace std;
 
 TimerManager::TimerManager()
-        : Heap(), _thrd(thread(&TimerManager::loop, this)), _is_stop(false)
+        : Heap(),
+          m_thrd(thread(&TimerManager::loop, this)),
+          m_isStop(false)
 {
         WHPSLogInfo("timer pool init...");
 }
@@ -25,12 +27,12 @@ TimerManager::~TimerManager()
 TimerManager* TimerManager::GetInstance()
 {
         // if (!_tcp_server.get())
-        if (!_timer_manager)
+        if (!m_timerManager)
         {
-                _timer_manager = std::shared_ptr<TimerManager>(new TimerManager());
+                m_timerManager = std::shared_ptr<TimerManager>(new TimerManager());
         }
 
-        return _timer_manager.get();
+        return m_timerManager.get();
 }
 
 void TimerManager::addTimer(WHPSTimer t)
@@ -41,7 +43,7 @@ void TimerManager::addTimer(WHPSTimer t)
 void TimerManager::delTimer(WHPSTimer& t)
 {
         WHPSLogInfo("TimerManager::delTimer: %ld", t.id());
-//        std::lock_guard<std::mutex> lock(_mutex);
+//        std::lock_guard<std::mutex> lock(m_mutex);
         bool is_success = this->erase(t);
 
         if (is_success)
@@ -53,8 +55,8 @@ void TimerManager::delTimer(WHPSTimer& t)
 
 void TimerManager::stop()
 {
-        _is_stop = true;
-        _thrd.join();
+        m_isStop = true;
+        m_thrd.join();
 }
 
 long TimerManager::waitTime(WHPSTimer& t)
@@ -72,15 +74,14 @@ void TimerManager::loop()
 {
         int sleep_time = 10;    // ms
 
-        while (!_is_stop)
+        while (!m_isStop)
         {
                 WHPSTimer t;
                 if (this->size())
                 {
                         t = this->front();
                         sleep_time = this->waitTime(t);
-                }
-                else
+                } else
                 {
                         sleep_time = 10;
                 }
@@ -91,7 +92,7 @@ void TimerManager::loop()
                 }
 
                 t = this->pop();
-                std::lock_guard<std::mutex> lock(_mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
 
                 if (t.isValid())
                 {

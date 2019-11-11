@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <sstream>
 #include <iomanip>
@@ -16,7 +15,7 @@ void exitService(int status)
 
 void delayMs(const unsigned int& ms)
 {
-        const timespec ts = {0, ms};
+        const timespec ts = { 0, ms };
         nanosleep(&ts, NULL);        // 线程级别的睡眠（毫秒级）
 }
 
@@ -25,7 +24,8 @@ string getHexString(unsigned char* s, const int& len)
         std::ostringstream out;
         out << std::hex << std::setw(2) << std::setfill('0');
 
-        for (int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++)
+        {
                 out << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(s[i]) << " ";
         }
 
@@ -34,7 +34,7 @@ string getHexString(unsigned char* s, const int& len)
 
 string getServerTime()
 {
-        char time_str[64] = {0};
+        char time_str[64] = { 0 };
         time_t t;
         time(&t);
         const char* format = "%Y-%m-%dT%H:%M:%S.000+08:00";
@@ -61,9 +61,10 @@ void initConfig()
 static void testPO()
 {
         void* handle = dlopen("./bin/libtest.so", RTLD_LAZY);
-        if (!handle) {
+        if (!handle)
+        {
                 WHPSLogWarn("Cannot load library: %s", dlerror());
-                return; 
+                return;
         }
 
         dlclose(handle);

@@ -1,35 +1,35 @@
-
 #include <iostream>
 
 #include "WHPSThreadPool.h"
 
 using namespace std;
 
-WHPSThreadPool::WHPSThreadPool(int size, WHPSEpollEventLoop& main_loop)
-        : _main_loop(main_loop)
-        , _index(0)
-        , _size(size)
-        , _task(_size)
+WHPSThreadPool::WHPSThreadPool(int size, WHPSEpollEventLoop* main_loop)
+        : m_mainLoop(main_loop),
+          m_index(0),
+          m_size(size),
+          m_task(m_size)
 {
+        m_task.stop();
         this->createThreads();
 
-        if (_size > 100)
+        if (m_size > 100)
         {
                 perror("too many threads, exit...");
                 exit(-1);
         }
 }
 
-WHPSThreadPool::WHPSThreadPool(int size, WHPSEpollEventLoop& main_loop, task_func_t callback)
-        : _main_loop(main_loop)
-        , _index(0)
-        , _size(size)
-        , _callback(callback)
-        , _task(_size)
+WHPSThreadPool::WHPSThreadPool(int size, task_func_t callback, WHPSEpollEventLoop* main_loop)
+        : m_mainLoop(main_loop),
+          m_index(0),
+          m_size(size),
+          m_callBack(callback),
+          m_task(m_size)
 {
         this->createThreads();
 
-        if (_size > 100)
+        if (m_size > 100)
         {
                 perror("too many threads, exit...");
                 exit(-1);
@@ -38,109 +38,51 @@ WHPSThreadPool::WHPSThreadPool(int size, WHPSEpollEventLoop& main_loop, task_fun
 
 WHPSThreadPool::~WHPSThreadPool()
 {
-        _task.stop();
         this->stop();
 }
 
 WHPSEpollEventLoop& WHPSThreadPool::getOneLoop()
 {
-        if (_size)      // 多线程
+        if (m_size)      // 多线程
         {
-                WHPSEpollEventLoop& loop = _v_th[_index]->getLoop();
-                _index = (_index+1) % _size;
-//                cout << "------index: " << _index << endl;
+                WHPSEpollEventLoop& loop = m_vTh[m_index]->getLoop();
+                m_index = (m_index + 1) % m_size;
+
                 return loop;
-        }
-        else            // 单线程(只有主线程时调用)
+        } else            // 单线程(只有主线程时调用)
         {
-                return _main_loop;
+                return *m_mainLoop;
         }
 }
 
 void WHPSThreadPool::start()
 {
-        for (int i = 0; i < _size; i++)
+        for (int i = 0; i < m_size; i++)
         {
-                _v_th[i]->start();
+                m_vTh[i]->start();
         }
+}
+
+void WHPSThreadPool::addTask(task_func_t task)
+{
+        m_task.addTask(task);
 }
 
 void WHPSThreadPool::createThreads()
 {
-        for (int i = 0; i < _size; i++)
+        for (int i = 0; i < m_size; i++)
         {
-                WHPSThread* th = new WHPSThread(_task);
-                _v_th.push_back(th);
+                WHPSThread* th = new WHPSThread(m_task);
+                m_vTh.push_back(th);
         }
 }
 
 void WHPSThreadPool::stop()
 {
-        for (int i = 0; i < _size; i++)
+        m_task.stop();
+        for (int i = 0; i < m_size; i++)
         {
                 // __v_th[i]->stop();
-                delete _v_th[i];
-        }
-}
-
-
-WHPSWorkerThreadPool::WHPSWorkerThreadPool(int size)
-        : _task(size)
-        , _index(0)
-        , _size(size)
-{
-        this->createThreads();
-
-        if (_size > 100)
-        {
-                perror("too many threads, exit...");
-                exit(-1);
-        }
-}
-
-WHPSWorkerThreadPool::WHPSWorkerThreadPool(int size, task_func_t callback)
-        : _task(size)
-        , _index(0)
-        , _size(size)
-        , _callback(callback)
-{
-        this->createThreads();
-
-        if (_size > 100)
-        {
-                perror("too many threads, exit...");
-                exit(-1);
-        }
-}
-
-WHPSWorkerThreadPool::~WHPSWorkerThreadPool()
-{
-        _task.stop();
-        this->stop();
-}
-
-void WHPSWorkerThreadPool::start()
-{
-        for (int i = 0; i < _size; i++)
-        {
-                _v_th[i]->start();
-        }
-}
-
-void WHPSWorkerThreadPool::createThreads()
-{
-        for (int i = 0; i < _size; i++)
-        {
-                WHPSWorkerThread* th = new WHPSWorkerThread(_task);
-                _v_th.push_back(th);
-        }
-}
-
-void WHPSWorkerThreadPool::stop()
-{
-        for (int i = 0; i < _size; i++)
-        {
-                // __v_th[i]->stop();
-                delete _v_th[i];
+                delete m_vTh[i];
         }
 }

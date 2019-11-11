@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_CONN_SOCKET_H__
 #define __WHPS_CONN_SOCKET_H__
 
@@ -6,7 +5,7 @@
 
 /* 客户端连接socket类，保留客户端的连接信息
  */
-class WHPSConnSocket : public Socket
+class WHPSConnSocket: public Socket
 {
 public:
         //WHPSConnSocket();

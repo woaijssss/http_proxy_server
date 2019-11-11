@@ -1,9 +1,7 @@
-
 #include <iostream>
 #include <string.h>
 #include <sstream>      // for std::istringstream
 #include <iterator>     // for std::istream_iterator
-
 #include "WHPSImplMacroBase.h"
 #include "WHPSHttpParser.h"
 #include "WHPSLog.h"
@@ -78,8 +76,8 @@ Impl_GET_KV_SPLIT(HttpRequestContext, ":")
 Impl_GET_CONTACT(HttpRequestContext, WHPSHttpParser::SpVector, "\r\n")
 
 WHPSHttpParser::WHPSHttpParser()
-        : _crlf_old("\n")
-        , _crlf("\r\n")
+        : m_crlfOld("\n"),
+          m_crlf("\r\n")
 {
 
 }
@@ -100,19 +98,19 @@ void WHPSHttpParser::parseHttpRequest(std::string& raw_msg, HttpRequestContext& 
 #endif
 
         // 当前没有做包完整性校验，测试阶段默认一次请求一个完整的包
-        SpVector vrow_seq = String(raw_msg).split(_crlf);
+        SpVector vrow_seq = String(raw_msg).split(m_crlf);
         this->parseSequence(vrow_seq, context);
 }
 
 /*
-        struct HttpRequestContext
-        {
-                std::string                             _method;        // 请求方法
-                std::string                             _url;           // 请求资源路径
-                std::string                             _version;       // 协议版本
-                std::map<std::string, std::string>      _header;        // 请求头(K-V格式)
-                std::string                             _body;          // 请求体
-        };
+ struct HttpRequestContext
+ {
+ std::string                             _method;        // 请求方法
+ std::string                             _url;           // 请求资源路径
+ std::string                             _version;       // 协议版本
+ std::map<std::string, std::string>      _header;        // 请求头(K-V格式)
+ std::string                             _body;          // 请求体
+ };
  */
 void WHPSHttpParser::parseSequence(SpVector& vrow_seq, HttpRequestContext& context)
 {
@@ -127,7 +125,7 @@ void WHPSHttpParser::parseSequence(SpVector& vrow_seq, HttpRequestContext& conte
         }
 
         this->getHeaderInfo(vrow_seq, context);         // http请求header信息
-        
+
         if (!this->getBodyInfo(vrow_seq, context))      // http请求body信息
         {
                 return;
@@ -138,7 +136,7 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
 {
         String first_line = String(vrow_seq[0]);
         SpVector req_line = GetContent(first_line.str());
-        
+
         /* 格式检查：
          *      必须符合： METHOD URL VERSION 格式
          *      否则返回失败
@@ -149,7 +147,13 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
         }
 
         const string& method = req_line[0];
-        const string& url = String(req_line[1]).decode("UrlCode");
+        string url = String(req_line[1]).decode("UrlCode");
+
+        cout << "---------------------------------------" << endl;
+        cout << req_line[1] << endl;
+        cout << url << endl;
+        cout << "---------------------------------------" << endl;
+
         context.setMethod(method);
         context.setUrl(url);	// 防止中文
         context.setUrlParams(url);
@@ -163,11 +167,8 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
          *      PUT
          *      DELETE
          * 四种方法 
-        */
-        if (method != "GET"
-                && method != "POST"
-                && method != "PUT"
-                && method != "DELETE")
+         */
+        if (method != "GET" && method != "POST" && method != "PUT" && method != "DELETE")
         {
                 WHPSLogWarn("not support " + method);
 
@@ -209,7 +210,7 @@ void WHPSHttpParser::getHeaderInfo(SpVector& vrow_seq, HttpRequestContext& conte
         int count = -1;
 
         // for (SpVector::iterator it = vrow_seq.begin(); it != vrow_seq.end(); ++it)
-        for (auto& seq_line: vrow_seq)  // 遍历行序列
+        for (auto& seq_line : vrow_seq)  // 遍历行序列
         {
                 count++;
                 if (seq_line == "\0")   // 可能出现空行，调过解析
@@ -221,7 +222,7 @@ void WHPSHttpParser::getHeaderInfo(SpVector& vrow_seq, HttpRequestContext& conte
                 GetSplit(context, seq_line);
         }
 
-        vrow_seq.erase(vrow_seq.begin(), vrow_seq.begin()+count);
+        vrow_seq.erase(vrow_seq.begin(), vrow_seq.begin() + count);
 }
 
 bool WHPSHttpParser::getBodyInfo(SpVector& vrow_seq, HttpRequestContext& context)

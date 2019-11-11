@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_CONFIG_H__
 #define __WHPS_CONFIG_H__
 

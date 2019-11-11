@@ -1,4 +1,3 @@
-
 #include <string.h>
 #include <iostream>
 #include <errno.h>
@@ -24,10 +23,10 @@ void sigHandler(int sig)
 
 int main(int argc, char const *argv[])
 {
-        signal(SIGPIPE, SIG_IGN);
+        signal(SIGPIPE, SIG_IGN );
         signal(SIGUSR1, sigHandler);
         signal(SIGUSR2, sigHandler);
-        signal(SIGINT, sigHandler); 
+        signal(SIGINT, sigHandler);
 
         initConfig();   // 初始化加载配置文件
         p_server = &GetWHPSHttpServer();

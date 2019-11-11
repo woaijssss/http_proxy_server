@@ -1,4 +1,3 @@
-
 #ifndef _WHPS_OBJECT_H__
 #define _WHPS_OBJECT_H__
 
@@ -9,7 +8,7 @@
 #include "HttpWhpsFactory.h"
 
 template<class T>
-class WhpsObject : public WhpsObjRegisterBase, public HttpWhps
+class WhpsObject: public WhpsObjRegisterBase, public HttpWhps
 {
 public:
         using HttpPtrType = HttpWhpsFactory::HttpPtrType;
@@ -21,7 +20,7 @@ public:
                 HttpPtrType ptr(new T());
                 return ptr;
         }
- 
+
         struct Aux
         {
                 Aux()
@@ -32,24 +31,26 @@ public:
                         }
                 }
 
-                inline void do_nothing()const { }
+                inline void do_nothing() const
+                {
+                }
         };
- 
-        static Aux _aux;        // 类名注册辅助器
- 
+
+        static Aux m_aux;        // 类名注册辅助器
+
 public:
         WhpsObject()
         {
-             
+
         }
- 
+
         virtual ~WhpsObject()
         {
-                _aux.do_nothing();
+                m_aux.do_nothing();
         }
 };
 
-template <class T>
-typename WhpsObject<T>::Aux WhpsObject<T>::_aux;
+template<class T>
+typename WhpsObject<T>::Aux WhpsObject<T>::m_aux;
 
 #endif  // _WHPS_OBJECT_H__

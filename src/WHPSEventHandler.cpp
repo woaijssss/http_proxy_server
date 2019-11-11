@@ -4,23 +4,23 @@
 #include "WHPSEpollEventLoop.h"
 
 WHPSEventHandler::WHPSEventHandler(WHPSEpollEventLoop* loop)
-        : _loop(loop)
-        , _is_stop(false)
-		, _cb_read(nullptr)
-		, _cb_write(nullptr)
-		, _cb_close(nullptr)
-		, _cb_error(nullptr)
+        : m_loop(loop),
+          m_isStop(false),
+          m_cbRead(nullptr),
+          m_cbWrite(nullptr),
+          m_cbClose(nullptr),
+          m_cbError(nullptr)
 {
 
 }
 
 WHPSEventHandler::~WHPSEventHandler()
 {
-    	std::lock_guard<std::mutex> lock(_mutex);
-        _cb_read = nullptr;
-        _cb_write = nullptr;
-        _cb_error = nullptr;
-        _cb_close = nullptr;
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_cbRead = nullptr;
+        m_cbWrite = nullptr;
+        m_cbError = nullptr;
+        m_cbClose = nullptr;
 }
 
 void WHPSEventHandler::setFd(const int& fd)
@@ -30,8 +30,8 @@ void WHPSEventHandler::setFd(const int& fd)
 
 void WHPSEventHandler::stop()
 {
-        _is_stop = true;
-        _loop->deleteOneChannel(this);
+        m_isStop = true;
+        m_loop->deleteOneChannel(this);
 }
 
 const int& WHPSEventHandler::getFd()
@@ -51,26 +51,26 @@ const events_t& WHPSEventHandler::getEvents() const
 
 void WHPSEventHandler::setReadCallback(CbFunc cb)
 {
-        this->setCallback(_cb_read, cb);
-//        _cb_read = cb;
+        this->setCallback(m_cbRead, cb);
+//        m_cbRead = cb;
 }
 
 void WHPSEventHandler::setWriteCallback(CbFunc cb)
 {
-        this->setCallback(_cb_write, cb);
-//        _cb_write = cb;
+        this->setCallback(m_cbWrite, cb);
+//        m_cbWrite = cb;
 }
 
 void WHPSEventHandler::setErrorCallback(CbFunc cb)
 {
-        this->setCallback(_cb_error, cb);
-//        _cb_error = cb;
+        this->setCallback(m_cbError, cb);
+//        m_cbError = cb;
 }
 
 void WHPSEventHandler::setCloseCallback(CbFunc cb)
 {
-        this->setCallback(_cb_close, cb);
-//        _cb_close = cb;
+        this->setCallback(m_cbClose, cb);
+//        m_cbClose = cb;
 }
 
 void WHPSEventHandler::setCallback(CbFunc& cb_s, CbFunc cb_d)
@@ -80,23 +80,22 @@ void WHPSEventHandler::setCallback(CbFunc& cb_s, CbFunc cb_d)
 
 void WHPSEventHandler::exCallback()
 {
-        if (_is_stop)
+        if (m_isStop)
         {
                 return;
         }
-        
+
         this->__exCallback();
 }
 
-void __stdcall WHPSEventHandler::__setCallback(__callback_t& __cb_s, __callback_t __cb_d)
-{
-    	std::lock_guard<std::mutex> lock(_mutex);
-        __cb_s = __cb_d;
+void __stdcall WHPSEventHandler::__setCallback(__callback_t& __cb_s, __callback_t   __cb_d) {
+std::lock_guard<std::mutex> lock(m_mutex);
+__cb_s = __cb_d;
 }
 
 void WHPSEventHandler::onCall(CbFunc& cb)
 {
-        std::lock_guard<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(m_mutex);
         if (cb)
         {
                 cb();
@@ -112,22 +111,19 @@ void __stdcall WHPSEventHandler::__exCallback()
          */
         if (events & EPOLLRDHUP)         // 对端异常关闭事件
         {
-//                _cb_close();
-        		this->onCall(_cb_close);
-        }
-        else if (events & (EPOLLIN | EPOLLPRI))  //读事件，对端有数据或者正常关闭
+//                m_cbClose();
+                this->onCall(m_cbClose);
+        } else if (events & (EPOLLIN | EPOLLPRI))  //读事件，对端有数据或者正常关闭
         {
-//                _cb_read();
-        		this->onCall(_cb_read);
-        }
-        else if (events & EPOLLOUT)  //写事件
+//                m_cbRead();
+                this->onCall(m_cbRead);
+        } else if (events & EPOLLOUT)  //写事件
         {
-//                _cb_write();
-        		this->onCall(_cb_write);
-        }
-        else    // 目前连接错误还没有测试过(未出现)
+//                m_cbWrite();
+                this->onCall(m_cbWrite);
+        } else    // 目前连接错误还没有测试过(未出现)
         {
-//                _cb_error();  //连接错误
-        		this->onCall(_cb_error);
+//                m_cbError();  //连接错误
+                this->onCall(m_cbError);
         }
 }

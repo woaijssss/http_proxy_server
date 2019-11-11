@@ -1,4 +1,3 @@
-
 #ifndef __IMPL_SINGLETON_H__
 #define __IMPL_SINGLETON_H__
 
@@ -15,11 +14,13 @@ public:
         }
 
 protected:
-        ImplSingleton() {}
+        ImplSingleton()
+        {
+        }
 
-	/* 该方法仅测试使用，真正的单例对象，不需要显示执行free释放，
- 	 * 使用了智能指针，应智能的管理内存。
-	 */
+        /* 该方法仅测试使用，真正的单例对象，不需要显示执行free释放，
+         * 使用了智能指针，应智能的管理内存。
+         */
         static void free()
         {
                 // _gc.free();
@@ -38,10 +39,10 @@ private:
                         }
                 }
         };
-        static GC _gc; 
+        static GC m_gc;
 };
 
 template<class C_T>
-typename ImplSingleton<C_T>::GC ImplSingleton<C_T>::_gc;
+typename ImplSingleton<C_T>::GC ImplSingleton<C_T>::m_gc;
 
 #endif  // __IMPL_SINGLETON_H__

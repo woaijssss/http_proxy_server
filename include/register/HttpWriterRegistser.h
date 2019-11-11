@@ -31,16 +31,16 @@ public:
         /* 注册http回写接口 */
         virtual void registObj(cbFunc cb)
         {
-                _cb_func = cb;
+                m_cbFunc = cb;
         }
 
         virtual cbFunc getRegistObj()
         {
-                return _cb_func;
+                return m_cbFunc;
         }
 
 private:
-        cbFunc _cb_func;
+        cbFunc m_cbFunc;
 };
 
 #endif  //__HTTP_WRITER_REGISTSER_H__

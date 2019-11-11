@@ -1,4 +1,3 @@
-
 #ifndef __FACTORY_BASE_H__
 #define __FACTORY_BASE_H__
 
@@ -16,7 +15,7 @@ public:
 protected:
         FactoryBase()
         {
-                
+
         }
 };
 

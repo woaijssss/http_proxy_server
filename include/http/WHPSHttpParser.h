@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_HTTP_PARSER_H__
 #define __WHPS_HTTP_PARSER_H__
 
@@ -28,7 +27,7 @@ public:
         /* 从原始数据解析出http各项参数 */
         void parseHttpRequest(std::string& raw_msg, HttpRequestContext& context);
 
-private:        
+private:
         /* 以下为各部分的解析方法，参数必须包含行序列和请求内容结构，
          * 每一步骤，自行补全"请求内容"结构中的相关值
          */
@@ -53,8 +52,8 @@ private:
         bool getBodyInfo(SpVector& vrow_seq, HttpRequestContext& context);
 
 private:
-        const char* _crlf_old/* = "\n"*/;   // 兼容老版本或不完整的http，提高兼容性(详见协议)
-        const char* _crlf/* = "\r\n"*/;   // 标准http请求行，都是以"\r\n"结尾分割
+        const char* m_crlfOld/* = "\n"*/;   // 兼容老版本或不完整的http，提高兼容性(详见协议)
+        const char* m_crlf/* = "\r\n"*/;   // 标准http请求行，都是以"\r\n"结尾分割
 };
 
 #endif  // __WHPS_HTTP_PARSER_H__

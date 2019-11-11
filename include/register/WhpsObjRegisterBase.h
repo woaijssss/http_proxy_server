@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_OBJ_REGISTER_BASE_H__
 #define __WHPS_OBJ_REGISTER_BASE_H__
 

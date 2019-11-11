@@ -1,4 +1,3 @@
-
 #ifndef __IMPL_THREAD_POLL_H__
 #define __IMPL_THREAD_POLL_H__
 
@@ -7,6 +6,9 @@
 class ImplThreadPool
 {
 public:
+        virtual ~ImplThreadPool()
+        {
+        }
         /* 所有线程开始执行任务 */
         virtual void start() = 0;
 

@@ -1,4 +1,3 @@
-
 #ifndef __CPP_THREAD_H__
 #define __CPP_THREAD_H__
 
@@ -12,7 +11,7 @@
 /* c++版本的线程
  * 实现了线程创建、销毁和启停动作的功能
  */
-class CPPThread : public ImplThread
+class CPPThread: public ImplThread
 {
 public:
         using task_t = task_func_t;
@@ -45,12 +44,12 @@ private:
         /* 线程进入执行函数后的一些初始化 */
         virtual void init();
 private:
-        std::thread __thrd;     // 线程句柄
-        thread__id  __tid;      // 线程id
-        bool __is_stop;         // 线程退出标志
+        std::thread m_thrd;     // 线程句柄
+        thread__id m_tid;      // 线程id
+        bool m_isStop;         // 线程退出标志
 
 private:
-        Task<task_t>& _task;    // 任务队列(共享线程池中的队列)
+        Task<task_t>& m_task;    // 任务队列(共享线程池中的队列)
 };
 
 #endif  // __CPP_THREAD_H__

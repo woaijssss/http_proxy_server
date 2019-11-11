@@ -29,25 +29,25 @@ public:
 
         void push_back(const value_type& v)
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 std::vector<__T>::push_back(v);
         }
 
         __T& operator[](size_type i)
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 return std::vector<__T>::operator[](i);
         }
 
         size_type capacity()
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 return std::vector<__T>::capacity();
         }
 
         bool erase(const value_type& v)
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 bool res = false;
                 iterator it = std::find(std::vector<__T>::begin(), std::vector<__T>::end(), v);
 
@@ -60,7 +60,7 @@ public:
                 return res;
         }
 private:
-        std::mutex __mutex;
+        std::mutex m_mutex;
 };
 
 #endif  // __VECTOR_H__

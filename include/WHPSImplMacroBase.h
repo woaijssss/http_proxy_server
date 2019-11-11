@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_IMPL_MACRO_BASE_H__
 #define __WHPS_IMPL_MACRO_BASE_H__
 

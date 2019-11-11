@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_TCP_SESSION_H__
 #define __WHPS_TCP_SESSION_H__
 
@@ -13,7 +12,7 @@
  * 句柄的操作由WHPSTcpConnSocket来维护；
  * 该类不做socket的改变
  */
-class WHPSTcpSession : public std::enable_shared_from_this<WHPSTcpSession>
+class WHPSTcpSession: public std::enable_shared_from_this<WHPSTcpSession>
 {
 public:
         using error_code = unsigned int;
@@ -31,29 +30,30 @@ public:
 
         std::string& getBufferIn()
         {
-                return _buffer_in;
+                return m_bufferIn;
         }
 
         const std::string& getBufferOut()
         {
-                return _buffer_out;
+                return m_bufferOut;
         }
 
         WHPSEpollEventLoop& getLoop()
         {
-                return _loop;
+                return m_loop;
         }
 
         const bool& getConnectFlag()
         {
-            	std::lock_guard<std::mutex> lock(_conn_flag_mutex);
-        		return _is_connect;
+                std::lock_guard<std::mutex> lock(m_connFlagMutex);
+
+                return m_isConnect;
         }
 
         void setConnectFlag()
         {
-        		std::lock_guard<std::mutex> lock(_conn_flag_mutex);
-        		_is_connect = false;
+                std::lock_guard<std::mutex> lock(m_connFlagMutex);
+                m_isConnect = false;
         }
 
 public:
@@ -74,7 +74,6 @@ public:
          */
         const std::string& getNetInfo() const;
 
-
         /* 检查句柄是否有效 */
         bool isValid();
 
@@ -86,7 +85,7 @@ public:
 
         /* 主动关闭连接 */
         void closeSession();
-        
+
         /* 清除当前session的所有资源
          * 包括：
          * （1）所有回调函数指针置空
@@ -111,7 +110,8 @@ public:
         /* 写数据要触发epoll事件 */
         void send(const std::string& msg);
 
-public:         // 应用层回调函数设置
+public:
+        // 应用层回调函数设置
         /* http接收数据回调函数 */
         void setHttpMessageCallback(httpCB cb);
 
@@ -131,7 +131,7 @@ public:         // 应用层回调函数设置
 private:
 
         /**********************************************************************/
-                // 当前读、写异常情况处理可能不全面，后续出问题再追加
+        // 当前读、写异常情况处理可能不全面，后续出问题再追加
         /* 写数据要触发epoll事件，必须要主动先写一次，调用此接口
          * 由send()调用
          */
@@ -144,7 +144,7 @@ private:
         /**********************************************************************/
 
         /**********************************************************************/
-                // error_code字段值为预留，后续扩展要加入异常
+        // error_code字段值为预留，后续扩展要加入异常
         /* 接收数据事件处理回调 */
         void onNewRead(error_code error);
 
@@ -162,38 +162,41 @@ private:
         void onCall(httpCB cb);
         /**********************************************************************/
 
-private:    // 网络层各对象
-        struct sockaddr_in _c_addr;     // 保存客户端的连接信息
-        WHPSEpollEventLoop& _loop;      // 引用外部事件循环
-        WHPSConnSocket _conn_sock;      // 连接句柄
-        event_chn _event_chn;           // 服务器事件回调通道
-        events_t  _base_events;         // 连接默认的事件监听标识
+private:
+        // 网络层各对象
+        struct sockaddr_in m_cAddr;     // 保存客户端的连接信息
+        WHPSEpollEventLoop& m_loop;      // 引用外部事件循环
+        WHPSConnSocket m_connSock;      // 连接句柄
+        event_chn m_eventChn;           // 服务器事件回调通道
+        events_t m_baseEvents;         // 连接默认的事件监听标识
 
-        TcpSessionCB _cb_cleanup;
+        TcpSessionCB m_cbCleanup;
 
-private:    // 对应用服务层提供的可用数据
-        std::string _client_ip;         // 客户端ip
-        int _client_port;               // 客户端端口
-        std::string _net_info;          // 客户端网络信息(格式：   ip:port)
-        
-        std::string _buffer_in;         // 接收消息缓冲(tcp请求)
-        std::string _buffer_out;        // 发送消息缓冲(tcp响应)
+private:
+        // 对应用服务层提供的可用数据
+        std::string m_clientIp;         // 客户端ip
+        int m_clientPort;               // 客户端端口
+        std::string m_netInfo;          // 客户端网络信息(格式：   ip:port)
 
-        bool _is_connect /*= true*/;    // 连接标志(默认为true)
-        bool _is_stop /*= false*/;			//
+        std::string m_bufferIn;         // 接收消息缓冲(tcp请求)
+        std::string m_bufferOut;        // 发送消息缓冲(tcp响应)
 
-        bool _is_wait;
+        bool m_isConnect /*= true*/;    // 连接标志(默认为true)
+        bool m_isStop /*= false*/;			//
 
-private:        // 应用层回调函数定义
-        httpCB _http_onMessage;            // http接收数据回调函数
-        httpCB _http_onSend;            // http发送数据回调函数
-        httpCB _http_onClose;           // http连接关闭回调函数
-        httpCB _http_onError;           // http异常错误回调函数
+        bool m_isWait;
 
-        std::mutex _mutex;
-        std::mutex _conn_flag_mutex;
+private:
+        // 应用层回调函数定义
+        httpCB m_httpOnMessage;            // http接收数据回调函数
+        httpCB m_httpOnSend;            // http发送数据回调函数
+        httpCB m_httpOnClose;           // http连接关闭回调函数
+        httpCB m_httpOnError;           // http异常错误回调函数
+
+        std::mutex m_mutex;
+        std::mutex m_connFlagMutex;
 };
 
-typedef WHPSTcpSession::TcpSessionCB    TcpSessionCB;
+typedef WHPSTcpSession::TcpSessionCB TcpSessionCB;
 
 #endif  // __WHPS_TCP_SESSION_H__

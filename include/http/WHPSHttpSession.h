@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_HTTP_SESSION_H__
 #define __WHPS_HTTP_SESSION_H__
 
@@ -24,7 +23,9 @@ public:
 public:
         virtual void doGet(HttpWhpsRequest& request, HttpWhpsResponse& response);
 
-        virtual void doPost(HttpWhpsRequest& request, HttpWhpsResponse& response) {}
+        virtual void doPost(HttpWhpsRequest& request, HttpWhpsResponse& response)
+        {
+        }
 
 private:
         /* 处理静态资源请求 */
@@ -53,12 +54,12 @@ public:
         using TimerCallback_t = WHPSTimer::TimerCallback_t;
 public:
         /* http session的实例化，必须依赖于tcp session，是一一对应的关系 */
-        WHPSHttpSession(const sp_TcpSession _tcp_session, WHPSWorkerThreadPool& worker_thread_pool);
+        WHPSHttpSession(const sp_TcpSession _tcp_session, WHPSThreadPool& worker_thread_pool);
 
         ~WHPSHttpSession();
-	
-		/* 初始化各项参数，不与构造函数一起，防止乱序 */
-		void init();
+
+        /* 初始化各项参数，不与构造函数一起，防止乱序 */
+        void init();
 
         /* 定时器回调函数 */
         void __stdcall TimerCallback(WHPSTimer& timer);
@@ -101,43 +102,43 @@ private:
         /* 关闭tcp层接口 */
         void closeAll();
 
-private:        // writer
+private:
+        // writer
         /* 客户端回写接口
          */
         void sendHttpMessage(const std::string& msg);
 
         void setConnStatus(int status)
         {
-                std::lock_guard<std::mutex> lock(_mutex_status);
-                _conn_status = status;
+                std::lock_guard<std::mutex> lock(m_mutexStatus);
+                m_connStatus = status;
         }
 
         const int& getConnStatus()
         {
-                std::lock_guard<std::mutex> lock(_mutex_status);
-                return _conn_status;
+                std::lock_guard<std::mutex> lock(m_mutexStatus);
+                return m_connStatus;
         }
 
 private:
         // 先使用这种方式测试http功能，后续引入工作线程池后，可以将发送消息的任务，加入到工作线程队列里
-        const sp_TcpSession _tcp_session;      // tcp连接对象
-        HttpSessionCB_ _http_closeCB;            // http连接断开回调函数
+        const sp_TcpSession m_tcpSession;      // tcp连接对象
+        HttpSessionCB_ m_httpCloseCB;            // http连接断开回调函数
 
-        WHPSHttpParser _http_parser;            // http解析器
+        WHPSHttpParser m_httpParser;            // http解析器
 
 private:
-        const std::string& _obj_name;           // 配置文件中，配置的子类名称
-        WhpsSysResource _whps_static_processor; // 系统静态资源处理器
-        HttpWhpsFactory* _http_whps_factory;    // 应用层实例化工厂类对象
+        const std::string& m_objName;           // 配置文件中，配置的子类名称
+        WhpsSysResource m_whpsStaticProcessor; // 系统静态资源处理器
+        HttpWhpsFactory* m_httpWhpsFactory;    // 应用层实例化工厂类对象
         // HttpWhps* _http_whps;                        
-        HttpPtrType _http_whps;                 // 应用层（业务层）调用句柄
+        HttpPtrType m_httpWhps;                 // 应用层（业务层）调用句柄
 
+        WriterFunc m_writerFunc;
+        HttpWriterRegistser m_Writer;   // 数据发送注册器
 
-        WriterFunc _writer_func;
-        HttpWriterRegistser _writer;   // 数据发送注册器
-
-        TimerCallback_t _cb;
-        WHPSTimer _timer;
+        TimerCallback_t m_cb;
+        WHPSTimer m_Timer;
 
         enum ConnStatus         // 连接状态枚举
         {
@@ -148,10 +149,10 @@ private:
                 STOPPED         // 停止状态（什么处理都不做）
         };
 
-        int _conn_status;             // 连接状态标志
-        WHPSWorkerThreadPool& _worker_thread_pool;
-        std::mutex _mutex_status;    // 数据处理标识锁
-        std::mutex _mutex;
+        int m_connStatus;             // 连接状态标志
+        WHPSThreadPool& m_workerThreadPool;
+        std::mutex m_mutexStatus;    // 数据处理标识锁
+        std::mutex m_mutex;
 };
 
 #endif  // __WHPS_HTTP_SESSION_H__

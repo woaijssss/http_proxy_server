@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_EVENT_HANDLER_H__
 #define __WHPS_EVENT_HANDLER_H__
 
@@ -25,7 +24,7 @@ enum EventType
  *  （2）设置指定的epoll触发类型
  *  （3）设置指定的回调函数
  */
-class WHPSEventHandler : public ImplEventHandler
+class WHPSEventHandler: public ImplEventHandler
 {
 public:
         WHPSEventHandler(WHPSEpollEventLoop* loop);
@@ -58,7 +57,6 @@ public:
         /* 设置关闭句柄事件回调函数 */
         void setCloseCallback(CbFunc cb);
 
-
         /* 执行事件回调函数 */
         virtual void exCallback();
 
@@ -69,22 +67,22 @@ private:
          */
         virtual void setCallback(CbFunc& cb_s, CbFunc cb_d);
 
-        virtual void __stdcall __setCallback(__callback_t& __cb_s, __callback_t __cb_d);
+        virtual void __stdcall __setCallback(__callback_t& __cb_s, __callback_t   __cb_d );
 
         /* 执行回调函数接口 */
         virtual void __stdcall __exCallback();
 
         void onCall(CbFunc& cb);
 
-private:
-        WHPSEpollEventLoop* _loop;
-        bool _is_stop /*= false*/;
-        CbFunc _cb_read;      // 读回调
-        CbFunc _cb_write;     // 写回调
-        CbFunc _cb_close;     // 关闭回调
-        CbFunc _cb_error;     // 错误回调
+private :
+        WHPSEpollEventLoop* m_loop;
+        bool m_isStop /*= false*/;
+        CbFunc m_cbRead;      // 读回调
+                                             CbFunc m_cbWrite;// 写回调
+                                             CbFunc m_cbClose;// 关闭回调
+                                             CbFunc m_cbError;// 错误回调
 
-        std::mutex _mutex;
-};
+                                             std::mutex m_mutex;
+                                     };
 
 #endif  // __WHPS_EVENT_HANDLER_H__

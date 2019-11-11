@@ -1,16 +1,15 @@
-
 #include "WHPSHttpServer.h"
 
-// WHPSHttpServer* WHPSHttpServer::_http_server = NULL;
-std::shared_ptr<WHPSHttpServer> WHPSHttpServer::_http_server;
+// WHPSHttpServer* WHPSHttpServer::m_httpServer = NULL;
+std::shared_ptr<WHPSHttpServer> WHPSHttpServer::m_httpServer;
 
 WHPSHttpServer::WHPSHttpServer()
-        : _tcp_server(GetWHPSTcpServer())
-        , _worker_thread_pool(atoi(GetWebSourceConfig().get("Server", "workThreads").c_str()))
+        : m_tcpServer(GetWHPSTcpServer()),
+          m_workerThreadPool(atoi(GetWebSourceConfig().get("Server", "workThreads").c_str()))
 {
-        _worker_thread_pool.start();
-        _tcp_server->setNewConnCallback(std::bind(&WHPSHttpServer::onNewConnection, this, std::placeholders::_1));
-        // _tcp_server->setNewCloseCallback(std::bind(&WHPSHttpServer::onNewClose, this, std::placeholders::_1));
+        m_workerThreadPool.start();
+        m_tcpServer->setNewConnCallback(std::bind(&WHPSHttpServer::onNewConnection, this, std::placeholders::_1));
+        // m_tcpServer->setNewCloseCallback(std::bind(&WHPSHttpServer::onNewClose, this, std::placeholders::_1));
 }
 
 WHPSHttpServer::~WHPSHttpServer()
@@ -21,20 +20,20 @@ WHPSHttpServer::~WHPSHttpServer()
 /*static */
 WHPSHttpServer& WHPSHttpServer::GetInstance()
 {
-        // if (!_http_server.get())
-        if (!_http_server)
+        // if (!m_httpServer.get())
+        if (!m_httpServer)
         {
-                _http_server = std::shared_ptr<WHPSHttpServer>(new WHPSHttpServer());
+                m_httpServer = std::shared_ptr<WHPSHttpServer>(new WHPSHttpServer());
         }
 
-        return *_http_server.get();
+        return *m_httpServer.get();
 }
 
 /* 启动http服务 */
 void WHPSHttpServer::start()
 {
-        _tcp_server->start();
-        _tcp_server->startLoop();
+        m_tcpServer->start();
+        m_tcpServer->startLoop();
 }
 
 void WHPSHttpServer::onNewConnection(sp_TcpSession tcp_session)
@@ -45,30 +44,30 @@ void WHPSHttpServer::onNewConnection(sp_TcpSession tcp_session)
 void WHPSHttpServer::onNewSession(sp_TcpSession tcp_session)
 {
         WHPSLogError("WHPSHttpServer::onNewConnection: " + tcp_session->getNetInfo());
-        sp_HttpSession http_session(new WHPSHttpSession(tcp_session, _worker_thread_pool));
+        sp_HttpSession http_session(new WHPSHttpSession(tcp_session, m_workerThreadPool));
 #if 1
-        char addr[1024] = {0};
-        sprintf(addr, "%ld", (long)tcp_session.get());
+        char addr[1024] = { 0 };
+        sprintf(addr, "%ld", (long) tcp_session.get());
         string str(addr);
-        _http_sess_list[tcp_session->getNetInfo() + str] = http_session;
+        m_httpSessList[tcp_session->getNetInfo() + str] = http_session;
 #else
-        _http_sess_list[tcp_session->getNetInfo()] = http_session;
+        m_httpSessList[tcp_session->getNetInfo()] = http_session;
 #endif
         http_session->setHttpCloseCallback(std::bind(&WHPSHttpServer::onNewClose, this, std::placeholders::_1));
-	http_session->init();
+        http_session->init();
 }
 
 void WHPSHttpServer::onNewClose(sp_TcpSession tcp_session)
 {
-        WHPSLogError("WHPSHttpServer::onNewClose before: %ld", _http_sess_list.size());
+        WHPSLogError("WHPSHttpServer::onNewClose before: %ld", m_httpSessList.size());
 #if 1
-        char addr[1024] = {0};
-        sprintf(addr, "%ld", (long)tcp_session.get());
+        char addr[1024] = { 0 };
+        sprintf(addr, "%ld", (long) tcp_session.get());
         string str(addr);
         string key = tcp_session->getNetInfo() + str;
-        _http_sess_list.erase(key);
+        m_httpSessList.erase(key);
 #else
-        _http_sess_list.erase(tcp_session->getNetInfo());
+        m_httpSessList.erase(tcp_session->getNetInfo());
 #endif
-        WHPSLogError("WHPSHttpServer::onNewClose: %ld", _http_sess_list.size());
+        WHPSLogError("WHPSHttpServer::onNewClose: %ld", m_httpSessList.size());
 }

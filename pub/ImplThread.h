@@ -1,4 +1,3 @@
-
 #ifndef __IMPL_THREAD_H__
 #define __IMPL_THREAD_H__
 
@@ -22,7 +21,7 @@ public:
          * 一般进行对线程执行状态标志位置位、初始化参数等操作
          */
         virtual void start() = 0;
-        virtual void start(__impl_task_func_t __callback) = 0;  // 可以设置线程的执行函数
+        virtual void start(__impl_task_func_t  __callback) = 0;  // 可以设置线程的执行函数
 
         /* 停止线程
          * 一般进行对线程执行状态标志位初始化操作
@@ -38,7 +37,6 @@ public:
 public:
         /* 线程执行函数(c和c++对于执行函数的参数和返回值都不同，这里不做统一) */
         //virtual void workFunc() = 0;
-
         /* 线程进入执行函数后的一些初始化 */
         virtual void init() = 0;
 };

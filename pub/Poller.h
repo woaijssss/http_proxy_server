@@ -1,4 +1,3 @@
-
 #ifndef __POLLER_H__
 #define __POLLER_H__
 
@@ -33,9 +32,9 @@ public:
         void __setTimeout(int timeout);
 
 private:
-        int __poll_fd;          // epoll实例句柄
-        int __maxevents;
-        int __timeout;
+        int m_pollFd;          // epoll实例句柄
+        int m_maxEvents;
+        int m_timeout;
 };
 
 #endif  // __EPOLLER_H__

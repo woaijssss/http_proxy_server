@@ -1,4 +1,3 @@
-
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
@@ -24,6 +23,5 @@ std::string getServerTime();
 void initConfig();
 
 #define GET_PARAM_TYPE(__x) typeid(__x).name()
-
 
 #endif  // __UTIL_H__

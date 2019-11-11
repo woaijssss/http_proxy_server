@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include "WhpsWriter.h"
 #include "WHPSResponseWrapper.h"
@@ -6,31 +5,30 @@
 using namespace std;
 
 WhpsWriter::WhpsWriter(WHPSResponseWrapper* resp, cbFunc cb)
-        : _resp(resp)
-        , _cb_func(cb)
+        : m_resp(resp),
+          m_cbFunc(cb)
 {
 
 }
 
 WhpsWriter::~WhpsWriter()
 {
-        
+
 }
 
 void WhpsWriter::write(const string& msg)
 {
-        if (_cb_func)
+        if (m_cbFunc)
         {
-                if (_resp)
+                if (m_resp)
                 {
-                        _resp->_setIntHeader("Content-Length", msg.size());
+                        m_resp->_setIntHeader("Content-Length", msg.size());
                         string sendMsg;
-                        sendMsg += _resp->_getHeader();
+                        sendMsg += m_resp->_getHeader();
                         sendMsg += msg;
 
-                        _cb_func(sendMsg);
-                }
-                else
+                        m_cbFunc(sendMsg);
+                } else
                 {
 
                 }

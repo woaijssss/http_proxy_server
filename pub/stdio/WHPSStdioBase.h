@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_STDIO_BASE_H__
 #define __WHPS_STDIO_BASE_H__
 

@@ -1,4 +1,3 @@
-
 #ifndef __WHPSTCPSOCKET_H__
 #define __WHPSTCPSOCKET_H__
 
@@ -9,7 +8,7 @@
 
 /* WHPS服务主socket类
  */
-class WHPSTcpSocket : public WHPSSocket
+class WHPSTcpSocket: public WHPSSocket
 {
 public:
         WHPSTcpSocket(int mode);

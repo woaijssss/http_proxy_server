@@ -1,44 +1,43 @@
-
 #include "WHPSThread.h"
 
 #include <iostream>
 using namespace std;
 WHPSThread::WHPSThread(Task<task_t>& task)
-        : _thrd(_loop.getTask())
-        , _is_stop(false)
+        : m_thrd(m_loop.getTask()),
+          m_isStop(false)
 {
-        
+
 }
 
 WHPSThread::~WHPSThread()
 {
         this->stop();
-        _thrd.join();
+        m_thrd.join();
 }
 
 void WHPSThread::start()
 {
         task_func_t callback = std::bind(&WHPSThread::workFunc, this);
-        _thrd.start(callback);
+        m_thrd.start(callback);
 }
 
 void WHPSThread::stop()
 {
-        _is_stop = true;
-        _loop.stop();
+        m_isStop = true;
+        m_loop.stop();
 }
 
 WHPSEpollEventLoop& WHPSThread::getLoop()
 {
-        return _loop;
+        return m_loop;
 }
 
 void WHPSThread::workFunc()
 {
-        while (!_is_stop)
+        while (!m_isStop)
         {
                 /* 调用执行一次epoll任务的接口，因为线程还要处理Task queue中的内容 */
-                _loop.loopOne();
+                m_loop.loopOne();
 
                 /* 处理Task queue中的内容，每次只取一个 */
 //                this->excuteTask();
@@ -47,46 +46,5 @@ void WHPSThread::workFunc()
 
 void WHPSThread::excuteTask()
 {
-        _thrd.excuteTask();
-}
-
-
-
-
-WHPSWorkerThread::WHPSWorkerThread(Task<task_t>& task)
-        : _thrd(task)
-        , _is_stop(false)
-{
-
-}
-
-WHPSWorkerThread::~WHPSWorkerThread()
-{
-        this->stop();
-        _thrd.join();
-}
-
-void WHPSWorkerThread::start()
-{
-        task_func_t callback = std::bind(&WHPSWorkerThread::workFunc, this);
-        _thrd.start(callback);
-}
-
-void WHPSWorkerThread::stop()
-{
-        _is_stop = true;
-}
-
-void WHPSWorkerThread::workFunc()
-{
-        while (!_is_stop)
-        {
-                /* 处理Task queue中的内容，每次只取一个 */
-                this->excuteTask();
-        }
-}
-
-void WHPSWorkerThread::excuteTask()
-{
-        _thrd.excuteTask();
+        m_thrd.excuteTask();
 }

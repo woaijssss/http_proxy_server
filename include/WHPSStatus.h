@@ -33,7 +33,7 @@ public:
          */
         virtual const Status_t& getStatus()
         {
-                return _itp;
+                return m_itp;
         }
 
         /* 获取状态
@@ -41,7 +41,7 @@ public:
          */
         virtual const StrStatus& getStatus(const int& st)
         {
-                return _stp;
+                return m_stp;
         }
 
         /* 获取状态
@@ -49,17 +49,19 @@ public:
          */
         virtual const StrStatus& getStatus(const std::string& st)
         {
-                return _stp;
+                return m_stp;
         }
 
 protected:
-        WHPSStatus() {}
+        WHPSStatus()
+        {
+        }
 
 private:
         WHPSStatus(WHPSStatus& st) = delete;
 
-        Status_t  _itp;
-        StrStatus _stp;
+        Status_t m_itp;
+        StrStatus m_stp;
 };
 
 #endif /* __WHPSSTATUS_H__ */

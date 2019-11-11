@@ -1,4 +1,3 @@
-
 #ifndef __HTTP_WHPS_FACTORY_H__
 #define __HTTP_WHPS_FACTORY_H__
 
@@ -28,17 +27,16 @@ public:
 public:
         static HttpWhpsFactory* GetInstance()
         {
-                if (!_http_whps_factory.get())
+                if (!m_httpWhpsFactory)
                 {
-                        _http_whps_factory = std::shared_ptr<HttpWhpsFactory>(new HttpWhpsFactory());
+                        m_httpWhpsFactory = std::shared_ptr<HttpWhpsFactory>(new HttpWhpsFactory());
                 }
 
-                return _http_whps_factory.get();
+                return m_httpWhpsFactory.get();
         }
 public:
         HttpWhpsFactory()
-                : ImplSingleton<HttpWhpsFactory>()
-                , FactoryBase()
+                : ImplSingleton<HttpWhpsFactory>(), FactoryBase()
         {
 
         }
@@ -57,31 +55,28 @@ public:
         // {
         //         // 当前测试，先写死一个子类
         //         // std::shared_ptr<HelloWhps> ptr(new HelloWhps());
-
         //         string whpsName = GetWebSourceConfig().get("whps", "whps-name");    // 获取whps实例的名字
         //         // 以下添加从实例注册中心获取实例对象
-
         //         HttpWhps* ptr = new HelloWhps();
         //         return ptr;
         // }
-
 public:
         HttpPtrType get(const std::string& type);
 public:
         bool create(const std::string& type_name);
 
         HttpPtrType _create(const std::string & type_name);
- 
+
         // 解析类型名称（转换为 A::B::C 的形式）
         static std::string readTypeName(const char* name);
- 
+
         bool regist(const char * name, CreateFunction func);
 
 private:
-        static std::shared_ptr<HttpWhpsFactory> _http_whps_factory;
+        static std::shared_ptr<HttpWhpsFactory> m_httpWhpsFactory;
 
-        Map<std::string, CreateFunction> _create_function_map;     // 对象名和创建函数的对应关系
-        Map<std::string, HttpPtrType> _map_ptr;                    // 对象名和指针句柄的对应关系
+        Map<std::string, CreateFunction> m_createFunctionMap;     // 对象名和创建函数的对应关系
+        Map<std::string, HttpPtrType> m_mapPtr;                    // 对象名和指针句柄的对应关系
 };
 
 GET_SINGLETON_OBJECT_PTR(HttpWhpsFactory)

@@ -8,21 +8,21 @@ using namespace std;
 #define C_INVALID_PORT	-1
 
 WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr)
-        : std::enable_shared_from_this<WHPSTcpSession>()
-        , _c_addr(c_addr)
-        , _loop(loop)
-        , _conn_sock(fd)
-        , _event_chn(&_loop)
-        , _base_events(EPOLLIN | EPOLLPRI)
-        , _cb_cleanup(nullptr)
-        , _client_port(C_INVALID_PORT)
-        , _is_connect(true)
-        , _is_stop(false)
-        , _is_wait(false)
-        , _http_onMessage(nullptr)
-        , _http_onSend(nullptr)
-        , _http_onClose(nullptr)
-        , _http_onError(nullptr)
+        : std::enable_shared_from_this<WHPSTcpSession>(),
+          m_cAddr(c_addr),
+          m_loop(loop),
+          m_connSock(fd),
+          m_eventChn(&m_loop),
+          m_baseEvents(EPOLLIN | EPOLLPRI),
+          m_cbCleanup(nullptr),
+          m_clientPort(C_INVALID_PORT),
+          m_isConnect(true),
+          m_isStop(false),
+          m_isWait(false),
+          m_httpOnMessage(nullptr),
+          m_httpOnSend(nullptr),
+          m_httpOnClose(nullptr),
+          m_httpOnError(nullptr)
 {
         this->getEndpointInfo();
 }
@@ -34,20 +34,20 @@ WHPSTcpSession::~WHPSTcpSession()
 
 void WHPSTcpSession::init()
 {
-        _conn_sock.setOption();
+        m_connSock.setOption();
         /* 每个客户端的socket要设置成非阻塞，否则在read或write会使线程阻塞，无法实现异步和线程复用 */
-        _conn_sock.setNonblock();
+        m_connSock.setNonblock();
 
-        _event_chn.setFd(_conn_sock.get());
-        // _event_chn.setEvents(EPOLLIN | EPOLLPRI | EPOLLOUT); // 不能设置EPOLLOUT，否则客户端连接，会频繁调用onNewWrite()
-        _event_chn.setEvents(_base_events);        // 设置接收连接事件，epoll模式为边缘触发
+        m_eventChn.setFd(m_connSock.get());
+        // m_eventChn.setEvents(EPOLLIN | EPOLLPRI | EPOLLOUT); // 不能设置EPOLLOUT，否则客户端连接，会频繁调用onNewWrite()
+        m_eventChn.setEvents(m_baseEvents);        // 设置接收连接事件，epoll模式为边缘触发
 
-        _event_chn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0)); // 注册数据接收回调函数
-        _event_chn.setWriteCallback(std::bind(&WHPSTcpSession::onNewWrite, this, 0)); // 注册数据发送回调函数
-        _event_chn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0)); // 注册连接关闭回调函数
-        _event_chn.setErrorCallback(std::bind(&WHPSTcpSession::onNewError, this, 0)); // 注册异常错误回调函数
+        m_eventChn.setReadCallback(std::bind(&WHPSTcpSession::onNewRead, this, 0)); // 注册数据接收回调函数
+        m_eventChn.setWriteCallback(std::bind(&WHPSTcpSession::onNewWrite, this, 0)); // 注册数据发送回调函数
+        m_eventChn.setCloseCallback(std::bind(&WHPSTcpSession::onNewClose, this, 0)); // 注册连接关闭回调函数
+        m_eventChn.setErrorCallback(std::bind(&WHPSTcpSession::onNewError, this, 0)); // 注册异常错误回调函数
 
-	this->addToEventLoop();
+        this->addToEventLoop();
         // 还需要注册发送数据和超时回调
 }
 
@@ -55,44 +55,44 @@ void WHPSTcpSession::getEndpointInfo()
 {
         struct sockaddr_in sa;
         socklen_t len = sizeof(sa);
-        if (!getpeername(_conn_sock.get(), (struct sockaddr *)&sa, &len))
+        if (!getpeername(m_connSock.get(), (struct sockaddr *) &sa, &len))
         {
-                _client_ip = string(inet_ntoa(sa.sin_addr));
-                _client_port = ntohs(sa.sin_port);
-                _net_info = _client_ip + ":" + to_string(_client_port);
+                m_clientIp = string(inet_ntoa(sa.sin_addr));
+                m_clientPort = ntohs(sa.sin_port);
+                m_netInfo = m_clientIp + ":" + to_string(m_clientPort);
         }
 
-        WHPSLogInfo("a client has been connected: " + _net_info);
+        WHPSLogInfo("a client has been connected: " + m_netInfo);
 }
 
 const std::string& WHPSTcpSession::getIp() const
 {
-        return _client_ip;
+        return m_clientIp;
 }
 
 const int& WHPSTcpSession::getPort() const
 {
-        return _client_port;
+        return m_clientPort;
 }
 
 const std::string& WHPSTcpSession::getNetInfo() const
 {
-        return _net_info;
+        return m_netInfo;
 }
 
 bool WHPSTcpSession::isValid()
 {
-        return _conn_sock.isValid();
+        return m_connSock.isValid();
 }
 
 const int& WHPSTcpSession::get() const
 {
-        return _conn_sock.get();
+        return m_connSock.get();
 }
 
 WHPSConnSocket& WHPSTcpSession::getConn()
 {
-        return _conn_sock;
+        return m_connSock;
 }
 
 void WHPSTcpSession::closeSession()
@@ -109,53 +109,53 @@ void WHPSTcpSession::closeSession()
 
         this->setConnectFlag();
         this->delFromEventLoop();
-//        _event_chn.stop();     // 直接停止调用回调
+//        m_eventChn.stop();     // 直接停止调用回调
 
         {
-        		// 防止 WHPSEventLoop 对象调用回调函数时，析构 WHPSEventHandler 对象
-//        		std::lock_guard<std::mutex> lock(_loop.getMutex());
-        		_event_chn.stop();     // 直接停止调用回调
+                // 防止 WHPSEventLoop 对象调用回调函数时，析构 WHPSEventHandler 对象
+//        		std::lock_guard<std::mutex> lock(m_loop.getMutex());
+                m_eventChn.stop();     // 直接停止调用回调
         }
 
-        _is_wait = true;
-          // _loop.addTask(std::bind(_cb_cleanup, shared_from_this())); // 执行清理回调函数
-        //_buffer_in.clear();
-        //_buffer_out.clear();
-        _http_onMessage = nullptr;
-        _http_onSend = nullptr;
-        _http_onClose = nullptr;
-        _http_onError = nullptr;
+        m_isWait = true;
+        // m_loop.addTask(std::bind(m_cbCleanup, shared_from_this())); // 执行清理回调函数
+        //m_bufferIn.clear();
+        //m_bufferOut.clear();
+        m_httpOnMessage = nullptr;
+        m_httpOnSend = nullptr;
+        m_httpOnClose = nullptr;
+        m_httpOnError = nullptr;
 }
 
 void WHPSTcpSession::addToEventLoop()
 {
-        _loop.addEvent(&_event_chn);    // 所有请求都由主线程处理(后续要修改成多线程)
+        m_loop.addEvent(&m_eventChn);    // 所有请求都由主线程处理(后续要修改成多线程)
 }
 
 void WHPSTcpSession::delFromEventLoop()
 {
-        _event_chn.setEvents(_base_events);
-        _loop.updateEvent(&_event_chn);
-        _loop.delEvent(&_event_chn);
+        m_eventChn.setEvents(m_baseEvents);
+        m_loop.updateEvent(&m_eventChn);
+        m_loop.delEvent(&m_eventChn);
 }
 
 void WHPSTcpSession::setCleanUpCallback(TcpSessionCB& cb)
 {
-        _cb_cleanup = cb;
+        m_cbCleanup = cb;
 }
 
 void WHPSTcpSession::onCall(httpCB cb)
 {
 #if 0
-        std::lock_guard<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(m_mutex);
 
-        if (!_is_connect)
+        if (!m_isConnect)
         {
                 return;
         }
 #endif
 
-        std::lock_guard<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(m_mutex);
         if (!cb)
         {
                 return;
@@ -166,24 +166,23 @@ void WHPSTcpSession::onCall(httpCB cb)
 
 void WHPSTcpSession::release()
 {
-        std::lock_guard<std::mutex> lock(_mutex);
-        if (_is_stop)
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (m_isStop)
         {
-        		return;
+                return;
         }
 
-        _is_stop = true;
-        _conn_sock.close();
+        m_isStop = true;
+        m_connSock.close();
 
         try
         {
-                if (_cb_cleanup)
+                if (m_cbCleanup)
                 {
-                        _cb_cleanup(shared_from_this());
-                        _cb_cleanup = nullptr;
+                        m_cbCleanup(shared_from_this());
+                        m_cbCleanup = nullptr;
                 }
-        }
-        catch (exception& e)
+        } catch (exception& e)
         {
                 WHPSLogWarn("WHPSTcpSession::release exception: %s", e.what());
         }
@@ -191,37 +190,34 @@ void WHPSTcpSession::release()
 
 void WHPSTcpSession::send(const std::string& msg)
 {
-        _buffer_out = msg;
-        int res = this->sendTcpMessage(_buffer_out);    // 需要判别发送的结果，从而决定要不要关闭连接
+        m_bufferOut = msg;
+        int res = this->sendTcpMessage(m_bufferOut);    // 需要判别发送的结果，从而决定要不要关闭连接
 
         if (res > 0)    // 正确发送数据
         {
-                events_t events = _event_chn.getEvents();
+                events_t events = m_eventChn.getEvents();
 
-                if (_buffer_out.size())     // 还有数据未发送(可能是tcp缓冲区占满导致)
+                if (m_bufferOut.size())     // 还有数据未发送(可能是tcp缓冲区占满导致)
                 {
                         events = events | EPOLLOUT;         // 设置写监听
-                }
-                else        // 数据发送完毕
+                } else        // 数据发送完毕
                 {
-                        events = _base_events;      // 数据发送完毕，无需继续监听写操作
-//                        _http_onSend(shared_from_this());
-//                        this->onCall(_http_onSend);
+                        events = m_baseEvents;      // 数据发送完毕，无需继续监听写操作
+//                        m_httpOnSend(shared_from_this());
+//                        this->onCall(m_httpOnSend);
 
-                        if (_is_wait)
+                        if (m_isWait)
                         {
                                 this->onNewClose(0);
                         }
                 }
 
-                _event_chn.setEvents(events);
-                _loop.updateEvent(&_event_chn);
-        }
-        else if (res == 0)    // 数据发送异常
+                m_eventChn.setEvents(events);
+                m_loop.updateEvent(&m_eventChn);
+        } else if (res == 0)    // 数据发送异常
         {
                 onNewClose(-1); // 关闭连接
-        }
-        else
+        } else
         {
                 onNewError(-1); // 错误处理，释放资源
         }
@@ -237,25 +233,24 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
         long bytes_transferred = 0;
         while (true)
         {
-                // int w_nbytes = write(_conn_sock.get(), buffer_out.c_str(), buffer_out.size());
+                // int w_nbytes = write(m_connSock.get(), buffer_out.c_str(), buffer_out.size());
                 /* 写入数据可能产生 SIGPIPE 信号
                  * 对发送函数设置 MSG_NOSIGNAL，可忽略此信号，不至于进程退出
                  */
-                int w_nbytes = ::send(_conn_sock.get(), buffer_out.c_str(), buffer_out.size(), MSG_NOSIGNAL);
+                int w_nbytes = ::send(m_connSock.get(), buffer_out.c_str(), buffer_out.size(), MSG_NOSIGNAL);
                 bytes_transferred += w_nbytes;
 
                 if (w_nbytes > 0)   // 该笔数据已发送
                 {
                         buffer_out.erase(0, w_nbytes); // 清除缓冲区中已发送的数据(不适用于重发的情况)
 
-                        if (_buffer_out.size() == 0)
+                        if (m_bufferOut.size() == 0)
                         {
                                 res = bytes_transferred;
                                 break;
                         }
 
-                }
-                else if (w_nbytes == 0)
+                } else if (w_nbytes == 0)
                 {
                         if (errno == EAGAIN)    // 数据正确的发送完成，再次调用的返回结果
                         {
@@ -263,8 +258,7 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
                         }
 
                         break;
-                }
-                else    // 写数据异常
+                } else    // 写数据异常
                 {
                         if (errno == EAGAIN)    // tcp发送缓冲区满了，下次继续发送
                         {
@@ -273,16 +267,13 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
                                  *  但实际的bytes_transferred结果为-1，会导致异常关闭。
                                  */
                                 res = 1;
-                        }
-                        else if (errno == EPIPE) // 客户端已经close，并发了RST，继续wirte会报EPIPE，返回0，表示close
+                        } else if (errno == EPIPE) // 客户端已经close，并发了RST，继续wirte会报EPIPE，返回0，表示close
                         {
-				// pass
-                        }
-                        else if (errno == EINTR) // 中断，write()会返回-1，同时置errno为EINTR
+                                // pass
+                        } else if (errno == EINTR) // 中断，write()会返回-1，同时置errno为EINTR
                         {
-				// pass
-                        }
-                        else
+                                // pass
+                        } else
                         {
 //                                "unknow errno type..." << endl;
                         }
@@ -297,25 +288,23 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
 #include <thread>
 void WHPSTcpSession::onNewRead(error_code error)
 {
-        int res = this->readTcpMessage(_buffer_in);
+        int res = this->readTcpMessage(m_bufferIn);
 
         if (res > 0)
         {
                 // 进行业务层的数据数据(tcp数据处理)
                 // 异步回调方式，epoll线程跟业务线程分离
-//                _http_onMessage(shared_from_this());
-                this->onCall(_http_onMessage);
+//                m_httpOnMessage(shared_from_this());
+                this->onCall(m_httpOnMessage);
 
 #if 0           // 测试socket关闭后，再发送数据的错误处理
                 TestSend(this);
                 // 测试发送接口修改成通过向任务队列抛任务的方式，由不同的线程异步执行
 #endif
-        }
-        else if (res == 0)
+        } else if (res == 0)
         {
                 onNewClose(-1); // 关闭连接
-        }
-        else
+        } else
         {
                 onNewError(-1); // 错误处理，释放资源
         }
@@ -329,24 +318,22 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
         while (true)
         {
                 char buffer[1024];
-                // int r_nbyte = read(_conn_sock.get(), buffer, 1);
+                // int r_nbyte = read(m_connSock.get(), buffer, 1);
                 /* 参考nginx实现方式
                  */
-                // int r_nbyte = recvfrom(_conn_sock.get(), buffer, 1024, 0, NULL, NULL);
-                int r_nbyte = recv(_conn_sock.get(), buffer, 1024, 0);
+                // int r_nbyte = recvfrom(m_connSock.get(), buffer, 1024, 0, NULL, NULL);
+                int r_nbyte = recv(m_connSock.get(), buffer, 1024, 0);
 
                 if (r_nbyte > 0)    // 正常读取数据
                 {
-                        _buffer_in.append(buffer, r_nbyte);     // 每次追加写入数据
+                        m_bufferIn.append(buffer, r_nbyte);     // 每次追加写入数据
                         bytes_transferred += r_nbyte;
-                }
-                else if (r_nbyte == 0)    // 客户端关闭socket，FIN包
+                } else if (r_nbyte == 0)    // 客户端关闭socket，FIN包
                 {
                         res = 0;
 
                         break;
-                }
-                else    // 读数据异常(-1)
+                } else    // 读数据异常(-1)
                 {
                         // 异步时，当缓冲区无数据时，read会返回-1,即：读完了
                         /* 在非阻塞模式下调用了阻塞操作，在该操作没有完成就返回这个错误，
@@ -357,8 +344,7 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
                                 // pass
                                 // res = bytes_transferred;
                                 res = (bytes_transferred == 0) ? 1 : bytes_transferred;
-                        }
-                        else if (errno == EINTR) // 中断，read()会返回-1，同时置errno为EINTR
+                        } else if (errno == EINTR) // 中断，read()会返回-1，同时置errno为EINTR
                         {
                                 res = -1;
                         }
@@ -372,35 +358,32 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
 
 void WHPSTcpSession::onNewWrite(error_code error)
 {
-        int res = this->sendTcpMessage(_buffer_out);    // 需要判别发送的结果，从而决定要不要关闭连接
+        int res = this->sendTcpMessage(m_bufferOut);    // 需要判别发送的结果，从而决定要不要关闭连接
 
         if (res > 0)    // 正确发送数据
         {
-                events_t events = _event_chn.getEvents();
+                events_t events = m_eventChn.getEvents();
 
-                if (_buffer_out.size())     // 还有数据未发送(可能是tcp缓冲区占满导致)
+                if (m_bufferOut.size())     // 还有数据未发送(可能是tcp缓冲区占满导致)
                 {
                         events = events | EPOLLOUT;         // 设置写监听
-                }
-                else        // 数据发送完毕
+                } else        // 数据发送完毕
                 {
-                        events = _base_events;      // 数据发送完毕，无需继续监听写操作
-//                        _http_onSend(shared_from_this());
-                        this->onCall(_http_onSend);
-                        if (_is_wait)
+                        events = m_baseEvents;      // 数据发送完毕，无需继续监听写操作
+//                        m_httpOnSend(shared_from_this());
+                        this->onCall(m_httpOnSend);
+                        if (m_isWait)
                         {
                                 this->onNewClose(0);
                         }
                 }
 
-                _event_chn.setEvents(events);
-                _loop.updateEvent(&_event_chn);
-        }
-        else if (res == 0)    // 数据发送异常
+                m_eventChn.setEvents(events);
+                m_loop.updateEvent(&m_eventChn);
+        } else if (res == 0)    // 数据发送异常
         {
                 onNewClose(-1); // 关闭连接
-        }
-        else
+        } else
         {
                 onNewError(-1); // 错误处理，释放资源
         }
@@ -423,23 +406,22 @@ void WHPSTcpSession::onNewClose(error_code error)
          *      （2）关闭socket
          *      （3）通知主socket对象和EventLoop对象删除该句柄资源
          */
-// if (_buffer_in.size() || _buffer_out.size() || _is_processing)
-        if (_buffer_in.size() || _buffer_out.size())
+// if (m_bufferIn.size() || m_bufferOut.size() || _is_processing)
+        if (m_bufferIn.size() || m_bufferOut.size())
         {
-                if (_buffer_in.size())
+                if (m_bufferIn.size())
                 {
-//                        _http_onMessage(shared_from_this());
-                        this->onCall(_http_onMessage);
+//                        m_httpOnMessage(shared_from_this());
+                        this->onCall(m_httpOnMessage);
                 }
-        }
-        else
+        } else
         {
-                if (_is_wait)   // 如果服务端主动关闭，需要有延迟来保证对端接收数据完毕
+                if (m_isWait)   // 如果服务端主动关闭，需要有延迟来保证对端接收数据完毕
                 {
                         delayMs(0);
                 }
 
-                this->onCall(_http_onClose);
+                this->onCall(m_httpOnClose);
                 // this->release();
         }
 }
@@ -454,27 +436,27 @@ void WHPSTcpSession::onNewError(error_code error)
          *      （1）关闭socket
          *      （2）通知主socket对象和EventLoop对象删除该句柄资源
          */
-        this->onCall(_http_onError);
+        this->onCall(m_httpOnError);
         // this->release();
 }
 
 void WHPSTcpSession::setHttpMessageCallback(httpCB cb)
 {
-        _http_onMessage = cb;
+        m_httpOnMessage = cb;
 }
 
 void WHPSTcpSession::setHttpSendCallback(httpCB cb)
 {
-        _http_onSend = cb;
+        m_httpOnSend = cb;
 }
 
 void WHPSTcpSession::setHttpCloseCallback(httpCB cb)
 {
-        _http_onClose = cb;
+        m_httpOnClose = cb;
 }
 
 void WHPSTcpSession::setHttpErrorCallback(httpCB cb)
 {
-        _http_onError = cb;
+        m_httpOnError = cb;
 }
 

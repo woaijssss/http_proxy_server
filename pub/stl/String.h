@@ -14,7 +14,7 @@
 
 #include "Codec.h"
 
-class String: public std::string 
+class String: public std::string
 {
 public:
         typedef std::vector<std::string> SVector;
@@ -34,8 +34,8 @@ public:
         /* 按照sep拆分字符串 */
         SVector split(const char* sep);
 
-    	/* 默认过滤字符串中的空格 */
-    	void strip();
+        /* 默认过滤字符串中的空格 */
+        void strip();
 
         /* 过滤字符串中，带有chr的字符 */
         void strip(const char* chr);
@@ -68,12 +68,12 @@ public:
         /* 字符串编码
          */
         const std::string& encode(const std::string& type = "utf-8");
-        
+
         /* 字符串解码
          */
         const std::string& decode(const std::string& type = "utf-8");
 private:
-        std::string _str;
+        std::string m_str;
 };
 
 typedef String::SVector SVector;

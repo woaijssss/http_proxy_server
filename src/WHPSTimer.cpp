@@ -10,49 +10,49 @@ using namespace std;
 #define MAX_FIRE_TIME   0xFFFFFFFF
 
 WHPSTimer::WHPSTimer(TimerCallback_t cb, void* param, const int& interval)
-        : _isActive(false)
-        , _isStop(true)
-        , _id(this->getMilliseconds() + long(this))
-        , _mutex(new std::mutex())
+        : m_isActive(false),
+          m_isStop(true),
+          m_id(this->getMilliseconds() + long(this)),
+          m_mutex(new std::mutex())
 {
-        _interval = interval;
-        _fireTime = _interval + this->getMilliseconds();
+        m_interval = interval;
+        m_fireTime = m_interval + this->getMilliseconds();
 
         this->setTimerCallback(cb);
 }
 
 WHPSTimer::~WHPSTimer()
 {
-        if (_mutex)
+        if (m_mutex)
         {
-//                delete _mutex;
-//                _mutex = nullptr;
+//                delete m_mutex;
+//                m_mutex = nullptr;
         }
 }
 
 long WHPSTimer::fireTime()
 {
-        return _fireTime;
+        return m_fireTime;
 }
 
 int WHPSTimer::interval()
 {
-        return _interval;
+        return m_interval;
 }
 
 void WHPSTimer::setInterval(const int& interval)
 {
-        _interval = interval;
+        m_interval = interval;
 }
 
 void WHPSTimer::setTimerCallback(TimerCallback_t cb)
 {
-        _timeCB = cb;
+        m_timeCb = cb;
 }
 
 WHPSTimer::TimerCallback_t WHPSTimer::getTimerCallback()
 {
-        return _timeCB;
+        return m_timeCb;
 }
 
 bool WHPSTimer::operator<(WHPSTimer& right)
@@ -72,7 +72,7 @@ bool WHPSTimer::operator==(WHPSTimer& right)
 
 bool WHPSTimer::isValid()
 {
-        return (_isStop ? false : true);
+        return (m_isStop ? false : true);
 }
 
 long WHPSTimer::getMilliseconds()
@@ -85,29 +85,29 @@ long WHPSTimer::getMilliseconds()
 
 void WHPSTimer::start()
 {
-        std::lock_guard<std::mutex> lock(*_mutex);
-        _isStop = false;
-        _isActive = true;
-        _fireTime = _interval + this->getMilliseconds();
+        std::lock_guard<std::mutex> lock(*m_mutex);
+        m_isStop = false;
+        m_isActive = true;
+        m_fireTime = m_interval + this->getMilliseconds();
         GetTimerManager()->addTimer(*this);
 }
 
 void WHPSTimer::stop()
 {
-        std::lock_guard<std::mutex> lock(*_mutex);
-        if (_isStop)    // 已经停止
+        std::lock_guard<std::mutex> lock(*m_mutex);
+        if (m_isStop)    // 已经停止
         {
                 return;
         }
 
-        _isStop = true;
-        _isActive = false;
-        _fireTime = MAX_FIRE_TIME;    // 设置为永久
+        m_isStop = true;
+        m_isActive = false;
+        m_fireTime = MAX_FIRE_TIME;    // 设置为永久
         GetTimerManager()->delTimer(*this);
-        _id = INVALID_TIMERID;
+        m_id = INVALID_TIMERID;
 }
 
 const unsigned long& WHPSTimer::id()
 {
-        return _id;
+        return m_id;
 }

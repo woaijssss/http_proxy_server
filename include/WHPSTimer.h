@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_TIMER_H__
 #define __WHPS_TIMER_H__
 
@@ -51,11 +50,11 @@ public:
         bool isValid();
 
 private:
-        bool _isActive;         // 定时器活跃度标识
-        bool _isStop;           // 是否已经停止
-        unsigned long _id;
+        bool m_isActive;         // 定时器活跃度标识
+        bool m_isStop;           // 是否已经停止
+        unsigned long m_id;
 //        std::mutex _mutex;
-        std::shared_ptr<std::mutex> _mutex;
+        std::shared_ptr<std::mutex> m_mutex;
 //        std::mutex* _mutex;
 };
 

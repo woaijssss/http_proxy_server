@@ -29,7 +29,8 @@ protected:
 
         }
 
-protected:      // 接口集
+protected:
+        // 接口集
         /* 注册接口入口 */
         virtual void registObj(cbFunc cb) = 0;
 

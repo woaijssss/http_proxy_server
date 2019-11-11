@@ -1,4 +1,3 @@
-
 #ifndef __WHPSTCPSERVER_H__
 #define __WHPSTCPSERVER_H__
 
@@ -16,12 +15,12 @@
 /* Tcp服务类
  * 单例模式： 一个服务进程只能有一个主socket
  */
-class WHPSTcpServer : public ImplSingleton<WHPSTcpServer>
+class WHPSTcpServer: public ImplSingleton<WHPSTcpServer>
 {
 public:
         using error_code = unsigned int;
         using sp_TcpSession = WHPSTcpSession::sp_TcpSession;
-        using cbFunc = std::function<void(const sp_TcpSession&)> ;
+        using cbFunc = std::function<void(const sp_TcpSession&)>;
 public:
         WHPSTcpServer();
         /* 虽然是单例，但实例化了线程池，没有析构函数，服务停止时，无法正常释放线程资源，导致内存泄漏 */
@@ -61,35 +60,38 @@ public:
         /* 某个客户端连接关闭时，调用此回调清除句柄资源 */
         void onCleanUpResource(const sp_TcpSession& sp_tcp_session);
 
-public:     // 应用层回调注册接口
+public:
+        // 应用层回调注册接口
         /* 客户端连接回调 */
         void setNewConnCallback(cbFunc cb);
 
         /* 客户端断开回调 */
         void setNewCloseCallback(cbFunc cb);
 
-public:     // 测试接口
+public:
+        // 测试接口
         void stop()
         {
-                _loop.stop();
+                m_loop.stop();
         }
 
 private:
         // static WHPSTcpServer* _tcp_server;
-        static std::shared_ptr<WHPSTcpServer> _tcp_server;
+        static std::shared_ptr<WHPSTcpServer> m_tcpServer;
 
-        WHPSEpollEventLoop _loop;       // 服务器事件循环触发
-        WHPSThreadPool _thread_pool;    // 线程池句柄
-        WHPSTcpSocket _tcp_socket;      // 服务器主socket
-        WHPSEventHandler _event_chn;    // 服务器事件回调通道
+        WHPSEpollEventLoop m_loop;       // 服务器事件循环触发
+        WHPSThreadPool m_threadPool;    // 线程池句柄
+        WHPSTcpSocket m_tcpSocket;      // 服务器主socket
+        WHPSEventHandler m_eventChn;    // 服务器事件回调通道
 
         /* 保证在连接存在时，智能指针至少被引用一次，不至于销毁连接 */
 //        Map<int, sp_TcpSession> _tcp_sess_list;   // tcp客户端连接表(断线要清理)
-        Map<std::string, sp_TcpSession> _tcp_sess_list;   // tcp客户端连接表(断线要清理)
+        Map<std::string, sp_TcpSession> m_tcpSessList;   // tcp客户端连接表(断线要清理)
 
-private:    // 应用层回调函数
-        cbFunc _cb_connect;     // 新连接应用层回调
-        cbFunc _cb_close;       // 连接关闭应用层回调
+private:
+        // 应用层回调函数
+        cbFunc m_cbConnect;     // 新连接应用层回调
+        cbFunc m_cbClose;       // 连接关闭应用层回调
 };
 
 GET_SINGLETON_OBJECT_PTR(WHPSTcpServer)

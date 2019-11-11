@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_WRITER_H__
 #define __WHPS_WRITER_H__
 
@@ -21,8 +20,8 @@ public:
         void write(const std::string& msg);
 
 private:
-        WHPSResponseWrapper* _resp;
-        cbFunc _cb_func;
+        WHPSResponseWrapper* m_resp;
+        cbFunc m_cbFunc;
 };
 
 #endif  // __WHPS_WRITER_H__

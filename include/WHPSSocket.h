@@ -1,4 +1,3 @@
-
 #ifndef __WHPSSOCKET_H__
 #define __WHPSSOCKET_H__
 
@@ -7,12 +6,11 @@
 
 #define SERVER_MODE             0       // 服务器主socket
 #define CLIENT_CONN_MODE        1       // 服务器接受连接的客户端的socket
-
 /*
  * WHPS服务的基础socket类，初始化服务
  */
 
-class WHPSSocket : public Socket
+class WHPSSocket: public Socket
 {
 public:
         WHPSSocket(int mode);
@@ -66,8 +64,8 @@ protected:
         int close();
 
 private:
-        int _mode;
-        int _tcp_port;   // tcp监听端口
+        int m_mode;
+        int m_tcpPort;   // tcp监听端口
 };
 
 #endif 	// __WHPSSOCKET_H__

@@ -1,4 +1,3 @@
-
 #include "WHPSResponse.h"
 
 using namespace std;
@@ -21,7 +20,7 @@ WhpsWriter& HttpResponseContext::getWriter()
 
 HttpResponseContext& HttpResponseContext::getResponse()
 {
-        return (HttpResponseContext&)*this->_getResponse();
+        return (HttpResponseContext&) *this->_getResponse();
 }
 
 void HttpResponseContext::setContentLength(const string& length)

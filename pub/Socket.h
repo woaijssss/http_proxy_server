@@ -1,4 +1,3 @@
-
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
@@ -32,7 +31,7 @@ public:
 protected:
         /* 设置socket，适用于服务器接收的客户端socket */
         void __set(int fd);
-        
+
         /* 设置socket属性 */
         int __setSocketOpt();
 
@@ -63,7 +62,7 @@ protected:
         int __close();
 
 private:
-        int __socket_fd;         // 句柄文件描述符
+        int m_socketFd;         // 句柄文件描述符
 };
 
 #endif  // __SOCKET_H__

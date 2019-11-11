@@ -1,4 +1,3 @@
-
 #include <string.h>
 
 #include "WHPSPoller.h"
@@ -8,7 +7,7 @@ WHPSPoller::WHPSPoller(int maxevents, int timeout)
 {
 
 }
-       
+
 WHPSPoller::~WHPSPoller()
 {
 
@@ -68,7 +67,7 @@ void WHPSPoller::eventOperation(OpsType type, event_chn* p_event)
 
 int WHPSPoller::epollWait()
 {
-        return this->__poll(_events);
+        return this->__poll(m_events);
 }
 
 int WHPSPoller::poll(List<event_chn*>& event_queue)
@@ -88,30 +87,30 @@ int WHPSPoller::poll(List<event_chn*>& event_queue)
 }
 
 #if 0
-        typedef union epoll_data
-        {
-                void *ptr;
-                int fd;
-                uint32_t u32;
-                uint64_t u64;
-        } epoll_data_t;
+typedef union epoll_data
+{
+        void *ptr;
+        int fd;
+        uint32_t u32;
+        uint64_t u64;
+}epoll_data_t;
 
-        struct epoll_event
-        {
-                uint32_t events;      /* Epoll events */
-                epoll_data_t data;    /* User data variable */
-        } __EPOLL_PACKED;
+struct epoll_event
+{
+        uint32_t events; /* Epoll events */
+        epoll_data_t data; /* User data variable */
+}__EPOLL_PACKED;
 #endif
 void WHPSPoller::onEvent(List<event_chn*>& event_queue, const int& n_fds)
 {
         for (int i = 0; i < n_fds; i++)
         {
-                int events = _events[i].events;                         // 获取被触发的事件类型
-                event_chn* p_event = (event_chn*)_events[i].data.ptr;   // 获取被触发的事件指针
+                int events = m_events[i].events;                         // 获取被触发的事件类型
+                event_chn* p_event = (event_chn*) m_events[i].data.ptr;   // 获取被触发的事件指针
                 const int& fd = p_event->getFd();                       // 获取事件对应的句柄
-                Map<int, event_chn*>::iterator it = _event_list.find(fd);
+                Map<int, event_chn*>::iterator it = m_eventList.find(fd);
 
-                if (it != _event_list.end())    // 在事件表中找到了对应的句柄
+                if (it != m_eventList.end())    // 在事件表中找到了对应的句柄
                 {
                         p_event->setEvents(events);     // 设置句柄本次触发的事件类型
 //                        event_queue.push_back(p_event); // 向队列添加事件
@@ -120,21 +119,19 @@ void WHPSPoller::onEvent(List<event_chn*>& event_queue, const int& n_fds)
         }
 }
 
-
-
 void WHPSPoller::addToEventList(int fd, event_chn* p_event)
 {
-        _event_list.insert(fd, p_event);
+        m_eventList.insert(fd, p_event);
 }
 
 void WHPSPoller::delFromEventList(int fd)
 {
-        _event_list.erase(fd);
+        m_eventList.erase(fd);
 }
 
 /*
-void WHPSPoller::updateEventList(int fd)
-{
-        // nothing to do
-}
-*/
+ void WHPSPoller::updateEventList(int fd)
+ {
+ // nothing to do
+ }
+ */

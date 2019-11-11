@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_EPOLL_EVENT_LOOP_H__
 #define __WHPS_EPOLL_EVENT_LOOP_H__
 
@@ -38,7 +37,7 @@ public:
         void loop();
 
         /* 子线程执行，循环由线程控制，函数内部只执行一次 */
-        void loopOne();      
+        void loopOne();
 
         /* 获取当前循环的任务队列 */
         Task<task_t>& getTask();
@@ -46,17 +45,18 @@ public:
         /* 通过事件处理，添加一个异步任务 */
         void addTask(task_t func_cb);
 
-public:         // 测试接口
+public:
+        // 测试接口
         void stop();
 
         std::mutex& getMutex()
         {
-                return _mutex;
+                return m_mutex;
         }
 
         void deleteOneChannel(event_chn* chn)
         {
-                bool res = _event_queue.erase(chn);
+                bool res = m_eventQueue.erase(chn);
                 WHPSLogInfo("WHPSEpollEventLoop::deleteOneChannel res[%d]", res);
         }
 
@@ -67,14 +67,14 @@ private:
          * 外部线程，通过事件队列，来向epoll获取任务
          */
 //        Vector<event_chn*> _event_queue;
-        List<event_chn*> _event_queue_main;    // 仅由主线程使用
-        List<event_chn*> _event_queue;    // I/O线程池使用，用于接收tcp连接的epoll事件
+        List<event_chn*> m_eventQueueMain;    // 仅由主线程使用
+        List<event_chn*> m_eventQueue;    // I/O线程池使用，用于接收tcp连接的epoll事件
 
-        bool _is_stop;
+        bool m_isStop;
 
-        Task<task_t> _task;     // 线程任务队列
+        Task<task_t> m_task;     // 线程任务队列
 
-        std::mutex _mutex;
+        std::mutex m_mutex;
 };
 
 #endif  // __WHPS_EPOLL_EVENT_LOOP_H__

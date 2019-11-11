@@ -1,4 +1,3 @@
-
 #ifndef __WEB_SOURCE_CONFIG_H__
 #define __WEB_SOURCE_CONFIG_H__
 
@@ -40,13 +39,10 @@ public:
 
 public:
         /* section模式设置保存一项配置 */
-        virtual void set(const std::string& section, 
-                         const std::string& key, 
-                         const std::string& val);
+        virtual void set(const std::string& section, const std::string& key, const std::string& val);
 
         /* 读取指定配置 */
-        virtual const std::string& get(const std::string& section, 
-                                       const std::string& key);
+        virtual const std::string& get(const std::string& section, const std::string& key);
 
         /* 读取所有配置 */
         virtual ConfigTypeWithSection& getAllConfigWithSection();
@@ -65,8 +61,8 @@ private:
         virtual ConfigType& getAllConfig();
 
 private:
-        static std::shared_ptr<WebSourceConfig> _webSourceConfig;       // 单例对象
-        std::string _webConfigPath/* = "./conf/web.conf"*/;     // 配置文件名（不可以外部指定）
+        static std::shared_ptr<WebSourceConfig> m_webSourceConfig;       // 单例对象
+        std::string m_webConfigPath/* = "./conf/web.conf"*/;     // 配置文件名（不可以外部指定）
 };
 
 GET_SINGLETON_OBJECT(WebSourceConfig)

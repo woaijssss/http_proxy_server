@@ -1,4 +1,3 @@
-
 #include "HttpWhpsFactory.h"
 
 #ifdef __GNUC__
@@ -6,24 +5,24 @@
 #endif
 #include <stdlib.h>
 
-std::shared_ptr<HttpWhpsFactory> HttpWhpsFactory::_http_whps_factory;
+std::shared_ptr<HttpWhpsFactory> HttpWhpsFactory::m_httpWhpsFactory;
 
 HttpWhpsFactory::HttpPtrType HttpWhpsFactory::get(const std::string& type)
 {
-        return _map_ptr[type];
+        return m_mapPtr[type];
 }
 
 bool HttpWhpsFactory::create(const std::string& type_name)
 {
         HttpPtrType obj = _create(type_name);
-        
+
         if (!obj)
         {
                 return false;
         }
 
         WHPSLogInfo("HttpWhpsFactory::create: " + type_name);
-        _map_ptr[type_name] = obj;
+        m_mapPtr[type_name] = obj;
 
         return true;
 }
@@ -35,13 +34,13 @@ HttpWhpsFactory::HttpPtrType HttpWhpsFactory::_create(const std::string & type_n
                 return NULL;
         }
 
-        std::map<std::string, CreateFunction>::iterator it = _create_function_map.find(type_name);
-        
-        if (it == _create_function_map.end())
+        std::map<std::string, CreateFunction>::iterator it = m_createFunctionMap.find(type_name);
+
+        if (it == m_createFunctionMap.end())
         {
                 return NULL;
         }
-        
+
         return it->second();
 }
 
@@ -65,7 +64,7 @@ bool HttpWhpsFactory::regist(const char * name, CreateFunction func)
         }
 
         std::string type_name = readTypeName(name);
-        _create_function_map.insert(type_name, func);
-        
+        m_createFunctionMap.insert(type_name, func);
+
         return this->create(type_name);
 }

@@ -1,4 +1,3 @@
-
 #include "WHPSRequestWrapper.h"
 #include "String.h"
 #include "WHPSLog.h"
@@ -6,7 +5,7 @@
 using namespace std;
 
 WHPSRequestWrapper::WHPSRequestWrapper()
-        : _isStatic(false)
+        : m_isStatic(false)
 {
 
 }
@@ -18,47 +17,47 @@ WHPSRequestWrapper::~WHPSRequestWrapper()
 
 const string& WHPSRequestWrapper::_getMethod()
 {
-        return _method;
+        return m_method;
 }
 
 const string& WHPSRequestWrapper::_getUrl()
 {
-        return _url;
+        return m_url;
 }
 
 const string& WHPSRequestWrapper::_getUrlParams(const string& key)
 {
-        return _url_params[key];
+        return m_url_params[key];
 }
 
 const string& WHPSRequestWrapper::_getVersion()
 {
-        return _version;
+        return m_version;
 }
 
 HttpRequestHeader& WHPSRequestWrapper::_getHeader()
 {
-        return _header;
+        return m_header;
 }
 
 const string& WHPSRequestWrapper::_getBody()
 {
-        return _body;
+        return m_body;
 }
 
 const bool& WHPSRequestWrapper::_getFlag()
 {
-        return _isStatic;
+        return m_isStatic;
 }
 
 void WHPSRequestWrapper::_setMethod(const string& method)
 {
-        _method = method;
+        m_method = method;
 }
 
 void WHPSRequestWrapper::_seturl(const string& url)
 {
-        _url = url;
+        m_url = url;
 }
 
 void WHPSRequestWrapper::_setUrlParams(const std::string& url)
@@ -69,33 +68,33 @@ void WHPSRequestWrapper::_setUrlParams(const std::string& url)
         if (m == 1)
         {
                 m = sUrl.find('?');
-                sUrl = sUrl.substr(m+1, sUrl.size()-1);
+                sUrl = sUrl.substr(m + 1, sUrl.size() - 1);
                 String::SVector v_params = sUrl.split("&");
 
-                for (auto& obj: v_params)
+                for (auto& obj : v_params)
                 {
                         String::SVector v_tmp = String(obj).split("=");
-                        _url_params[v_tmp[0]] = v_tmp[1];
+                        m_url_params[v_tmp[0]] = v_tmp[1];
                 }
         }
 }
 
 void WHPSRequestWrapper::_setVersion(const string& version)
 {
-        _version = version;
+        m_version = version;
 }
 
 void WHPSRequestWrapper::_setHeader(const string& k, const string& v)
 {
-        _header[k] = v;
+        m_header[k] = v;
 }
 
 void WHPSRequestWrapper::_setBody(const string& body)
 {
-        _body = body;
+        m_body = body;
 }
 
 void WHPSRequestWrapper::_setFlag(const bool& flag)
 {
-        _isStatic = flag;
+        m_isStatic = flag;
 }

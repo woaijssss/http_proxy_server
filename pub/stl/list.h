@@ -33,7 +33,7 @@ public:
 
         void push_back(const value_type& val)
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 std::list<__T>::push_back(val);
         }
 
@@ -43,7 +43,7 @@ public:
 //        const __T& front()
         __T front()
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 __T res = nullptr;
 
                 if (!std::list<__T>::empty())
@@ -56,19 +56,19 @@ public:
 
         size_type size()
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 return std::list<__T>::size();
         }
 
         bool empty()
         {
-            	std::lock_guard<std::mutex> lock(__mutex);
+            	std::lock_guard<std::mutex> lock(m_mutex);
             	return std::list<__T>::empty();
         }
 
         void pop_front()
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 if (!std::list<__T>::empty())
                 {
                     	std::list<__T>::pop_front();
@@ -77,7 +77,7 @@ public:
 
         bool erase(const value_type& v)
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 bool res = false;
 //                iterator it = std::find(std::list<__T>::begin(), std::list<__T>::end(), v);
 
@@ -102,12 +102,12 @@ public:
 
         void clear()
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 std::list<__T>::clear();
         }
 
 private:
-        std::mutex __mutex;
+        std::mutex m_mutex;
 };
 
 #endif /* __LIST_H__ */

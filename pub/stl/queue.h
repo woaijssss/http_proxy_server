@@ -31,7 +31,7 @@ public:
 
         void push(const value_type& val)
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 std::queue<__T>::push(val);
         }
 
@@ -40,23 +40,23 @@ public:
          */
         const __T& front()
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 return std::queue<__T>::front();
         }
 
         void pop()
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 std::queue<__T>::pop();
         }
 
         void clear()
         {
-                std::lock_guard<std::mutex> lock(__mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);
                 std::queue<__T>::clear();
         }
 private:
-        std::mutex __mutex;
+        std::mutex m_mutex;
 };
 
 #endif /* __QUEUE_H__ */

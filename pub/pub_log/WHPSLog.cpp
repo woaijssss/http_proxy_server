@@ -1,4 +1,3 @@
-
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -16,7 +15,7 @@ using namespace std;
 
 #define MAX_LEN 1024
 bool debug_mode = true;
-static vector<const char*> v_level = {"TRACE", "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL", "FATAL"};
+static vector<const char*> v_level = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL", "FATAL" };
 
 void WHPSLogDebug(const std::string& fmt, ...)
 {
@@ -51,18 +50,17 @@ static std::string MSG(int log_level, const char* fmt, va_list& ap)
 {
         string s_res;
 //        char* message = new char[1024];       // 1024大小先写死
-        char message[1024] = {0};
+        char message[1024] = { 0 };
         time_t timer = time(NULL);
         strftime(message, 23, "[%Y-%m-%d %H:%M:%S] ", localtime(&timer));
-        int size = 22 + sprintf(message+22, "%s: ", v_level[log_level]);
+        int size = 22 + sprintf(message + 22, "%s: ", v_level[log_level]);
 
         if (fmt)
         {
-                vsprintfGet(message+size, fmt, ap);
-        }
-        else
+                vsprintfGet(message + size, fmt, ap);
+        } else
         {
-                sprintf(message+size, "%s", va_arg(ap, const char*));
+                sprintf(message + size, "%s", va_arg(ap, const char*));
         }
 
         s_res = string(message);
@@ -126,7 +124,7 @@ const std::string& WHPSLog::getLogPath()
 
 void WHPSLog::printToFile(const std::string& msg)
 {
-        _flusher.WHPSFlushToFile((msg+"\n").c_str());
+        _flusher.WHPSFlushToFile((msg + "\n").c_str());
 }
 
 void FileFlusher::WHPSFlushToFile(const char* message)
@@ -140,21 +138,24 @@ void FileFlusher::WHPSFlushToFile(const char* message)
         if (log_path.empty())   // 空文件，打印到终端
         {
                 fd = stdin->_fileno;
-        }
-        else
+        } else
         {
                 fd = open(log_path.c_str(), O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
         }
 
-        if (fd == -1) {
+        if (fd == -1)
+        {
                 perror("open (log)");
-        } else {
-                if (is_print_time == false) {
+        } else
+        {
+                if (is_print_time == false)
+                {
                         if (write(fd, message + 22, strlen(message + 22)) == -1)
                         {
                                 perror("lprintf");
                         }
-                } else {
+                } else
+                {
                         if (write(fd, message, strlen(message)) == -1)
                         {
                                 perror("lprintf");

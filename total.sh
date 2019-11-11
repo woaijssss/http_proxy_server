@@ -15,7 +15,5 @@ cat \
         pub/stdio/* \
         pub/pub_log/*\
         pub/stl/*\
-	pub/data_structure/*\
-	pub/cdcm/mysql/*\
 	test_develop/* \
   > 1

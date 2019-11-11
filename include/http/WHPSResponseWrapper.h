@@ -1,4 +1,3 @@
-
 #ifndef __WHPS_RESPONSE_WRAPPER_H__
 #define __WHPS_RESPONSE_WRAPPER_H__
 
@@ -9,8 +8,8 @@
 #include "HttpWriterRegistser.h"
 #include "WHPSHttpStatusCode.h"
 
-typedef std::map<std::string, std::string>  HttpHeader__;
-typedef std::string                         HttpBody__;
+typedef std::map<std::string, std::string> HttpHeader__;
+typedef std::string HttpBody__;
 
 #define HttpResponseHeader      HttpHeader__
 #define HttpResponseBody        HttpBody__
@@ -26,7 +25,8 @@ public:
         /* 多态性，返回基类的对象，供子类使用 */
         WHPSResponseWrapper* _getResponse();
 
-protected:      /* 标准响应头函数*/
+protected:
+        /* 标准响应头函数*/
         /* 设置Content-Length字段值
          */
         void _setContentLength(const std::string& length);
@@ -43,7 +43,8 @@ protected:
         void _setError(const int& sc, const std::string& msg);
 
 //-----------------------------------------------------------------------------------
-protected:      /* 以下是添加自定义响应头和时间的函数 */
+protected:
+        /* 以下是添加自定义响应头和时间的函数 */
         /* 该方法是设置有多个值的响应头,参数name表示响应头名称,参数value表示响应头的值 
          */
         void _addHeader(const std::string& h_key, const std::string& h_value);
@@ -81,15 +82,15 @@ private:
         /* 初始化响应头的默认参数 */
         void initParams();
 
-        std::string _version/* = "HTTP/1.1"*/;  // 协议版本(应与请求头版本一致)
-        HttpResponseHeader _header;             // 响应头(K-V格式)
-        std::string _st_code/* = "200"*/;       // http状态码
-        std::string _status/* = "OK"*/;         // http状态信息
+        std::string m_version/* = "HTTP/1.1"*/;  // 协议版本(应与请求头版本一致)
+        HttpResponseHeader m_header;             // 响应头(K-V格式)
+        std::string m_stCode/* = "200"*/;       // http状态码
+        std::string m_status/* = "OK"*/;         // http状态信息
 
-        HttpResponseBody        _body;                      // 响应体
+        HttpResponseBody m_body;                      // 响应体
 
-        WHPSHttpStatusCode      _m_status;              // 状态器
-        WhpsWriter              _writer;                    // 发送器
+        WHPSHttpStatusCode m_statusMachine;              // 状态器
+        WhpsWriter m_writer;                    // 发送器
 };
 
 #endif

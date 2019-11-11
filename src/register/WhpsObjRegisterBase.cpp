@@ -1,14 +1,13 @@
-
 #include "WhpsObjRegisterBase.h"
 
-WhpsObjRegisterBase::WhpsObjRegisterBase() 
+WhpsObjRegisterBase::WhpsObjRegisterBase()
 {
 
 }
 
-WhpsObjRegisterBase::~WhpsObjRegisterBase() 
+WhpsObjRegisterBase::~WhpsObjRegisterBase()
 {
-        
+
 }
 
 void WhpsObjRegisterBase::registObj(cbFunc cb)
