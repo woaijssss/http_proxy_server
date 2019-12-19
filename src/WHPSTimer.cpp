@@ -94,6 +94,7 @@ void WHPSTimer::start()
 
 void WHPSTimer::stop()
 {
+        cout << "WHPSTimer::stop" << endl;
         std::lock_guard<std::mutex> lock(*m_mutex);
         if (m_isStop)    // 已经停止
         {

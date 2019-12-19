@@ -1,10 +1,11 @@
+
 #include "WHPSThread.h"
 
 #include <iostream>
 using namespace std;
 WHPSThread::WHPSThread(Task<task_t>& task)
-        : m_thrd(m_loop.getTask()),
-          m_isStop(false)
+        : m_thrd(m_loop.getTask())
+        , m_isStop(false)
 {
 
 }
@@ -45,6 +46,47 @@ void WHPSThread::workFunc()
 }
 
 void WHPSThread::excuteTask()
+{
+        m_thrd.excuteTask();
+}
+
+
+
+
+WHPSWorkerThread::WHPSWorkerThread(Task<task_t>& task)
+        : m_thrd(task)
+        , m_isStop(false)
+{
+
+}
+
+WHPSWorkerThread::~WHPSWorkerThread()
+{
+        this->stop();
+        m_thrd.join();
+}
+
+void WHPSWorkerThread::start()
+{
+        task_func_t callback = std::bind(&WHPSWorkerThread::workFunc, this);
+        m_thrd.start(callback);
+}
+
+void WHPSWorkerThread::stop()
+{
+        m_isStop = true;
+}
+
+void WHPSWorkerThread::workFunc()
+{
+        while (!m_isStop)
+        {
+                /* 处理Task queue中的内容，每次只取一个 */
+                this->excuteTask();
+        }
+}
+
+void WHPSWorkerThread::excuteTask()
 {
         m_thrd.excuteTask();
 }

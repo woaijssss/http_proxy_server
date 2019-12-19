@@ -54,7 +54,7 @@ public:
         using TimerCallback_t = WHPSTimer::TimerCallback_t;
 public:
         /* http session的实例化，必须依赖于tcp session，是一一对应的关系 */
-        WHPSHttpSession(const sp_TcpSession _tcp_session, WHPSThreadPool& worker_thread_pool);
+        WHPSHttpSession(const sp_TcpSession _tcp_session, WHPSWorkerThreadPool& worker_thread_pool);
 
         ~WHPSHttpSession();
 
@@ -150,7 +150,7 @@ private:
         };
 
         int m_connStatus;             // 连接状态标志
-        WHPSThreadPool& m_workerThreadPool;
+        WHPSWorkerThreadPool& m_workerThreadPool;
         std::mutex m_mutexStatus;    // 数据处理标识锁
         std::mutex m_mutex;
 };

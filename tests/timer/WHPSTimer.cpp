@@ -85,7 +85,7 @@ void WHPSTimer::start()
 void WHPSTimer::stop()
 {
         _isActive = false;
-        _fireTime = 0xFFFFFFFF;    // 设置为永久
+        _fireTime = 0xFFFFFFFF;    // 璁剧疆涓烘案涔�
         // tmg.delTimer(*this);
 }
 
@@ -119,9 +119,9 @@ void TimerManager::delTimer(const WHPSTimer& t)
 
         if (it != getHeap().end())
         {
-                cout << "删除定时器： " << it->id() << endl;
+                cout << "鍒犻櫎瀹氭椂鍣細 " << it->id() << endl;
                 this->erase(it);        
-                cout << "队列大小： " << this->size() << endl;
+                cout << "闃熷垪澶у皬锛� " << this->size() << endl;
         }
 }
 
@@ -139,7 +139,7 @@ const long TimerManager::waitTime()
         const long& fire_time = t.fireTime();
         const long& now = t.getMilliseconds();
 
-        /* 防止出现触发时间过期的情况，导致负数(long)或溢出(unsigned long) */
+        /* 闃叉鍑虹幇瑙﹀彂鏃堕棿杩囨湡鐨勬儏鍐碉紝瀵艰嚧璐熸暟(long)鎴栨孩鍑�(unsigned long) */
         return ((fire_time >= now) ? (fire_time-now) : 0);
 }
 

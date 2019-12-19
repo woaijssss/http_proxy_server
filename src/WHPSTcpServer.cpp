@@ -13,7 +13,7 @@ std::shared_ptr<WHPSTcpServer> WHPSTcpServer::m_tcpServer;
 WHPSTcpServer::WHPSTcpServer()
         : ImplSingleton<WHPSTcpServer>(),
           m_loop(),
-          m_threadPool(atoi(GetWebSourceConfig().get("Server", "ioThreads").c_str()), &m_loop),
+          m_threadPool(atoi(GetWebSourceConfig().get("Server", "ioThreads").c_str()), m_loop),
           m_tcpSocket(SERVER_MODE),
           m_eventChn(&m_loop)
 {

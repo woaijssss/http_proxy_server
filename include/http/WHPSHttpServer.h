@@ -54,7 +54,7 @@ private:
         WHPSTcpServer* m_tcpServer;
 
         Map<std::string, sp_HttpSession> m_httpSessList;    // http列表
-        WHPSThreadPool m_workerThreadPool;       // 工作线程池句柄
+        WHPSWorkerThreadPool m_workerThreadPool;       // 工作线程池句柄
 };
 
 GET_SINGLETON_OBJECT(WHPSHttpServer)

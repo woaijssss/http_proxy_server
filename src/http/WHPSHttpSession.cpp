@@ -12,7 +12,7 @@
 
 using namespace std;
 
-WHPSHttpSession::WHPSHttpSession(const sp_TcpSession m_tcpSession, WHPSThreadPool& worker_thread_pool)
+WHPSHttpSession::WHPSHttpSession(const sp_TcpSession m_tcpSession, WHPSWorkerThreadPool& worker_thread_pool)
         : m_tcpSession(m_tcpSession),
           m_httpCloseCB(nullptr),
           m_objName(GetWebSourceConfig().get("whps", "whps-name")),
@@ -41,6 +41,7 @@ WHPSHttpSession::~WHPSHttpSession()
         //         delete m_httpWhps;
         //         m_httpWhps = NULL;  // 后续加到工厂中释放资源
         // }
+        WHPSLogInfo("WHPSHttpSession::~WHPSHttpSession");
         m_Timer.stop();
 }
 
@@ -148,7 +149,7 @@ void WHPSHttpSession::notifyToClose()
 
 void WHPSHttpSession::TimerCallback(WHPSTimer& timer)
 {
-        std::lock_guard<std::mutex> lock(m_mutex);
+//        std::lock_guard<std::mutex> lock(m_mutex);
 
         if (this->getConnStatus() < CLOSING)
         {
