@@ -23,3 +23,13 @@ void HelloWhps::doPost(HttpWhpsRequest& request, HttpWhpsResponse& response)
 {
 
 }
+
+void HelloWhps::doPut(HttpWhpsRequest& request, HttpWhpsResponse& response)
+{
+
+}
+
+void HelloWhps::doDelete(HttpWhpsRequest& request, HttpWhpsResponse& response)
+{
+
+}

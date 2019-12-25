@@ -101,11 +101,8 @@ void WHPSEpollEventLoop::loopOne()
                         continue;
                 }
 
-                //cout << "===========WHPSEpollEventLoop::loopOne chn: " << chn << endl;
                 chn->exCallback();
-                //cout << "===========WHPSEpollEventLoop::loopOne size: " << m_eventQueue.size() << endl;
                 m_eventQueue.pop_front();
-                //cout << "===========WHPSEpollEventLoop::loopOne size after: " << m_eventQueue.size() << endl;
         }
 
         m_eventQueue.clear();   // 执行结束后清空队列

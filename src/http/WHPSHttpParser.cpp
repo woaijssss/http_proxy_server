@@ -89,14 +89,6 @@ WHPSHttpParser::~WHPSHttpParser()
 
 void WHPSHttpParser::parseHttpRequest(std::string& raw_msg, HttpRequestContext& context)
 {
-#if 0   // 用于调试http输出的原始字符
-        for (int i = 0; i < raw_msg.size(); i++)
-        {
-                printf("(%d, %c)", raw_msg[i], raw_msg[i]);
-        }
-        cout << endl;
-#endif
-
         // 当前没有做包完整性校验，测试阶段默认一次请求一个完整的包
         SpVector vrow_seq = String(raw_msg).split(m_crlf);
         this->parseSequence(vrow_seq, context);
@@ -149,10 +141,12 @@ bool WHPSHttpParser::getFirstLine(SpVector& vrow_seq, HttpRequestContext& contex
         const string& method = req_line[0];
         string url = String(req_line[1]).decode("UrlCode");
 
+#if 0
         cout << "---------------------------------------" << endl;
         cout << req_line[1] << endl;
         cout << url << endl;
         cout << "---------------------------------------" << endl;
+#endif
 
         context.setMethod(method);
         context.setUrl(url);	// 防止中文

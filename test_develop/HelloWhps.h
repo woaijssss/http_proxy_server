@@ -11,16 +11,17 @@
  * （4）析构函数必须为virtual
  * 不遵循以上规则，编译将会报错
  */
-class HelloWhps: public WhpsObject<HelloWhps>
+class HelloWhps final: public WhpsObject<HelloWhps>
 {
 public:
         HelloWhps();
         virtual ~HelloWhps();
 
 public:
-        virtual void doGet(HttpWhpsRequest& request, HttpWhpsResponse& response);
-
-        virtual void doPost(HttpWhpsRequest& request, HttpWhpsResponse& response);
+        virtual void doGet(HttpWhpsRequest& request, HttpWhpsResponse& response) override;
+        virtual void doPost(HttpWhpsRequest& request, HttpWhpsResponse& response) override;
+        virtual void doPut(HttpWhpsRequest& request, HttpWhpsResponse& response) override;
+        virtual void doDelete(HttpWhpsRequest& request, HttpWhpsResponse& response) override;
 
 private:
 };

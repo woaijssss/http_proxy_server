@@ -27,11 +27,11 @@ public:
                 {
                         if (!GetHttpWhpsFactory()->regist(typeid(T).name(), CreateObject))
                         {
-                                cout << "regist failed" << endl;
+                                WHPSLogError("regist failed");
                         }
                 }
 
-                inline void do_nothing() const
+                inline void doNothing() const
                 {
                 }
         };
@@ -46,7 +46,7 @@ public:
 
         virtual ~WhpsObject()
         {
-                m_aux.do_nothing();
+                m_aux.doNothing();
         }
 };
 

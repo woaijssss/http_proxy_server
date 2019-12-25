@@ -16,7 +16,7 @@ TimerManager::TimerManager()
           m_thrd(thread(&TimerManager::loop, this)),
           m_isStop(false)
 {
-        WHPSLogInfo("timer pool init...");
+        WHPSLogDebug("timer pool init...");
 }
 
 TimerManager::~TimerManager()
@@ -42,14 +42,14 @@ void TimerManager::addTimer(WHPSTimer t)
 
 void TimerManager::delTimer(WHPSTimer& t)
 {
-        WHPSLogInfo("TimerManager::delTimer: %ld", t.id());
+        WHPSLogDebug("TimerManager::delTimer: %ld", t.id());
 //        std::lock_guard<std::mutex> lock(m_mutex);
         bool is_success = this->erase(t);
 
         if (is_success)
         {
-                WHPSLogInfo("TimerManager::delTimer 删除定时器: %ld", t.id());
-                WHPSLogInfo("TimerManager::delTimer 队列大小: %ld", this->size());
+                WHPSLogDebug("TimerManager::delTimer 删除定时器: %ld", t.id());
+                WHPSLogDebug("TimerManager::delTimer 队列大小: %ld", this->size());
         }
 }
 

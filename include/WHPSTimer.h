@@ -9,7 +9,7 @@
 #include "WHPSLog.h"
 
 /* 定时器 */
-class WHPSTimer: public ImplTimer<WHPSTimer>
+class WHPSTimer final: public ImplTimer<WHPSTimer>
 {
 public:
         using TimerCallback_t = ImplTimer<WHPSTimer>::TimerCallback_t;
@@ -19,10 +19,10 @@ public:
 
         virtual ~WHPSTimer();
 
-        virtual long fireTime();
+        virtual long fireTime() override;
 
         /* 返回定时器触发间隔时间 */
-        virtual int interval();
+        virtual int interval() override;
 
         /* 设置定时器触发间隔时间 */
         virtual void setInterval(const int& interval);

@@ -49,6 +49,9 @@ public:
         // 后面需要增加一些接口，用来进行外部监控（比如：当前http有效连接数等）
 
 private:
+        /* 计算http session的全局唯一id */
+        std::string getGlobalId(const long& key);
+private:
         // static WHPSHttpServer* _http_server;
         static std::shared_ptr<WHPSHttpServer> m_httpServer;
         WHPSTcpServer* m_tcpServer;

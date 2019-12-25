@@ -36,12 +36,7 @@ WHPSHttpSession::WHPSHttpSession(const sp_TcpSession m_tcpSession, WHPSWorkerThr
 
 WHPSHttpSession::~WHPSHttpSession()
 {
-        // if (m_httpWhps)
-        // {
-        //         delete m_httpWhps;
-        //         m_httpWhps = NULL;  // 后续加到工厂中释放资源
-        // }
-        WHPSLogInfo("WHPSHttpSession::~WHPSHttpSession");
+        WHPSLogDebug("WHPSHttpSession::~WHPSHttpSession");
         m_Timer.stop();
 }
 
@@ -66,22 +61,19 @@ void WHPSHttpSession::onHttpMessage()
 {
         if (this->getConnStatus() > PROCESSING)
         {
-                WHPSLogWarn("connectStatus flag is bigger than CLOSING...: " + m_tcpSession->getNetInfo());
-                this->closeAll();
+                WHPSLogDebug("connectStatus flag is bigger than CLOSING...: " + m_tcpSession->getNetInfo());
+                this->closeSession();
                 return;
         }
 
-//        std::lock_guard<std::mutex> lock(m_mutex);
         this->setConnStatus(PROCESSING);
         HttpRequestContext request;
         HttpResponseContext response(m_writerFunc);
         m_httpParser.parseHttpRequest(m_tcpSession->getBufferIn(), request);     // 解析获取http请求内容
-
         /***************/
-        /* 增加判断http粘包问题后，从原始包中删除一个http整包，保留剩下的bufferin */
+//        todo 增加判断http粘包问题后，从原始包中删除一个http整包，保留剩下的bufferin
         m_tcpSession->getBufferIn().clear();     // 假设已经处理完毕
         /***************/
-
         this->onCallback(request, response);    // 调用消息回调处理程序
 }
 
@@ -92,17 +84,17 @@ void WHPSHttpSession::onHttpSend()
 
 void WHPSHttpSession::onHttpClose()
 {
-        WHPSLogWarn("WHPSHttpSession::onHttpClose: " + m_tcpSession->getNetInfo());
-        this->closeAll();
+        WHPSLogDebug("WHPSHttpSession::onHttpClose: " + m_tcpSession->getNetInfo());
+        this->closeSession();
 }
 
 void WHPSHttpSession::onHttpError()
 {
-        WHPSLogWarn("WHPSHttpSession::onHttpError: " + m_tcpSession->getNetInfo());
-        this->closeAll();
+        WHPSLogDebug("WHPSHttpSession::onHttpError: " + m_tcpSession->getNetInfo());
+        this->closeSession();
 }
 
-void WHPSHttpSession::closeAll()
+void WHPSHttpSession::closeSession()
 {
         std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -122,6 +114,7 @@ void WHPSHttpSession::notifyToClose()
 //        std::lock_guard<std::mutex> lock(m_mutex);
         /* 当响应头中包含 Connection: close 的时候，需要服务端主动关闭连接
          */
+#if 0
         {
                 std::lock_guard<std::mutex> lock(m_mutex);
                 if (this->getConnStatus() == STOPPED)
@@ -131,6 +124,14 @@ void WHPSHttpSession::notifyToClose()
 
                 this->setConnStatus(STOPPED);
         }
+#else
+        if (this->getConnStatus() == STOPPED)
+        {
+                return;
+        }
+
+        this->setConnStatus(STOPPED);
+#endif
 
         m_Timer.stop();
         m_tcpSession->release();        // 释放tcp层资源
@@ -154,9 +155,10 @@ void WHPSHttpSession::TimerCallback(WHPSTimer& timer)
         if (this->getConnStatus() < CLOSING)
         {
                 this->setConnStatus(CLOSING);
-        } else if (this->getConnStatus() == CLOSING)
+        }
+        else if (this->getConnStatus() == CLOSING)
         {
-                WHPSLogInfo("add to task queue and stop the timer: %ld", timer.id());
+                WHPSLogDebug("add to task queue and stop the timer: %ld", timer.id());
                 timer.stop();
                 this->setConnStatus(DISCONNECTED);
                 m_tcpSession->closeSession();       // 马上关闭对外连接，并停止事件触发
@@ -166,9 +168,10 @@ void WHPSHttpSession::TimerCallback(WHPSTimer& timer)
                         m_workerThreadPool.addTask(std::bind(&WHPSHttpSession::notifyToClose, shared_from_this()));
                 } catch (exception& e)
                 {
-                        WHPSLogWarn("WHPSHttpSession::TimerCallback exception: %s", e.what());
+                        WHPSLogError("WHPSHttpSession::TimerCallback exception: %s", e.what());
                 }
-        } else
+        }
+        else
         {
                 timer.stop();
         }
@@ -201,10 +204,6 @@ void WHPSHttpSession::onStaticRequest(HttpRequestContext& request, HttpResponseC
                 response.setStatus(200);
                 m_whpsStaticProcessor.doGet(request, response);    // 通过静态资源处理器直接返回
         }
-//        else if (request.getMethod() == "PUT")
-//        {
-//                WHPSLogInfo("WHPSHttpSession::onStaticRequest method-[%s] 用于上传静态资源", request.getMethod());
-//        }
         else
         {
                 WHPSLogWarn("WHPSHttpSession::onStaticRequest not support method: [" + request.getMethod() + "]");
@@ -219,8 +218,7 @@ void WHPSHttpSession::onDynamicRequest(HttpRequestContext& request, HttpResponse
         if (!m_httpWhps)
         {
                 WHPSLogWarn("WHPSHttpSession::onHttpMessage whps object is not callable....");
-                this->closeAll();
-//                this->notifyToClose();
+                this->closeSession();
 
                 return;
         }
@@ -231,10 +229,12 @@ void WHPSHttpSession::onDynamicRequest(HttpRequestContext& request, HttpResponse
         if (method == "GET" || method == "DELETE")
         {
                 m_httpWhps->doGet(request, response);
-        } else if (method == "POST" || method == "PUT")
+        }
+        else if (method == "POST" || method == "PUT")
         {
                 m_httpWhps->doPost(request, response);
-        } else
+        }
+        else
         {
                 WHPSLogWarn("WHPSHttpSession::onDynamicRequest not support method: [" + method + "]");
         }

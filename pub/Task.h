@@ -41,7 +41,6 @@ public:
          */
         inline void addTask(T task)
         {
-//                std::lock_guard<std::mutex> lock(m_qMutex);
                 pthread_mutex_lock(&m_qMutex);
                 m_tq.push(task);
                 m_tqSize++;    // 任务数加1
@@ -54,8 +53,6 @@ public:
          */
         inline T get()
         {
-//                std::lock_guard<std::mutex> lock(m_qMutex);
-
                 pthread_mutex_lock(&m_qMutex);
                 T task;
 
@@ -102,7 +99,6 @@ public:
 
 private:
         std::queue<T> m_tq;     // 任务队列
-//        std::mutex m_qMutex;   // 任务锁
         int m_used;             // 使用者数量
         std::atomic<int> m_tqSize;   // 任务量
         pthread_mutex_t m_qMutex;   // 任务锁

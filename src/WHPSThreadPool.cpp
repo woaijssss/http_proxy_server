@@ -47,7 +47,6 @@ WHPSEpollEventLoop& WHPSThreadPool::getOneLoop()
         {
                 WHPSEpollEventLoop& loop = m_vTh[m_index]->getLoop();
                 m_index = (m_index+1) % m_size;
-//                cout << "------index: " << m_index << endl;
                 return loop;
         }
         else            // 单线程(只有主线程时调用)
@@ -144,7 +143,6 @@ void WHPSWorkerThreadPool::stop()
 {
         for (int i = 0; i < m_size; i++)
         {
-                // _m_vTh[i]->stop();
                 delete m_vTh[i];
         }
 }

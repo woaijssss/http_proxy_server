@@ -21,11 +21,11 @@ public:
         virtual ~WhpsSysResource();
 
 public:
-        virtual void doGet(HttpWhpsRequest& request, HttpWhpsResponse& response);
+        virtual void doGet(HttpWhpsRequest& request, HttpWhpsResponse& response) override;
 
-        virtual void doPost(HttpWhpsRequest& request, HttpWhpsResponse& response)
-        {
-        }
+        virtual void doPost(HttpWhpsRequest& request, HttpWhpsResponse& response) override {}
+        virtual void doPut(HttpWhpsRequest& request, HttpWhpsResponse& response) override {}
+        virtual void doDelete(HttpWhpsRequest& request, HttpWhpsResponse& response) override {}
 
 private:
         /* 处理静态资源请求 */
@@ -41,7 +41,7 @@ private:
  * （1）应用层的数据处理，入口应是：
  *      WHPSHttpSession::onHttpRecv()
  */
-class WHPSHttpSession: public std::enable_shared_from_this<WHPSHttpSession>
+class WHPSHttpSession final: public std::enable_shared_from_this<WHPSHttpSession>
 {
 public:
         using sp_TcpSession = WHPSTcpSession::sp_TcpSession;
@@ -100,7 +100,7 @@ private:
         void notifyToClose();
 
         /* 关闭tcp层接口 */
-        void closeAll();
+        void closeSession();
 
 private:
         // writer
