@@ -4,9 +4,12 @@
 #include <memory>
 #include <mutex>
 
+#include <openssl/ssl.h>
+
 #include "WHPSConnSocket.h"
 #include "WHPSEventHandler.h"
 #include "WHPSEpollEventLoop.h"
+#include "WHPSSslManager.h"
 
 /* 连接客户端表示类，该类实例化的每个对象，分别表示一个客户端的一条tcp连接
  * 句柄的操作由WHPSTcpConnSocket来维护；
@@ -22,7 +25,7 @@ public:
         // 应用层回调函数类型
         using httpCB = std::function<void()>;
 public:
-        WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr);
+        WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr, WHPSSslManager& sslMgr);
         ~WHPSTcpSession();
 
         /* 初始化各项参数，不与构造函数一起，防止乱序 */
@@ -141,6 +144,10 @@ private:
          * 由onNewRead()调用
          */
         int readTcpMessage(std::string& buffer_in);
+
+        /* 读取ssl数据 */
+        int readTcpSslMessage(std::string& buffer_in);
+        int sendTcpSslMessage(std::string& buffer_out);
         /**********************************************************************/
 
         /**********************************************************************/
@@ -166,7 +173,11 @@ private:
         // 网络层各对象
         struct sockaddr_in m_cAddr;     // 保存客户端的连接信息
         WHPSEpollEventLoop& m_loop;      // 引用外部事件循环
-        WHPSConnSocket m_connSock;      // 连接句柄
+        WHPSConnSocket m_connSock;      // 连接句柄——tcp通道
+        WHPSSslManager& m_sslMgr; // ssl管理器
+        bool m_useSsl;          // 是否使用ssl通道
+        SSL* m_ssl;                     // 连接句柄——ssl通道
+
         event_chn m_eventChn;           // 服务器事件回调通道
         events_t m_baseEvents;         // 连接默认的事件监听标识
 
@@ -195,6 +206,7 @@ private:
 
         std::mutex m_mutex;
         std::mutex m_connFlagMutex;
+        std::mutex m_sslMutex;
 };
 
 typedef WHPSTcpSession::TcpSessionCB TcpSessionCB;

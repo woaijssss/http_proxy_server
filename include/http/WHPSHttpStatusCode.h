@@ -19,10 +19,6 @@ public:
 
         virtual ~WHPSHttpStatusCode();
 
-public:
-        /* 初始化状态器参数 */
-        virtual void init();
-
         /* 获取状态
          *      状态的保存为 k(int)-v(string) 形式
          */

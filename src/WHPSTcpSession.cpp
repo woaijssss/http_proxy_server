@@ -7,11 +7,14 @@ using namespace std;
 
 #define C_INVALID_PORT	-1
 
-WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr)
+WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct sockaddr_in& c_addr, WHPSSslManager& sslMgr)
         : std::enable_shared_from_this<WHPSTcpSession>(),
           m_cAddr(c_addr),
           m_loop(loop),
           m_connSock(fd),
+          m_sslMgr(sslMgr),
+          m_useSsl(false),
+          m_ssl(nullptr),
           m_eventChn(&m_loop),
           m_baseEvents(EPOLLIN | EPOLLPRI),
           m_cbCleanup(nullptr),
@@ -24,6 +27,19 @@ WHPSTcpSession::WHPSTcpSession(WHPSEpollEventLoop& loop, const int& fd, struct s
           m_httpOnClose(nullptr),
           m_httpOnError(nullptr)
 {
+        if (m_sslMgr.isInit())
+        {
+                m_useSsl = true;
+                std::lock_guard<std::mutex> lock(m_sslMutex);
+                if (!m_isStop)
+                {
+                        m_ssl = m_sslMgr.createSsl();
+                        SSL_set_fd(m_ssl, m_connSock.get());
+                        // todo 判断返回值
+                        SSL_accept(m_ssl);
+                }
+        }
+
         this->getEndpointInfo();
 }
 
@@ -107,15 +123,21 @@ void WHPSTcpSession::closeSession()
                 return;
         }
 
+        m_eventChn.stop();     // 直接停止调用回调
         this->setConnectFlag();
         this->delFromEventLoop();
-//        m_eventChn.stop();     // 直接停止调用回调
 
+        /***************************************************/
+        if (m_useSsl)
         {
-                // 防止 WHPSEventLoop 对象调用回调函数时，析构 WHPSEventHandler 对象
-//        		std::lock_guard<std::mutex> lock(m_loop.getMutex());
-                m_eventChn.stop();     // 直接停止调用回调
+                std::lock_guard<std::mutex> lock(m_sslMutex);
+                if (m_ssl)
+                {
+                        m_sslMgr.freeSsl(m_ssl);
+                        m_ssl = nullptr;
+                }
         }
+        /***************************************************/
 
         m_isWait = true;
         // m_loop.addTask(std::bind(m_cbCleanup, shared_from_this())); // 执行清理回调函数
@@ -191,7 +213,20 @@ void WHPSTcpSession::release()
 void WHPSTcpSession::send(const std::string& msg)
 {
         m_bufferOut = msg;
-        int res = this->sendTcpMessage(m_bufferOut);    // 需要判别发送的结果，从而决定要不要关闭连接
+        int res = -1;
+
+        if (m_useSsl)
+        {
+                std::lock_guard<std::mutex> lock(m_sslMutex);
+                if (m_ssl)
+                {
+                        res = this->sendTcpSslMessage(m_bufferOut);    // 需要判别发送的结果，从而决定要不要关闭连接
+                }
+        }
+        else
+        {
+                res = this->sendTcpMessage(m_bufferOut);    // 需要判别发送的结果，从而决定要不要关闭连接
+        }
 
         if (res > 0)    // 正确发送数据
         {
@@ -288,7 +323,21 @@ int WHPSTcpSession::sendTcpMessage(std::string& buffer_out)
 #include <thread>
 void WHPSTcpSession::onNewRead(error_code error)
 {
-        int res = this->readTcpMessage(m_bufferIn);
+//        int res = this->readTcpMessage(m_bufferIn);
+        int res = -1;
+
+        if (m_useSsl)
+        {
+                std::lock_guard<std::mutex> lock(m_sslMutex);
+                if (m_ssl)
+                {
+                        res = this->readTcpSslMessage(m_bufferIn);
+                }
+        }
+        else
+        {
+                res = this->readTcpMessage(m_bufferIn);
+        }
 
         if (res > 0)
         {
@@ -356,9 +405,88 @@ int WHPSTcpSession::readTcpMessage(std::string& buffer_in)
         return res;
 }
 
+int WHPSTcpSession::readTcpSslMessage(std::string& buffer_in)
+{
+        int res = -1;
+        int bytes_transferred = 0;
+
+        while (true)
+        {
+                char buffer[1024];
+                int r_nbyte = SSL_read(m_ssl, buffer, sizeof(buffer));
+                SSL_pending(m_ssl);
+
+                if (r_nbyte > 0)    // 正常读取数据
+                {
+                        m_bufferIn.append(buffer, r_nbyte);     // 每次追加写入数据
+                        bytes_transferred += r_nbyte;
+                }
+                else
+                {
+                        res = bytes_transferred;
+                        break;
+                }
+        }
+
+//        sleep(10);
+        return res;
+}
+
+int WHPSTcpSession::sendTcpSslMessage(std::string& buffer_out)
+{
+        /* 当前发送数据，是一个线程将_buffer_out中的所有数据全部发送
+         * 后续是否需要改成每次只发送一比数据，之后的数据靠epoll事件触发？
+         */
+        int res = -1;
+        long bytes_transferred = 0;
+
+        while (true)
+        {
+                // int w_nbytes = write(m_connSock.get(), buffer_out.c_str(), buffer_out.size());
+                /* 写入数据可能产生 SIGPIPE 信号
+                 * 对发送函数设置 MSG_NOSIGNAL，可忽略此信号，不至于进程退出
+                 */
+//                int w_nbytes = ::send(m_connSock.get(), buffer_out.c_str(), buffer_out.size(), MSG_NOSIGNAL);
+                int w_nbytes = SSL_write(m_ssl, buffer_out.c_str(), buffer_out.size());
+                bytes_transferred += w_nbytes;
+
+                if (w_nbytes > 0)   // 该笔数据已发送
+                {
+                        buffer_out.erase(0, w_nbytes); // 清除缓冲区中已发送的数据(不适用于重发的情况)
+
+                        if (m_bufferOut.size() == 0)
+                        {
+                                res = bytes_transferred;
+                                break;
+                        }
+
+                }
+                else    // 写数据异常
+                {
+//                        res = bytes_transferred;
+                        res = 0;
+                        break;
+                }
+        }
+
+        return res;
+}
+
 void WHPSTcpSession::onNewWrite(error_code error)
 {
-        int res = this->sendTcpMessage(m_bufferOut);    // 需要判别发送的结果，从而决定要不要关闭连接
+//        int res = this->sendTcpMessage(m_bufferOut);    // 需要判别发送的结果，从而决定要不要关闭连接
+        int res = -1;
+        {
+                std::lock_guard<std::mutex> lock(m_sslMutex);
+                if (m_ssl)
+                {
+                        res = this->sendTcpSslMessage(m_bufferOut);    // 需要判别发送的结果，从而决定要不要关闭连接
+                }
+                else
+                {
+                        res = this->sendTcpMessage(m_bufferOut);    // 需要判别发送的结果，从而决定要不要关闭连接
+                }
+        }
 
         if (res > 0)    // 正确发送数据
         {
@@ -411,7 +539,6 @@ void WHPSTcpSession::onNewClose(error_code error)
         {
                 if (m_bufferIn.size())
                 {
-//                        m_httpOnMessage(shared_from_this());
                         this->onCall(m_httpOnMessage);
                 }
         } else
@@ -422,7 +549,6 @@ void WHPSTcpSession::onNewClose(error_code error)
                 }
 
                 this->onCall(m_httpOnClose);
-                // this->release();
         }
 }
 
@@ -432,12 +558,16 @@ void WHPSTcpSession::onNewError(error_code error)
         {
                 return;
         }
+
+        m_eventChn.stop();     // 直接停止调用回调
+        this->setConnectFlag();
+        this->delFromEventLoop();
+
         /* 关闭数据需要做两件事情
          *      （1）关闭socket
          *      （2）通知主socket对象和EventLoop对象删除该句柄资源
          */
         this->onCall(m_httpOnError);
-        // this->release();
 }
 
 void WHPSTcpSession::setHttpMessageCallback(httpCB cb)

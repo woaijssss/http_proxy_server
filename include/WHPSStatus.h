@@ -24,10 +24,6 @@ public:
 
         }
 
-public:
-        /* 初始化状态器参数 */
-        virtual void init() = 0;
-
         /* 获取状态
          * 直接返回默认状态
          */

@@ -2,12 +2,12 @@
 
 std::shared_ptr<WHPSHttpServer> WHPSHttpServer::m_httpServer;
 
-WHPSHttpServer::WHPSHttpServer()
-        : m_tcpServer(GetWHPSTcpServer()),
+WHPSHttpServer::WHPSHttpServer(int port)
+        : m_tcpServer(port),
           m_workerThreadPool(atoi(GetWebSourceConfig().get("Server", "workThreads").c_str()))
 {
         m_workerThreadPool.start();
-        m_tcpServer->setNewConnCallback(std::bind(&WHPSHttpServer::onNewConnection, this, std::placeholders::_1));
+        m_tcpServer.setNewConnCallback(std::bind(&WHPSHttpServer::onNewConnection, this, std::placeholders::_1));
         // m_tcpServer->setNewCloseCallback(std::bind(&WHPSHttpServer::onNewClose, this, std::placeholders::_1));
 }
 
@@ -21,7 +21,7 @@ WHPSHttpServer& WHPSHttpServer::GetInstance()
 {
         if (!m_httpServer)
         {
-                m_httpServer = std::shared_ptr<WHPSHttpServer>(new WHPSHttpServer());
+                m_httpServer = std::shared_ptr<WHPSHttpServer>(new WHPSHttpServer(1));
         }
 
         return *m_httpServer.get();
@@ -30,8 +30,8 @@ WHPSHttpServer& WHPSHttpServer::GetInstance()
 /* 启动http服务 */
 void WHPSHttpServer::start()
 {
-        m_tcpServer->start();
-        m_tcpServer->startLoop();
+        m_tcpServer.start();
+        m_tcpServer.startLoop();
 }
 
 void WHPSHttpServer::onNewConnection(sp_TcpSession tcp_session)

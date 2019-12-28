@@ -262,6 +262,13 @@ void WhpsSysResource::doGet(HttpWhpsRequest& request, HttpWhpsResponse& response
         string msg;
         this->getResouceFile(path, response, msg);
 
+        if (msg.empty())        // 没有找到资源文件
+        {
+                // todo 增加对res的判断，因为有可能404.html也不存在
+                response.setStatus(404);
+                int res = load(GetWebSourceConfig().get("StaticResource", "rootDir")+"/html/404.html", msg);
+        }
+
         response.getWriter().write(msg);
 }
 
@@ -272,8 +279,9 @@ void WhpsSysResource::getResouceFile(const string& path, HttpWhpsResponse& respo
 
         if (res < 0)
         {
-                msg = "404 not found!";
-                response.setError(404, "Not Found");
+                msg.clear();
+//                msg = "404 not found!";
+//                response.setError(404, "Not Found");
         }
 }
 

@@ -7,6 +7,7 @@ HTTP:=http
 FACTORY:=factory
 REGISTER:=register
 CONFIG:=config
+OPENSSL:=openssl
 
 SRC_DIR:=src
 BUILD_DIR:=build
@@ -23,6 +24,7 @@ SRC:= \
 	$(wildcard $(SRC_DIR)/$(FACTORY)/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(REGISTER)/*.cpp) \
 	$(wildcard $(SRC_DIR)/$(CONFIG)/*.cpp) \
+	$(wildcard $(SRC_DIR)/$(OPENSSL)/*.cpp) \
 	$(wildcard test_develop/*.cpp) 
 
 OBJ:=$(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
@@ -38,6 +40,7 @@ CPPFLAGS+=-Iinclude \
 		-Iinclude/$(FACTORY) \
 		-Iinclude/$(REGISTER) \
 		-Iinclude/$(CONFIG) \
+		-Iinclude/$(OPENSSL) \
 		-Itest_develop
 
 CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -MMD \
@@ -45,7 +48,7 @@ CXXFLAGS+=-Wall -pedantic -Wextra -std=c++11 -MMD \
 	-Wunused-function \
 	-Wno-unused-parameter  # 设置此项，不提示“未使用变量”，正式程序需要去掉 
 
-LDLIBS:=-lpthread -lrt -ldl
+LDLIBS:=-lssl -lpthread -lrt -ldl
 
 ifeq ($(BUILD), release)
 CPPFLAGS+=-DNDEBUG

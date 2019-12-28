@@ -4,8 +4,8 @@
 #include "Socket.h"
 #include "WHPSLog.h"
 
-#define SERVER_MODE             0       // 服务器主socket
-#define CLIENT_CONN_MODE        1       // 服务器接受连接的客户端的socket
+#define SERVER_HTTP_MODE             0       // http服务模式
+#define SERVER_HTTPS_MODE             1       // https服务模式
 /*
  * WHPS服务的基础socket类，初始化服务
  */
@@ -13,21 +13,15 @@
 class WHPSSocket: public Socket
 {
 public:
-        WHPSSocket(int mode);
+        WHPSSocket(int port);
         virtual ~WHPSSocket();
 
 public:
         /* 设置socket，适用于服务器接收的客户端socket */
         void set(int fd);
 
-        /* 初始化socket属性，确定socket模式 */
+        /* 初始化socket属性 */
         int init();
-
-        /* 服务器模式socket初始化 */
-        int initServerMode();
-
-        /* 连接客户端的socket初始化 */
-        int initClientConnMode();
 
         /* 获取当前socket句柄 */
         const int& get() const;
@@ -64,7 +58,7 @@ protected:
         int close();
 
 private:
-        int m_mode;
+//        int m_mode;
         int m_tcpPort;   // tcp监听端口
 };
 

@@ -22,7 +22,7 @@ public:
         using sp_TcpSession = WHPSTcpSession::sp_TcpSession;
         using cbFunc = std::function<void(const sp_TcpSession&)>;
 public:
-        WHPSTcpServer();
+        WHPSTcpServer(int port);
         /* 虽然是单例，但实例化了线程池，没有析构函数，服务停止时，无法正常释放线程资源，导致内存泄漏 */
         virtual ~WHPSTcpServer();
 
@@ -87,6 +87,8 @@ private:
         /* 保证在连接存在时，智能指针至少被引用一次，不至于销毁连接 */
 //        Map<int, sp_TcpSession> _tcp_sess_list;   // tcp客户端连接表(断线要清理)
         Map<std::string, sp_TcpSession> m_tcpSessList;   // tcp客户端连接表(断线要清理)
+        WHPSSslManager m_sslMgr;        // ssl管理器
+        bool m_isUseSsl/* = false*/;    // 是否使用ssl加密(默认不使用)
 
 private:
         // 应用层回调函数

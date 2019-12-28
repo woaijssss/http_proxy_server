@@ -9,16 +9,6 @@
 
 WHPSHttpStatusCode::WHPSHttpStatusCode()
 {
-
-}
-
-WHPSHttpStatusCode::~WHPSHttpStatusCode()
-{
-
-}
-
-void WHPSHttpStatusCode::init()
-{
         m_scStatus[200] = "OK";
         m_scStatus[201] = "Created";
         m_scStatus[202] = "Accepted";
@@ -29,6 +19,11 @@ void WHPSHttpStatusCode::init()
         m_scStatus[405] = "Method Not Allowed";
         m_scStatus[500] = "Server Error";
         m_scStatus[502] = "Bad Gateway";
+}
+
+WHPSHttpStatusCode::~WHPSHttpStatusCode()
+{
+
 }
 
 const WHPSHttpStatusCode::StrStatus& WHPSHttpStatusCode::getStatus(const int& st)

@@ -15,7 +15,7 @@ public:
         using sp_TcpSession = WHPSTcpServer::sp_TcpSession;
         using sp_HttpSession = WHPSHttpSession::sp_HttpSession;
 public:
-        WHPSHttpServer();
+        WHPSHttpServer(int port);
         virtual ~WHPSHttpServer();
 
 public:
@@ -29,7 +29,7 @@ public:
         // 测试接口
         void stop()
         {
-                m_tcpServer->stop();
+                m_tcpServer.stop();
         }
 
 private:
@@ -54,12 +54,12 @@ private:
 private:
         // static WHPSHttpServer* _http_server;
         static std::shared_ptr<WHPSHttpServer> m_httpServer;
-        WHPSTcpServer* m_tcpServer;
+        WHPSTcpServer m_tcpServer;
 
         Map<std::string, sp_HttpSession> m_httpSessList;    // http列表
         WHPSWorkerThreadPool m_workerThreadPool;       // 工作线程池句柄
 };
 
-GET_SINGLETON_OBJECT(WHPSHttpServer)
+//GET_SINGLETON_OBJECT(WHPSHttpServer)
 
 #endif  //

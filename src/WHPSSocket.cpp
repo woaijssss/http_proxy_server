@@ -6,9 +6,8 @@ using namespace std;
 
 // int g_port = 3000;              // 可做成配置项
 
-WHPSSocket::WHPSSocket(int mode)
-        : m_mode(mode),
-          m_tcpPort(atoi(GetWebSourceConfig().get("Server", "tcpPort").c_str()))
+WHPSSocket::WHPSSocket(int port)
+        : m_tcpPort(port)
 {
 
 }
@@ -24,19 +23,6 @@ const int& WHPSSocket::get() const
 }
 
 int WHPSSocket::init()
-{
-        if (m_mode == SERVER_MODE)
-        {
-                return this->initServerMode();
-        } else if (m_mode == CLIENT_CONN_MODE)
-        {
-                return this->initClientConnMode();
-        }
-
-        return -1;      // 未知服务类型
-}
-
-int WHPSSocket::initServerMode()
 {
         if (this->socket() < 0)
         {
@@ -68,11 +54,6 @@ int WHPSSocket::initServerMode()
                 return -1;
         }
 
-        return 0;
-}
-
-int WHPSSocket::initClientConnMode()
-{
         return 0;
 }
 

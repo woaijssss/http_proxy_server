@@ -10,14 +10,21 @@ using namespace std;
 std::shared_ptr<WHPSTcpServer> WHPSTcpServer::m_tcpServer;
 // WHPSTcpServer::GC WHPSTcpServer::_gc;
 
-WHPSTcpServer::WHPSTcpServer()
+WHPSTcpServer::WHPSTcpServer(int port)
         : ImplSingleton<WHPSTcpServer>(),
           m_loop(),
           m_threadPool(atoi(GetWebSourceConfig().get("Server", "ioThreads").c_str()), m_loop),
-          m_tcpSocket(SERVER_MODE),
-          m_eventChn(&m_loop)
+          m_tcpSocket(port),
+          m_eventChn(&m_loop),
+          m_sslMgr(),
+          m_isUseSsl(false)
 {
 
+        if (port == 443)
+        {
+                m_sslMgr.init();
+                m_isUseSsl = true;
+        }
 }
 
 WHPSTcpServer::~WHPSTcpServer()
@@ -30,7 +37,7 @@ WHPSTcpServer* WHPSTcpServer::GetInstance()
         // if (!m_tcpServer.get())
         if (!m_tcpServer)
         {
-                m_tcpServer = std::shared_ptr<WHPSTcpServer>(new WHPSTcpServer());
+                m_tcpServer = std::shared_ptr<WHPSTcpServer>(new WHPSTcpServer(1));
         }
 
         return m_tcpServer.get();
@@ -107,19 +114,17 @@ void WHPSTcpServer::onNewSession()
 
         while ((fd = m_tcpSocket.Accept(c_addr)) > 0)         // 高并发时，可能返回多个连接的事件，因此循环处理
         {
-                sp_TcpSession sp_tcp_session(new WHPSTcpSession(m_threadPool.getOneLoop(), fd, c_addr));   // 实例化客户端对象
+                // 实例化客户端对象
+                sp_TcpSession sp_tcp_session(new WHPSTcpSession(m_threadPool.getOneLoop(), fd, c_addr, m_sslMgr));
 
                 // 设置客户端相关参数、回调功能
                 //sp_tcp_session->setCleanUpCallback(std::bind(&WHPSTcpServer::onCleanUpResource, this, sp_tcp_session));
                 TcpSessionCB cb = std::bind(&WHPSTcpServer::onCleanUpResource, this, std::placeholders::_1);
-//                m_tcpSessList[fd] = sp_tcp_session;
                 m_tcpSessList[sp_tcp_session->getNetInfo()] = sp_tcp_session;
                 sp_tcp_session->setCleanUpCallback(cb);         // 该任务属于线程任务，不属于epoll事件，因此需要设置线程回调函数才能被执行
-
                 m_cbConnect(sp_tcp_session);
 
                 // 将客户端回调任务加入到WHPSEventLoop中
-//                sp_tcp_session->addToEventLoop();
                 sp_tcp_session->init();
         }
 }

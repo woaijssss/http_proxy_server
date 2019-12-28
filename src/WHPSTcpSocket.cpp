@@ -1,7 +1,7 @@
 #include "WHPSTcpSocket.h"
 
-WHPSTcpSocket::WHPSTcpSocket(int mode)
-        : WHPSSocket(mode)
+WHPSTcpSocket::WHPSTcpSocket(int port)
+        : WHPSSocket(port)
 {
 
 }
